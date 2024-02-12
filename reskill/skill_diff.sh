@@ -1,0 +1,37 @@
+#python train_skill_modules.py --pick 1 --push 1 --prior_model 'Diffusion' --seed 0
+#python train_skill_modules.py --pick 1 --push 1 --prior_model 'Diffusion' --seed 1
+#python train_skill_modules.py --pick 1 --push 1 --prior_model 'Diffusion' --seed 2
+#python train_skill_modules.py --pick 1 --push 1 --prior_model 'Diffusion' --seed 3
+python train_skill_modules.py --pick 1 --push 1 --prior_model 'Diffusion' --seed 4
+python train_skill_modules.py --pick 1 --push 10 --prior_model 'Diffusion' --seed 0
+python train_skill_modules.py --pick 1 --push 10 --prior_model 'Diffusion' --seed 1
+python train_skill_modules.py --pick 1 --push 10 --prior_model 'Diffusion' --seed 2
+python train_skill_modules.py --pick 1 --push 10 --prior_model 'Diffusion' --seed 3
+python train_skill_modules.py --pick 1 --push 10 --prior_model 'Diffusion' --seed 4
+python train_skill_modules.py --pick 1 --push 100 --prior_model 'Diffusion' --seed 0
+python train_skill_modules.py --pick 1 --push 100 --prior_model 'Diffusion' --seed 1
+python train_skill_modules.py --pick 1 --push 100 --prior_model 'Diffusion' --seed 2
+python train_skill_modules.py --pick 1 --push 100 --prior_model 'Diffusion' --seed 3
+python train_skill_modules.py --pick 1 --push 100 --prior_model 'Diffusion' --seed 4
+python train_skill_modules.py --pick 1 --push 1000 --prior_model 'Diffusion' --seed 0
+python train_skill_modules.py --pick 1 --push 1000 --prior_model 'Diffusion' --seed 1
+python train_skill_modules.py --pick 1 --push 1000 --prior_model 'Diffusion' --seed 2
+python train_skill_modules.py --pick 1 --push 1000 --prior_model 'Diffusion' --seed 3
+python train_skill_modules.py --pick 1 --push 1000 --prior_model 'Diffusion' --seed 4
+python train_skill_modules.py --pick 10 --push 1 --prior_model 'Diffusion' --seed 0
+python train_skill_modules.py --pick 10 --push 1 --prior_model 'Diffusion' --seed 1
+python train_skill_modules.py --pick 10 --push 1 --prior_model 'Diffusion' --seed 2
+python train_skill_modules.py --pick 10 --push 1 --prior_model 'Diffusion' --seed 3
+python train_skill_modules.py --pick 10 --push 1 --prior_model 'Diffusion' --seed 4
+python train_skill_modules.py --pick 100 --push 1 --prior_model 'Diffusion' --seed 0
+python train_skill_modules.py --pick 100 --push 1 --prior_model 'Diffusion' --seed 1
+python train_skill_modules.py --pick 100 --push 1 --prior_model 'Diffusion' --seed 2
+python train_skill_modules.py --pick 100 --push 1 --prior_model 'Diffusion' --seed 3
+python train_skill_modules.py --pick 100 --push 1 --prior_model 'Diffusion' --seed 4
+python train_skill_modules.py --pick 1000 --push 1 --prior_model 'Diffusion' --seed 0
+python train_skill_modules.py --pick 1000 --push 1 --prior_model 'Diffusion' --seed 1
+python train_skill_modules.py --pick 1000 --push 1 --prior_model 'Diffusion' --seed 2
+python train_skill_modules.py --pick 1000 --push 1 --prior_model 'Diffusion' --seed 3
+python train_skill_modules.py --pick 1000 --push 1 --prior_model 'Diffusion' --seed 4
+
+
