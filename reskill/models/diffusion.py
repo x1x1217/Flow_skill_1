@@ -91,6 +91,19 @@ class Diffusion(nn.Module):
             )
         else:
             return noise
+        
+    def predict_start_from_noise_grad(self, x_t, t, noise, grad):
+        '''
+            if self.predict_epsilon, model output is (scaled) noise;
+            otherwise, model predicts x0 directly
+        '''
+        if self.predict_epsilon:
+            return (
+                    extract(self.sqrt_recip_alphas_cumprod, t, x_t.shape) * x_t -
+                    extract(self.sqrt_recipm1_alphas_cumprod, t, x_t.shape) * noise
+            )
+        else:
+            return noise
 
     def q_posterior(self, x_start, x_t, t):
         posterior_mean = (
@@ -125,6 +138,18 @@ class Diffusion(nn.Module):
 
         model_mean, posterior_variance, posterior_log_variance = self.q_posterior(x_start=x_recon, x_t=x, t=t)
         return model_mean, posterior_variance, posterior_log_variance
+
+    def p_mean_variance_grad(self, x, t, s, grad):
+        x_recon = self.predict_start_from_noise_grad(x, t=t, noise=self.model(x, t, s)-
+                                                     extract(self.sqrt_one_minus_alphas_cumprod, t, x.shape) * grad, grad=grad)
+
+        if self.clip_denoised:
+            x_recon.clamp_(-self.max_action, self.max_action)
+        else:
+            assert RuntimeError()
+
+        model_mean, posterior_variance, posterior_log_variance = self.q_posterior(x_start=x_recon, x_t=x, t=t)
+        return model_mean, posterior_variance, posterior_log_variance
     
     def p_mean_variance_ddim(self, x, t_i, t_j, s, use_sigma=False):
         noise = self.model(x, t_j, s)
@@ -134,6 +159,18 @@ class Diffusion(nn.Module):
             x_recon.clamp_(-self.max_action, self.max_action)
         else:
             assert RuntimeError()
+        model_mean, posterior_variance, posterior_log_variance = self.q_posterior_ddim(x_start=x_recon, t_i=t_i, t_j=t_j, noise=noise, use_sigma=use_sigma)
+        return model_mean, posterior_variance, posterior_log_variance
+    
+    def p_mean_variance_grad_ddim(self, x, t_i, t_j, s, grad, use_sigma=False):
+        noise = self.model(x, t_j, s) - extract(self.sqrt_one_minus_alphas_cumprod, t_j, x.shape) * grad
+        x_recon = self.predict_start_from_noise_grad(x, t=t_j, noise=noise, grad=grad)
+
+        if self.clip_denoised:
+            x_recon.clamp_(-self.max_action, self.max_action)
+        else:
+            assert RuntimeError()
+
         model_mean, posterior_variance, posterior_log_variance = self.q_posterior_ddim(x_start=x_recon, t_i=t_i, t_j=t_j, noise=noise, use_sigma=use_sigma)
         return model_mean, posterior_variance, posterior_log_variance
 
@@ -152,6 +189,24 @@ class Diffusion(nn.Module):
         model_mean, _, model_log_variance = self.p_mean_variance_ddim(x=x, t_i=t_i, t_j=t_j, s=s, use_sigma=use_sigma)
         if not use_sigma:
             return model_mean
+        noise = torch.randn_like(x)
+        # no noise when t == 0
+        nonzero_mask = (1 - (t_j == 0).float()).reshape(b, *((1,) * (len(x.shape) - 1)))
+        return model_mean + nonzero_mask * (0.5 * model_log_variance).exp() * noise
+
+     # @torch.no_grad()
+    def p_sample_grad(self, x, t, s, grad):
+        b, *_, device = *x.shape, x.device
+        model_mean, _, model_log_variance = self.p_mean_variance_grad(x=x, t=t, s=s, grad=grad)
+        noise = torch.randn_like(x)
+        # no noise when t == 0
+        nonzero_mask = (1 - (t == 0).float()).reshape(b, *((1,) * (len(x.shape) - 1)))
+        return model_mean + nonzero_mask * (0.5 * model_log_variance).exp() * noise
+
+ # @torch.no_grad()
+    def p_sample_grad_ddim(self, x, t_i, t_j, s, grad, use_sigma=False):
+        b, *_, device = *x.shape, x.device
+        model_mean, _, model_log_variance = self.p_mean_variance_grad_ddim(x=x, t_i=t_i, t_j=t_j, s=s, grad=grad, use_sigma=use_sigma)
         noise = torch.randn_like(x)
         # no noise when t == 0
         nonzero_mask = (1 - (t_j == 0).float()).reshape(b, *((1,) * (len(x.shape) - 1)))
@@ -211,6 +266,79 @@ class Diffusion(nn.Module):
             return x, torch.stack(diffusion, dim=1)
         else:
             return x
+        
+        # @torch.no_grad()
+    def p_sample_loop_grad(self, state, shape, cls, n_obs, verbose=False, return_diffusion=False):
+        device = self.betas.device
+
+        batch_size = shape[0]
+        x = torch.randn(shape, device=device)
+
+        if return_diffusion: diffusion = [x]
+
+        progress = Progress(self.n_timesteps) if verbose else Silent()
+        for i in reversed(range(0, self.n_timesteps)):
+            def cond_fn(x: torch.Tensor, t: torch.Tensor, y: torch.Tensor): 
+                with torch.enable_grad():
+                    x_in = x.detach().requires_grad_(True)
+                    logits = cls(torch.concat([state[:, :n_obs], x_in], dim=1)).reshape(-1, 1)
+                    log_probs = logits
+                    selected = log_probs[range(len(logits)), 0]
+                    return torch.autograd.grad(selected.sum(), x_in)[0].float()   # gradient descend
+                    
+            grad = cond_fn(x, i, y=1) 
+            timesteps = torch.full((batch_size,), i, device=device, dtype=torch.long)
+            x = self.p_sample_grad(x, timesteps, state, grad)
+
+            progress.update({'t': i})
+
+            if return_diffusion: diffusion.append(x)
+
+        progress.close()
+
+        if return_diffusion:
+            return x, torch.stack(diffusion, dim=1)
+        else:
+            return x
+        
+        # @torch.no_grad()
+    def p_sample_loop_grad_ddim(self, state, shape, cls, n_obs, verbose=False, return_diffusion=False):
+        device = self.betas.device
+
+        batch_size = shape[0]
+        x = torch.randn(shape, device=device)
+
+        if return_diffusion: diffusion = [x]
+
+        progress = Progress(self.n_timesteps) if verbose else Silent()
+        for i in range(len(self.seq)):
+            def cond_fn(x: torch.Tensor, t: torch.Tensor, y: torch.Tensor): 
+                with torch.enable_grad():
+                    x_in = x.detach().requires_grad_(True)
+                    logits = cls(torch.concat([state[:, :n_obs], x_in], dim=1)).reshape(-1, 1)
+                    log_probs = logits
+                    selected = log_probs[range(len(logits)), 0]
+                    return torch.autograd.grad(selected.sum(), x_in)[0].float()   # gradient descend
+                    
+            grad = cond_fn(x, i, y=1) 
+            if self.seq[i] == 0:
+                timesteps = torch.full((batch_size,), self.seq[i], device=device, dtype=torch.long)
+                x = self.p_sample_grad(x, timesteps, state, grad)
+            else:
+                timesteps_i = torch.full((batch_size,), self.seq[i+1], device=device, dtype=torch.long)
+                timesteps_j = torch.full((batch_size,), self.seq[i], device=device, dtype=torch.long)
+                x = self.p_sample_grad_ddim(x, timesteps_i, timesteps_j, state, grad, self.use_sigma)
+
+            progress.update({'t': i})
+
+            if return_diffusion: diffusion.append(x)
+
+        progress.close()
+
+        if return_diffusion:
+            return x, torch.stack(diffusion, dim=1)
+        else:
+            return x
 
     # @torch.no_grad()
     def sample(self, state, *args, **kwargs):
@@ -223,6 +351,20 @@ class Diffusion(nn.Module):
         batch_size = state.shape[0]
         shape = (batch_size, self.action_dim)
         action = self.p_sample_loop_ddim(state, shape, *args, **kwargs)
+        return action.clamp_(-self.max_action, self.max_action)
+    
+    # @torch.no_grad()
+    def sample_grad(self, state, cls, n_obs, *args, **kwargs):
+        batch_size = state.shape[0]
+        shape = (batch_size, self.action_dim)
+        action = self.p_sample_loop_grad(state, shape, cls, n_obs, *args, **kwargs)
+        return action.clamp_(-self.max_action, self.max_action)
+    
+    # @torch.no_grad()
+    def sample_grad_ddim(self, state, cls, n_obs, *args, **kwargs):
+        batch_size = state.shape[0]
+        shape = (batch_size, self.action_dim)
+        action = self.p_sample_loop_grad_ddim(state, shape, cls, n_obs, *args, **kwargs)
         return action.clamp_(-self.max_action, self.max_action)
     
     def sample_with_noise(self, state, noise):

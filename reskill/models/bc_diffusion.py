@@ -79,6 +79,18 @@ class Diffusion_BC(object):
             action = self.actor.sample_ddim(state)
         return action
         #return action.cpu().data.numpy().flatten()
+    
+    def sample_action_guide_repeat(self, state, cls, n_obs, repeat_time):
+        state = state.repeat([repeat_time, 1])
+        with torch.no_grad():
+            action = self.actor.sample_grad(state, cls, n_obs)
+        return action
+    
+    def sample_action_ddim_guide_repeat(self, state, cls, n_obs, repeat_time):
+        state = state.repeat([repeat_time, 1])
+        with torch.no_grad():
+            action = self.actor.sample_grad_ddim(state, cls, n_obs)
+        return action
 
     def sample_determin_action(self, state, noise):
         state = torch.FloatTensor(state.reshape(1, -1)).to(self.device)

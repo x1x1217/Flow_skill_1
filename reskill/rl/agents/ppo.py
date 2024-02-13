@@ -214,6 +214,7 @@ class PPO():
         # Set up optimizers for policy and value function
         self.pi_optimizer = Adam(self.ac.pi.parameters(), lr=pi_lr)
         self.vf_optimizer = Adam(self.ac.v.parameters(), lr=vf_lr)
+        self.qf_optimizer = Adam(self.ac.q.parameters(), lr=vf_lr)
 
     # Set up function for computing PPO policy loss
     def compute_loss_pi(self, data):
@@ -238,6 +239,10 @@ class PPO():
     def compute_loss_v(self, data):
         obs, ret = data['obs'], data['ret']
         return ((self.ac.v(obs) - ret)**2).mean()
+    
+    def compute_loss_q(self, data):
+        obs, act, ret = data['obs'], data['act'], data['ret']
+        return ((self.ac.q(torch.concat([obs, act], dim=1)) - ret) ** 2).mean()
 
 
     def update(self):
@@ -246,6 +251,7 @@ class PPO():
         pi_l_old, pi_info_old = self.compute_loss_pi(data)
         pi_l_old = pi_l_old.item()
         v_l_old = self.compute_loss_v(data).item()
+        q_l_old = self.compute_loss_q(data).item()
 
         # Train policy with multiple steps of gradient descent
         for i in range(self.train_pi_iters):
@@ -267,6 +273,12 @@ class PPO():
             mpi_avg_grads(self.ac.v)    # average grads across MPI processes
             self.vf_optimizer.step()
 
+            self.qf_optimizer.zero_grad()
+            loss_q = self.compute_loss_q(data)
+            loss_q.backward()
+            mpi_avg_grads(self.ac.q)
+            self.qf_optimizer.step()
+
         # Log changes from update
         kl, ent, cf = pi_info['kl'], pi_info_old['ent'], pi_info['cf']
 
@@ -276,6 +288,7 @@ class PPO():
                         Entropy=ent, 
                         ClipFrac=cf,
                         DeltaLossPi=(loss_pi.item() - pi_l_old),
-                        DeltaLossV=(loss_v.item() - v_l_old))
+                        DeltaLossV=(loss_v.item() - v_l_old),
+                        DeltaLossQ=(loss_q.item() - q_l_old))
 
 

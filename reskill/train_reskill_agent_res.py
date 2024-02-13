@@ -32,8 +32,8 @@ def get_obs(obs, env_name):
 def logistic_fn(step, k=0.001, C=18000):
     return 1/(1 + math.exp(-k * (step-C)))
 
-def train(agent, residual_agent, env, skill_vae, skill_prior, logistic_C, logistic_k, 
-          save_path, save_path_residual, writer, prior_model, args):
+def train(agent, zombie_agent, residual_agent, env, skill_vae, skill_prior, logistic_C, logistic_k, 
+          save_path, save_path_residual, save_path_zombie, writer, prior_model, args):
 
     env_name = env.spec.id
     obs, ep_ret, ep_len = env.reset(), 0, 0
@@ -56,7 +56,11 @@ def train(agent, residual_agent, env, skill_vae, skill_prior, logistic_C, logist
             elif prior_model == 'Diffusion':
                 state_ = torch.cat((o, n), dim=1).to(device)
                 #print(state_)
-                z = skill_prior.sample_action_torch_ddim(state_)
+                if args.use_grad == 1:
+                    z = skill_prior.sample_action_ddim_guide_repeat(state_, zombie_agent.ac.q, args.n_obs, 1)
+                else:
+                    z = skill_prior.sample_action_torch_ddim(state_)
+                v, logp = zombie_agent.ac.v_logp(torch.as_tensor(o, dtype=torch.float32), z)
             elif prior_model == 'CVAE':
                 state_ = torch.cat((o, n), dim=1).to(device)
                 lat = torch.normal(0, 1, (skill_prior.latent_dim, )).unsqueeze(0).cuda()
@@ -115,7 +119,8 @@ def train(agent, residual_agent, env, skill_vae, skill_prior, logistic_C, logist
 
             # save and log
             agent.buf.store(o.cpu().detach(), n.cpu().detach(), skill_r, v, logp)
-            
+            if prior_model == 'Diffusion':
+                zombie_agent.buf.store(o.cpu().detach(), z.cpu().detach(), skill_r, v, logp)
 
             o = o2
             t += 1
@@ -130,11 +135,17 @@ def train(agent, residual_agent, env, skill_vae, skill_prior, logistic_C, logist
                 # if trajectory didn't reach terminal state, bootstrap value target
                 if timeout or epoch_ended:
                     _, v, _, _, _ = agent.ac.step(o)
+                    if prior_model == 'Diffusion':
+                        _, v_zombie, _, _, _ = zombie_agent.ac.step(o)
                     _, v_res, _, _, _ = residual_agent.ac.step(o2_res)
                 else:
                     v = 0
+                    if prior_model == 'Diffusion':
+                        v_zombie = 0
                     v_res = 0
                 agent.buf.finish_path(v)
+                if prior_model == 'Diffusion':
+                    zombie_agent.buf.finish_path(v_zombie)
                 residual_agent.buf.finish_path(v_res)
                 if terminal:
                     if proc_id() == 0:
@@ -145,11 +156,14 @@ def train(agent, residual_agent, env, skill_vae, skill_prior, logistic_C, logist
         # Save model
         if (epoch % agent.save_freq == 0) or (epoch == agent.epochs-1):
             torch.save(agent.ac.pi, save_path)
+            if prior_model == 'Diffusion':
+                torch.save(zombie_agent.ac, save_path_zombie)
             #skill_distill.save_checkpoint(env_name, str(args.seed)+"_"+args.prior_model)
             torch.save(residual_agent.ac.pi, save_path_residual)
 
         # Perform PPO update!
         losses = agent.update()
+        zombir_losses = zombie_agent.update()
         residual_losses = residual_agent.update()
 
         success_traj = 0
@@ -173,9 +187,10 @@ def train(agent, residual_agent, env, skill_vae, skill_prior, logistic_C, logist
                 elif prior_model == "Diffusion":
                     n = n.cuda()
                     state_ = torch.cat((obs, n), dim=1).cuda()
-                    #print(state_)
-                    z = skill_prior.sample_action_torch_ddim(state_).detach()
-                    #z = skill_distill.select_action(obs, evaluate=True)
+                    if args.use_grad == 1:
+                        z = skill_prior.sample_action_ddim_guide_repeat(state_, zombie_agent.ac.q, args.n_obs, 1)
+                    else:
+                        z = skill_prior.sample_action_torch_ddim(state_)
                 elif prior_model == 'MLP':
                     n = n.cuda()
                     state_ = torch.cat((obs, n), dim=1).cuda()
@@ -278,6 +293,7 @@ def main():
     parser.add_argument('--pick', type=int, default=1)
     parser.add_argument('--push', type=int, default=1)
     parser.add_argument('--use_sigma', type=int, default=1)
+    parser.add_argument('--use_grad', type=int, default=1)
     args=parser.parse_args()
 
     args.dataset_name = f'fetch_block_{args.pick}_{args.push}'
@@ -304,6 +320,7 @@ def main():
     save_dir = f"./results/saved_rl_models/{conf.setup.env}/{args.dataset_name}/{args.prior_model}/{args.seed}/"
     os.makedirs(save_dir, exist_ok=True)
     save_path = save_dir + "ppo_agent.pth"
+    save_path_zombie = save_dir + "ppo_zombie_agent.pth"
     save_path_residual = save_dir + "ppo_residual_agent.pth"
 
     torch.set_num_threads(torch.get_num_threads())
@@ -327,6 +344,8 @@ def main():
     n_actions = skill_vae.n_actions
     n_obs = skill_vae.n_obs
     seq_len = skill_vae.seq_len
+    skill_zombie_agent = None
+    args.n_obs = n_obs
 
     if args.prior_model == 'RNVP':
         skill_agent = PPO(ac_kwargs=dict(hidden_sizes=[conf.skill_agent.hid]*conf.skill_agent.l),
@@ -344,6 +363,39 @@ def main():
                     target_kl=conf.skill_agent.target_kl, 
                     obs_dim=n_obs, 
                     act_dim=n_features, 
+                    act_limit=2)
+    elif args.prior_model == 'Diffusion':
+        skill_zombie_agent = PPO(ac_kwargs=dict(hidden_sizes=[conf.skill_agent.hid]*conf.skill_agent.l),
+                    gamma=conf.skill_agent.gamma, 
+                    seed=args.seed, 
+                    steps_per_epoch=conf.skill_agent.steps_per_epoch, 
+                    epochs=conf.setup.epochs,
+                    clip_ratio=conf.skill_agent.clip_ratio, 
+                    pi_lr=conf.skill_agent.pi_lr,
+                    vf_lr=conf.skill_agent.vf_lr, 
+                    train_pi_iters=conf.skill_agent.train_pi_iters, 
+                    train_v_iters=conf.skill_agent.train_v_iters, 
+                    lam=conf.skill_agent.lam, 
+                    max_ep_len=conf.setup.max_ep_len,
+                    target_kl=conf.skill_agent.target_kl, 
+                    obs_dim=n_obs, 
+                    act_dim=n_features, 
+                    act_limit=2)
+        skill_agent = PPO(ac_kwargs=dict(hidden_sizes=[conf.skill_agent.hid]*conf.skill_agent.l),
+                    gamma=conf.skill_agent.gamma, 
+                    seed=args.seed, 
+                    steps_per_epoch=conf.skill_agent.steps_per_epoch, 
+                    epochs=conf.setup.epochs,
+                    clip_ratio=conf.skill_agent.clip_ratio, 
+                    pi_lr=conf.skill_agent.pi_lr,
+                    vf_lr=conf.skill_agent.vf_lr, 
+                    train_pi_iters=conf.skill_agent.train_pi_iters, 
+                    train_v_iters=conf.skill_agent.train_v_iters, 
+                    lam=conf.skill_agent.lam, 
+                    max_ep_len=conf.setup.max_ep_len,
+                    target_kl=conf.skill_agent.target_kl, 
+                    obs_dim=n_obs, 
+                    act_dim=n_actions, 
                     act_limit=2)
     else:
         skill_agent = PPO(ac_kwargs=dict(hidden_sizes=[conf.skill_agent.hid]*conf.skill_agent.l),
@@ -391,6 +443,7 @@ def main():
 
     print("Training RL agent...")
     train(agent=skill_agent,
+          zombie_agent=skill_zombie_agent,
           residual_agent=residual_agent,  
           env=env,
           skill_vae=skill_vae,
@@ -398,6 +451,7 @@ def main():
           logistic_C=conf.setup.logistic_C,
           logistic_k=conf.setup.logistic_k,
           save_path=save_path,
+          save_path_zombie=save_path_zombie,
           save_path_residual=save_path_residual,
           writer=writer,
           prior_model=args.prior_model,
