@@ -21,13 +21,16 @@ class Diffusion_BC(object):
                  beta_schedule='linear',
                  n_timesteps=100,
                  lr=2e-4,
+                 ddim_steps=10,
+                 use_sigma=False,
                  ):
 
         self.model = MLP(state_dim=state_dim, action_dim=action_dim, device=device)
         self.actor = Diffusion(state_dim=state_dim, action_dim=action_dim, model=self.model, max_action=max_action,
-                               beta_schedule=beta_schedule, n_timesteps=n_timesteps,
+                               beta_schedule=beta_schedule, n_timesteps=n_timesteps, ddim_steps=ddim_steps, use_sigma=use_sigma
                                ).to(device)
         self.actor_optimizer = torch.optim.Adam(self.actor.parameters(), lr=lr)
+        self.ddim_steps = ddim_steps
 
         self.max_action = max_action
         self.action_dim = action_dim
@@ -55,11 +58,25 @@ class Diffusion_BC(object):
             action = self.actor.sample(state)
         return action.cpu().data.numpy()
         #return action.cpu().data.numpy().flatten()
+    
+    def sample_action_ddim(self, state):
+        state = torch.FloatTensor(state.reshape(1, -1)).to(self.device)
+        with torch.no_grad():
+            action = self.actor.sample_ddim(state)
+        return action.cpu().data.numpy()
+        #return action.cpu().data.numpy().flatten()
 
     def sample_action_torch(self, state):
         #state = torch.FloatTensor(state.reshape(1, -1)).to(self.device)
         with torch.no_grad():
             action = self.actor.sample(state)
+        return action
+        #return action.cpu().data.numpy().flatten()
+    
+    def sample_action_torch_ddim(self, state):
+        #state = torch.FloatTensor(state.reshape(1, -1)).to(self.device)
+        with torch.no_grad():
+            action = self.actor.sample_ddim(state)
         return action
         #return action.cpu().data.numpy().flatten()
 

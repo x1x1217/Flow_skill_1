@@ -49,7 +49,7 @@ register(
         max_episode_steps=100  
     )
 
-register(
+"""register(
         id='FetchHook-v0',
         entry_point='reskill.rl.envs.fetch_hook_env:FetchHookEnv',
         timestep_limit=100,
@@ -65,6 +65,6 @@ register(
     id='ComplexHookSingleObject-v0',
     entry_point='reskill.rl.envs.complex_hook_env:ComplexHookSingleObjectEnv',
     timestep_limit=100,
-)
+)"""
 
 

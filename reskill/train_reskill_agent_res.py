@@ -16,6 +16,7 @@ from utils.general_utils import AttrDict
 import rl.envs
 import math
 from tensorboardX import SummaryWriter
+from models.bc_diffusion import Diffusion_BC
 
 
 device = torch.device('cuda')
@@ -55,7 +56,7 @@ def train(agent, residual_agent, env, skill_vae, skill_prior, logistic_C, logist
             elif prior_model == 'Diffusion':
                 state_ = torch.cat((o, n), dim=1).to(device)
                 #print(state_)
-                z = skill_prior.sample_action_torch(state_)
+                z = skill_prior.sample_action_torch_ddim(state_)
             elif prior_model == 'CVAE':
                 state_ = torch.cat((o, n), dim=1).to(device)
                 lat = torch.normal(0, 1, (skill_prior.latent_dim, )).unsqueeze(0).cuda()
@@ -155,7 +156,7 @@ def train(agent, residual_agent, env, skill_vae, skill_prior, logistic_C, logist
         total_r = 0
         r_time = 0
 
-        for roll in range(20):
+        for roll in range(50):
             obs = env.reset()
             obs = get_obs(obs, env_name)
 
@@ -173,7 +174,7 @@ def train(agent, residual_agent, env, skill_vae, skill_prior, logistic_C, logist
                     n = n.cuda()
                     state_ = torch.cat((obs, n), dim=1).cuda()
                     #print(state_)
-                    z = skill_prior.sample_action_torch(state_).detach()
+                    z = skill_prior.sample_action_torch_ddim(state_).detach()
                     #z = skill_distill.select_action(obs, evaluate=True)
                 elif prior_model == 'MLP':
                     n = n.cuda()
@@ -272,11 +273,14 @@ def main():
                         help='size of replay buffer (default: 10000000)')
 
     parser.add_argument('--config_file', type=str, default="table_cleanup/config.yaml")
-    parser.add_argument('--dataset_name', type=str, default="fetch_block_40000")
     parser.add_argument('--prior_model', type=str, default='Diffusion')
     parser.add_argument('--seed', type=int, default=21)
+    parser.add_argument('--pick', type=int, default=1)
+    parser.add_argument('--push', type=int, default=1)
+    parser.add_argument('--use_sigma', type=int, default=1)
     args=parser.parse_args()
 
+    args.dataset_name = f'fetch_block_{args.pick}_{args.push}'
     config_path = "configs/rl/" + args.config_file
     with open(config_path, 'r') as file:
         conf = yaml.safe_load(file)
@@ -289,7 +293,7 @@ def main():
     if proc_id() == 0:
         #wandb.init(project=conf.setup.exp_name)
         #wandb.run.name = conf.setup.env + "_reskill_seed_" + str(conf.setup.seed) + '_' + time.asctime().replace(' ', '_')
-        log_file = './log/agent/'+args.dataset_name+'/seed_'+str(args.seed)+'_'+args.prior_model+'/'
+        log_file = f'./log/agent/{conf.setup.env}/{args.dataset_name}/seed_{args.seed}/{args.prior_model}/'
         os.makedirs(log_file, exist_ok=True)
         writer = SummaryWriter(log_file)
     else:
@@ -297,22 +301,27 @@ def main():
 
     env = gym.make(conf.setup.env)
 
-    save_dir = "./results_1999/saved_rl_models/" + "stack/" + args.dataset_name + "/" + args.prior_model + "/"
+    save_dir = f"./results/saved_rl_models/{conf.setup.env}/{args.dataset_name}/{args.prior_model}/{args.seed}/"
     os.makedirs(save_dir, exist_ok=True)
-    save_path = save_dir + "ppo_agent_" + str(args.seed) + ".pth"
-    save_path_residual = save_dir + "ppo_residual_agent_" + str(args.seed) + ".pth"
+    save_path = save_dir + "ppo_agent.pth"
+    save_path_residual = save_dir + "ppo_residual_agent.pth"
 
     torch.set_num_threads(torch.get_num_threads())
 
     # Load skills module
-    skill_vae_path = "./results/saved_skill_models/" + args.dataset_name + "/skill_prior_" + args.prior_model + "/skill_vae.pth"
+    skill_vae_path = f"./results/saved_skill_models/{args.dataset_name}/seed_{args.seed}/skill_prior_{args.prior_model}/skill_vae.pth"
     skill_vae = torch.load(skill_vae_path, map_location=device)
     # Load skill prior module
-    skill_prior_path = "./results/saved_skill_models/" + args.dataset_name + "/skill_prior_" + args.prior_model + "/skill_prior.pth"
+    skill_prior_path = f"./results/saved_skill_models/{args.dataset_name}/seed_{args.seed}/skill_prior_{args.prior_model}/skill_prior.pth"
     skill_prior = torch.load(skill_prior_path, map_location=device)
     if args.prior_model == 'RNVP':
         for i in skill_prior.bijectors:
             i.device = device
+    if args.prior_model == 'Diffusion':
+        skill_prior2 = Diffusion_BC(state_dim=skill_prior.actor.state_dim, action_dim=skill_prior.actor.action_dim, max_action=skill_prior.actor.max_action, device=device)
+        skill_prior2.model = skill_prior.model
+        skill_prior2.actor.model = skill_prior.actor.model
+        skill_prior = skill_prior2
 
     n_features = skill_vae.n_z
     n_actions = skill_vae.n_actions

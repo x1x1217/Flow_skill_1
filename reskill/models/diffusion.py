@@ -19,13 +19,14 @@ from utils.utils import Progress, Silent
 class Diffusion(nn.Module):
     def __init__(self, state_dim, action_dim, model, max_action,
                  beta_schedule='linear', n_timesteps=100,
-                 loss_type='l2', clip_denoised=True, predict_epsilon=True, ddim_steps=10):
+                 loss_type='l2', clip_denoised=True, predict_epsilon=True, ddim_steps=10, use_sigma=False):
         super(Diffusion, self).__init__()
 
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.max_action = max_action
         self.model = model
+        self.use_sigma = use_sigma
 
         if beta_schedule == 'linear':
             betas = linear_beta_schedule(n_timesteps)
@@ -42,7 +43,11 @@ class Diffusion(nn.Module):
         self.n_timesteps = int(n_timesteps)
         self.ddim_steps = ddim_steps
         self.skip = self.n_timesteps // self.ddim_steps
-        self.seq = range(0, self.n_timesteps, self.skip)
+        self.seq = list(range(0, self.n_timesteps, self.skip))
+        if self.seq[-1] != self.n_timesteps-1:
+            self.seq.append(self.n_timesteps-1)
+        self.seq = list(reversed(self.seq))
+
         self.clip_denoised = clip_denoised
         self.predict_epsilon = predict_epsilon
 
@@ -101,7 +106,7 @@ class Diffusion(nn.Module):
             sigma = extract(self.sqrt_one_minus_alphas_cumprod, t_i, x_start.shape) / extract(self.sqrt_one_minus_alphas_cumprod, t_j, x_start.shape)
             sigma *= torch.sqrt(1 - extract(self.alphas, t_j, x_start.shape) / extract(self.alphas, t_i, x_start.shape))
         else:
-            sigma = 0
+            sigma = torch.zeros([x_start.shape[0]]).to(self.model.device)
         posterior_mean = (
                 extract(self.sqrt_alphas_cumprod, t_j, x_start.shape) * x_start +
                 torch.sqrt(1 - extract(self.alphas_cumprod, t_j, x_start.shape) - sigma) * noise
@@ -144,7 +149,7 @@ class Diffusion(nn.Module):
     # @torch.no_grad()
     def p_sample_ddim(self, x, t_i, t_j, s, use_sigma=False):
         b, *_, device = *x.shape, x.device
-        model_mean, _, model_log_variance = self.p_mean_variance_ddim(x=x, t_i=t_i, t=t_j, s=s, use_sigma=use_sigma)
+        model_mean, _, model_log_variance = self.p_mean_variance_ddim(x=x, t_i=t_i, t_j=t_j, s=s, use_sigma=use_sigma)
         if not use_sigma:
             return model_mean
         noise = torch.randn_like(x)
@@ -187,9 +192,14 @@ class Diffusion(nn.Module):
         if return_diffusion: diffusion = [x]
 
         progress = Progress(self.n_timesteps) if verbose else Silent()
-        for i in reversed(range(0, self.n_timesteps)):
-            timesteps = torch.full((batch_size,), i, device=device, dtype=torch.long)
-            x = self.p_sample(x, timesteps, state)
+        for i in range(len(self.seq)):
+            if self.seq[i] == 0:
+                timesteps = torch.full((batch_size,), self.seq[i], device=device, dtype=torch.long)
+                x = self.p_sample(x, timesteps, state)
+            else:
+                timesteps_i = torch.full((batch_size,), self.seq[i+1], device=device, dtype=torch.long)
+                timesteps_j = torch.full((batch_size,), self.seq[i], device=device, dtype=torch.long)
+                x = self.p_sample_ddim(x, timesteps_i, timesteps_j, state, self.use_sigma)
 
             progress.update({'t': i})
 
@@ -207,6 +217,12 @@ class Diffusion(nn.Module):
         batch_size = state.shape[0]
         shape = (batch_size, self.action_dim)
         action = self.p_sample_loop(state, shape, *args, **kwargs)
+        return action.clamp_(-self.max_action, self.max_action)
+    
+    def sample_ddim(self, state, *args, **kwargs):
+        batch_size = state.shape[0]
+        shape = (batch_size, self.action_dim)
+        action = self.p_sample_loop_ddim(state, shape, *args, **kwargs)
         return action.clamp_(-self.max_action, self.max_action)
     
     def sample_with_noise(self, state, noise):
