@@ -21,7 +21,7 @@ class Diffusion_BC(object):
                  beta_schedule='linear',
                  n_timesteps=100,
                  lr=2e-4,
-                 ddim_steps=10,
+                 ddim_steps=20,
                  use_sigma=False,
                  ):
 

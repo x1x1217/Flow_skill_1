@@ -222,7 +222,9 @@ class PPO():
 
         # Policy loss
         pi, logp = self.ac.pi(obs, act)
-        ratio = torch.exp(logp - logp_old)
+        tmp = logp - logp_old
+        tmp = torch.clamp(tmp, -2, 2)
+        ratio = torch.exp(tmp)
         clip_adv = torch.clamp(ratio, 1-self.clip_ratio, 1+self.clip_ratio) * adv
         loss_pi = -(torch.min(ratio * adv, clip_adv)).mean()
 
@@ -232,6 +234,7 @@ class PPO():
         clipped = ratio.gt(1+self.clip_ratio) | ratio.lt(1-self.clip_ratio)
         clipfrac = torch.as_tensor(clipped, dtype=torch.float32).mean().item()
         pi_info = dict(kl=approx_kl, ent=ent, cf=clipfrac)
+        #print(tmp.min(), tmp.max(), tmp.mean())
 
         return loss_pi, pi_info
 

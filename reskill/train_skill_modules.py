@@ -135,13 +135,9 @@ class ModelTrainer():
                 action = data["actions"][:, 0, :]
                 action = action / 2.
 
-                skill = skill.repeat([20, 1])
-                state = state.repeat([20, 1])
-                action = action.repeat([20, 1])
-
                 action_ori = action
                 state_ori = state
-                for i in range(5):
+                for i in range(100):
                     action = action_ori + 0.2 * torch.normal(0, 1, action.shape).to(self.device)
                     state = torch.cat([state_ori, action], dim=1)
 
@@ -159,14 +155,14 @@ class ModelTrainer():
                 action = data["actions"][:, 0, :]
                 action = action / 2.
 
-                skill = skill.repeat([20, 1])
-                state = state.repeat([20, 1])
-                action = action.repeat([20, 1])
+                #skill = skill.repeat([20, 1])
+                #state = state.repeat([20, 1])
+                #action = action.repeat([20, 1])
 
                 action_ori = action
                 state_ori = state
 
-                for i in range(5):
+                for i in range(100):
                     action = action_ori + 0.2 * torch.normal(0, 1, action.shape).to(self.device)
                     state = torch.cat([state_ori, action], dim=1)
 
@@ -188,14 +184,14 @@ class ModelTrainer():
                 action = data["actions"][:, 0, :]
                 action = action / 2.
 
-                skill = skill.repeat([20, 1])
-                state = state.repeat([20, 1])
-                action = action.repeat([20, 1])
+                #skill = skill.repeat([20, 1])
+                #state = state.repeat([20, 1])
+                #action = action.repeat([20, 1])
 
                 action_ori = action
                 state_ori = state
 
-                for i in range(5):
+                for i in range(100):
                     action = action_ori + 0.2 * torch.normal(0, 1, action.shape).to(self.device)
                     state = torch.cat([state_ori, action], dim=1)
 
@@ -258,7 +254,7 @@ if __name__ == "__main__":
     parser.add_argument('--prior_model', type=str, default='CVAE')
     parser.add_argument('--seed', type=int, default=21)
     args=parser.parse_args()
-    args.dataset_name = f'fetch_block_{args.pick}_{args.push}'
+    args.dataset_name = f'fetch_block_push{args.push}_pick{args.pick}'
     
     log_file = f'./log/skill_prior/{args.dataset_name}/seed_{args.seed}_{args.prior_model}/'
     os.makedirs(log_file, exist_ok=True)

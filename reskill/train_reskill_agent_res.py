@@ -57,9 +57,9 @@ def train(agent, zombie_agent, residual_agent, env, skill_vae, skill_prior, logi
                 state_ = torch.cat((o, n), dim=1).to(device)
                 #print(state_)
                 if args.use_grad == 1:
-                    z = skill_prior.sample_action_ddim_guide_repeat(state_, zombie_agent.ac.q, args.n_obs, 1)
+                    z = skill_prior.sample_action_guide_repeat(state_, zombie_agent.ac.q, args.n_obs, 1)
                 else:
-                    z = skill_prior.sample_action_torch_ddim(state_)
+                    z = skill_prior.sample_action_torch(state_)
                 v, logp = zombie_agent.ac.v_logp(torch.as_tensor(o, dtype=torch.float32), z)
             elif prior_model == 'CVAE':
                 state_ = torch.cat((o, n), dim=1).to(device)
@@ -163,7 +163,8 @@ def train(agent, zombie_agent, residual_agent, env, skill_vae, skill_prior, logi
 
         # Perform PPO update!
         losses = agent.update()
-        zombir_losses = zombie_agent.update()
+        if prior_model == 'Diffusion':
+            zombie_losses = zombie_agent.update()
         residual_losses = residual_agent.update()
 
         success_traj = 0
@@ -188,9 +189,9 @@ def train(agent, zombie_agent, residual_agent, env, skill_vae, skill_prior, logi
                     n = n.cuda()
                     state_ = torch.cat((obs, n), dim=1).cuda()
                     if args.use_grad == 1:
-                        z = skill_prior.sample_action_ddim_guide_repeat(state_, zombie_agent.ac.q, args.n_obs, 1)
+                        z = skill_prior.sample_action_guide_repeat(state_, zombie_agent.ac.q, args.n_obs, 1)
                     else:
-                        z = skill_prior.sample_action_torch_ddim(state_)
+                        z = skill_prior.sample_action_torch(state_)
                 elif prior_model == 'MLP':
                     n = n.cuda()
                     state_ = torch.cat((obs, n), dim=1).cuda()
@@ -296,7 +297,7 @@ def main():
     parser.add_argument('--use_grad', type=int, default=1)
     args=parser.parse_args()
 
-    args.dataset_name = f'fetch_block_{args.pick}_{args.push}'
+    args.dataset_name = f'fetch_block_push{args.push}_pick{args.pick}'
     config_path = "configs/rl/" + args.config_file
     with open(config_path, 'r') as file:
         conf = yaml.safe_load(file)
@@ -309,7 +310,7 @@ def main():
     if proc_id() == 0:
         #wandb.init(project=conf.setup.exp_name)
         #wandb.run.name = conf.setup.env + "_reskill_seed_" + str(conf.setup.seed) + '_' + time.asctime().replace(' ', '_')
-        log_file = f'./log/agent/{conf.setup.env}/{args.dataset_name}/seed_{args.seed}/{args.prior_model}/'
+        log_file = f'./log/agent/{conf.setup.env}/{args.dataset_name}/seed_{args.seed}/{args.prior_model}/sigma_{args.use_sigma}_grad_{args.use_grad}/'
         os.makedirs(log_file, exist_ok=True)
         writer = SummaryWriter(log_file)
     else:
@@ -317,7 +318,7 @@ def main():
 
     env = gym.make(conf.setup.env)
 
-    save_dir = f"./results/saved_rl_models/{conf.setup.env}/{args.dataset_name}/{args.prior_model}/{args.seed}/"
+    save_dir = f"./results/saved_rl_models/{conf.setup.env}/{args.dataset_name}/{args.prior_model}/{args.seed}/use_sigma_{args.use_sigma}_grad_{args.use_grad}/"
     os.makedirs(save_dir, exist_ok=True)
     save_path = save_dir + "ppo_agent.pth"
     save_path_zombie = save_dir + "ppo_zombie_agent.pth"
@@ -335,7 +336,10 @@ def main():
         for i in skill_prior.bijectors:
             i.device = device
     if args.prior_model == 'Diffusion':
-        skill_prior2 = Diffusion_BC(state_dim=skill_prior.actor.state_dim, action_dim=skill_prior.actor.action_dim, max_action=skill_prior.actor.max_action, device=device)
+        use_sigma = False
+        if args.use_sigma == 1:
+            use_sigma = True
+        skill_prior2 = Diffusion_BC(state_dim=skill_prior.actor.state_dim, action_dim=skill_prior.actor.action_dim, max_action=skill_prior.actor.max_action, device=device, use_sigma=use_sigma)
         skill_prior2.model = skill_prior.model
         skill_prior2.actor.model = skill_prior.actor.model
         skill_prior = skill_prior2

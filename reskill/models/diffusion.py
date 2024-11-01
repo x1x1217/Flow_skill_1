@@ -19,7 +19,7 @@ from utils.utils import Progress, Silent
 class Diffusion(nn.Module):
     def __init__(self, state_dim, action_dim, model, max_action,
                  beta_schedule='linear', n_timesteps=100,
-                 loss_type='l2', clip_denoised=True, predict_epsilon=True, ddim_steps=10, use_sigma=False):
+                 loss_type='l2', clip_denoised=True, predict_epsilon=True, ddim_steps=20, use_sigma=False):
         super(Diffusion, self).__init__()
 
         self.state_dim = state_dim
@@ -114,18 +114,25 @@ class Diffusion(nn.Module):
         posterior_log_variance_clipped = extract(self.posterior_log_variance_clipped, t, x_t.shape)
         return posterior_mean, posterior_variance, posterior_log_variance_clipped
     
-    def q_posterior_ddim(self, x_start, t_i, t_j, noise, use_sigma=False):  #t_j > t_i
+    def q_posterior_ddim(self, x_start, x_t, t_i, t_j, noise, use_sigma=False):  #t_j > t_i
+        nta = 0.01
         if use_sigma:
-            sigma = extract(self.sqrt_one_minus_alphas_cumprod, t_i, x_start.shape) / extract(self.sqrt_one_minus_alphas_cumprod, t_j, x_start.shape)
-            sigma *= torch.sqrt(1 - extract(self.alphas, t_j, x_start.shape) / extract(self.alphas, t_i, x_start.shape))
+            #sigma = extract(self.sqrt_one_minus_alphas_cumprod, t_i, x_start.shape) / extract(self.sqrt_one_minus_alphas_cumprod, t_j, x_start.shape)
+            #sigma *= torch.sqrt(1 - extract(self.alphas, t_j, x_start.shape) / extract(self.alphas, t_i, x_start.shape))
+            sigma = nta * extract(self.posterior_variance, t_j, x_start.shape)
         else:
             sigma = torch.zeros([x_start.shape[0]]).to(self.model.device)
-        posterior_mean = (
-                extract(self.sqrt_alphas_cumprod, t_j, x_start.shape) * x_start +
-                torch.sqrt(1 - extract(self.alphas_cumprod, t_j, x_start.shape) - sigma) * noise
-        )
-        posterior_variance = torch.pow(sigma, 2)
+        posterior_variance = sigma
         posterior_log_variance_clipped = torch.log(torch.clamp(posterior_variance, min=1e-20))
+        posterior_mean = (
+            (extract(self.sqrt_alphas_cumprod, t_i, x_start.shape) / extract(self.sqrt_alphas_cumprod, t_j, x_start.shape)) * x_t - 
+            (extract(self.sqrt_one_minus_alphas_cumprod, t_j, x_start.shape) / extract(self.sqrt_alphas_cumprod, t_j, x_start.shape)) * noise +
+            (torch.sqrt(1 - extract(self.alphas_cumprod, t_i, x_start.shape) - sigma) * noise)
+        )
+        #posterior_mean = (
+        #        extract(self.sqrt_alphas_cumprod, t_i, x_start.shape) * x_start +
+        #        torch.sqrt(1 - extract(self.alphas_cumprod, t_i, x_start.shape) - posterior_log_variance_clipped.exp()) * noise
+        #)
         return posterior_mean, posterior_variance, posterior_log_variance_clipped
 
     def p_mean_variance(self, x, t, s):
@@ -141,7 +148,7 @@ class Diffusion(nn.Module):
 
     def p_mean_variance_grad(self, x, t, s, grad):
         x_recon = self.predict_start_from_noise_grad(x, t=t, noise=self.model(x, t, s)-
-                                                     extract(self.sqrt_one_minus_alphas_cumprod, t, x.shape) * grad, grad=grad)
+                                                     extract(self.sqrt_one_minus_alphas_cumprod, t, x.shape) * 3 * grad, grad=grad)
 
         if self.clip_denoised:
             x_recon.clamp_(-self.max_action, self.max_action)
@@ -159,11 +166,11 @@ class Diffusion(nn.Module):
             x_recon.clamp_(-self.max_action, self.max_action)
         else:
             assert RuntimeError()
-        model_mean, posterior_variance, posterior_log_variance = self.q_posterior_ddim(x_start=x_recon, t_i=t_i, t_j=t_j, noise=noise, use_sigma=use_sigma)
+        model_mean, posterior_variance, posterior_log_variance = self.q_posterior_ddim(x_start=x_recon, x_t=x, t_i=t_i, t_j=t_j, noise=noise, use_sigma=use_sigma)
         return model_mean, posterior_variance, posterior_log_variance
     
     def p_mean_variance_grad_ddim(self, x, t_i, t_j, s, grad, use_sigma=False):
-        noise = self.model(x, t_j, s) - extract(self.sqrt_one_minus_alphas_cumprod, t_j, x.shape) * grad
+        noise = self.model(x, t_j, s) - extract(self.sqrt_one_minus_alphas_cumprod, t_j, x.shape) * 3 * grad
         x_recon = self.predict_start_from_noise_grad(x, t=t_j, noise=noise, grad=grad)
 
         if self.clip_denoised:
@@ -171,7 +178,7 @@ class Diffusion(nn.Module):
         else:
             assert RuntimeError()
 
-        model_mean, posterior_variance, posterior_log_variance = self.q_posterior_ddim(x_start=x_recon, t_i=t_i, t_j=t_j, noise=noise, use_sigma=use_sigma)
+        model_mean, posterior_variance, posterior_log_variance = self.q_posterior_ddim(x_start=x_recon, x_t=x, t_i=t_i, t_j=t_j, noise=noise, use_sigma=use_sigma)
         return model_mean, posterior_variance, posterior_log_variance
 
     # @torch.no_grad()
@@ -207,6 +214,8 @@ class Diffusion(nn.Module):
     def p_sample_grad_ddim(self, x, t_i, t_j, s, grad, use_sigma=False):
         b, *_, device = *x.shape, x.device
         model_mean, _, model_log_variance = self.p_mean_variance_grad_ddim(x=x, t_i=t_i, t_j=t_j, s=s, grad=grad, use_sigma=use_sigma)
+        if not use_sigma:
+            return model_mean
         noise = torch.randn_like(x)
         # no noise when t == 0
         nonzero_mask = (1 - (t_j == 0).float()).reshape(b, *((1,) * (len(x.shape) - 1)))

@@ -114,7 +114,7 @@ if __name__ == "__main__":
     parser.add_argument('--task', type=str, default="block", choices=["block", "hook"])
     args = parser.parse_args()
 
-    dataset_name = "fetch_" + args.task + "_" + str(args.num_trajectories)
+    dataset_name = "fetch_" + args.task + "_push999_pick1"
     collector = CollectDemos(dataset_name=dataset_name, num_trajectories=args.num_trajectories, subseq_len=args.subseq_len, task=args.task)
     collector.collect()
 
