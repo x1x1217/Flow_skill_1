@@ -6,10 +6,9 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from utils.logger import logger
 
-from models.diffusion import Diffusion
-from models.model import MLP
+from reskill.models.diffusion import Diffusion
+from reskill.models.model import MLP
 
 
 class Diffusion_BC(object):

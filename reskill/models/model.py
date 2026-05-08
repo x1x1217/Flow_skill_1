@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from models.helpers import SinusoidalPosEmb
+from reskill.models.helpers import SinusoidalPosEmb
 
 
 class MLP(nn.Module):

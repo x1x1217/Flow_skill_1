@@ -26,9 +26,9 @@ class CollectDemos():
 
         self.seqs = []
         self.task = task
-        self.dataset_dir = "../dataset/" + dataset_name + "/"
+        self.dataset_dir = "dataset/" + dataset_name + "/"
         os.makedirs(self.dataset_dir, exist_ok=True)
-        self.save_dir = "../dataset/" + dataset_name + "/" + "demos.npy"
+        self.save_dir = "dataset/" + dataset_name + "/" + "demos.npy"
         self.num_trajectories = num_trajectories
         self.subseq_len = subseq_len
         if self.task == "hook":

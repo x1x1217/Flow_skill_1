@@ -14,13 +14,13 @@ import time
 import yaml
 import numpy as np
 
-from models.skill_vae import SkillVAE
-from data.skill_dataloader import SkillsDataset
-from models.cvae import CVAE
-from models.normal_mlp import NMLP
-from models.rnvp import stacked_NVP
-from models.bc_diffusion import Diffusion_BC
-from utils.general_utils import AttrDict
+from reskill.models.skill_vae import SkillVAE
+from reskill.data.skill_dataloader import SkillsDataset
+from reskill.models.cvae import CVAE
+from reskill.models.normal_mlp import NMLP
+from reskill.models.rnvp import stacked_NVP
+from reskill.models.bc_diffusion import Diffusion_BC
+from reskill.utils.general_utils import AttrDict
 
 
 
@@ -33,7 +33,10 @@ class ModelTrainer():
         os.makedirs(self.save_dir, exist_ok=True)
         self.vae_save_path = self.save_dir + "/skill_vae.pth"
         self.sp_save_path = self.save_dir + "/skill_prior.pth"
-        config_path = "configs/skill_mdl/" + config_file
+        
+        # config_path = "configs/skill_mdl/" + config_file
+        curr_dir = os.path.dirname(__file__)
+        config_path = os.path.join(curr_dir, "configs", "skill_mdl", config_file)
 
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.writer = writer
@@ -233,7 +236,7 @@ class ModelTrainer():
         print("Training...") 
         for epoch in tqdm(range(self.n_epochs)):
             train_epoch_loss = self.fit(epoch)
-            if epoch%5 == 0:
+            if epoch % 5 == 0:
                 val_epoch_loss = self.validate()
 
             self.writer.add_scalar('train_loss', train_epoch_loss, epoch)
@@ -256,7 +259,16 @@ if __name__ == "__main__":
     args=parser.parse_args()
     args.dataset_name = f'fetch_block_push{args.push}_pick{args.pick}'
     
-    log_file = f'./log/skill_prior/{args.dataset_name}/seed_{args.seed}_{args.prior_model}/'
+    # log_file = f'./log/skill_prior/{args.dataset_name}/seed_{args.seed}_{args.prior_model}/'
+    curr_dir = os.path.dirname(__file__)
+    log_file = os.path.join(
+        curr_dir,
+        "log",
+        "skill_prior",
+        args.dataset_name,
+        f"seed_{args.seed}_{args.prior_model}",
+    )
+    
     os.makedirs(log_file, exist_ok=True)
     writer = SummaryWriter(log_file)
 

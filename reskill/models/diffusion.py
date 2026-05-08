@@ -8,12 +8,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-from models.helpers import (cosine_beta_schedule,
+from reskill.models.helpers import (cosine_beta_schedule,
                             linear_beta_schedule,
                             vp_beta_schedule,
                             extract,
                             Losses)
-from utils.utils import Progress, Silent
+from reskill.utils.utils import Progress, Silent
 
 
 class Diffusion(nn.Module):

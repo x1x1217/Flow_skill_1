@@ -9,3 +9,5 @@ python train_skill_modules.py --pick 999 --push 1 --prior_model 'Diffusion' --se
 python train_skill_modules.py --pick 999 --push 1 --prior_model 'Diffusion' --seed 21
 python train_skill_modules.py --pick 999 --push 1 --prior_model 'Diffusion' --seed 22
 
+
+python -m reskill.train_skill_modules --pick 1 --push 999 --prior_model 'Diffusion' --seed 2

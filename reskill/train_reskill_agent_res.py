@@ -6,17 +6,15 @@ from tqdm import tqdm
 import time
 import numpy as np
 import os
-import sys
-sys.path.append("..")
-from rl.sac.sac import SAC
-from rl.sac.replay_memory import ReplayMemory
-from rl.utils.mpi_tools import num_procs, mpi_fork, proc_id
-from rl.agents.ppo import PPO
-from utils.general_utils import AttrDict
-import rl.envs
+from reskill.rl.sac.sac import SAC
+from reskill.rl.sac.replay_memory import ReplayMemory
+from reskill.rl.utils.mpi_tools import num_procs, mpi_fork, proc_id
+from reskill.rl.agents.ppo import PPO
+from reskill.utils.general_utils import AttrDict
+import reskill.rl.envs
+from reskill.models.bc_diffusion import Diffusion_BC
 import math
 from tensorboardX import SummaryWriter
-from models.bc_diffusion import Diffusion_BC
 
 
 device = torch.device('cuda')
@@ -298,7 +296,9 @@ def main():
     args=parser.parse_args()
 
     args.dataset_name = f'fetch_block_push{args.push}_pick{args.pick}'
-    config_path = "configs/rl/" + args.config_file
+    curr_dir = os.path.dirname(__file__)
+    config_path = os.path.join(curr_dir, "configs", "rl", args.config_file)
+    
     with open(config_path, 'r') as file:
         conf = yaml.safe_load(file)
         conf = AttrDict(conf)
@@ -310,7 +310,18 @@ def main():
     if proc_id() == 0:
         #wandb.init(project=conf.setup.exp_name)
         #wandb.run.name = conf.setup.env + "_reskill_seed_" + str(conf.setup.seed) + '_' + time.asctime().replace(' ', '_')
-        log_file = f'./log/agent/{conf.setup.env}/{args.dataset_name}/seed_{args.seed}/{args.prior_model}/sigma_{args.use_sigma}_grad_{args.use_grad}/'
+        # log_file = f'./log/agent/{conf.setup.env}/{args.dataset_name}/seed_{args.seed}/{args.prior_model}/sigma_{args.use_sigma}_grad_{args.use_grad}/'
+        log_file = os.path.join(
+            curr_dir,
+            "log",
+            "agent",
+            conf.setup.env,
+            args.dataset_name,
+            f"seed_{args.seed}",
+            args.prior_model,
+            f"sigma_{args.use_sigma}_grad_{args.use_grad}",
+        )
+
         os.makedirs(log_file, exist_ok=True)
         writer = SummaryWriter(log_file)
     else:
@@ -318,7 +329,17 @@ def main():
 
     env = gym.make(conf.setup.env)
 
-    save_dir = f"./results/saved_rl_models/{conf.setup.env}/{args.dataset_name}/{args.prior_model}/{args.seed}/use_sigma_{args.use_sigma}_grad_{args.use_grad}/"
+    # save_dir = f"./results/saved_rl_models/{conf.setup.env}/{args.dataset_name}/{args.prior_model}/{args.seed}/use_sigma_{args.use_sigma}_grad_{args.use_grad}/"
+    save_dir = os.path.join(
+        curr_dir,
+        "results",
+        "saved_rl_models",
+        conf.setup.env,
+        args.dataset_name,
+        args.prior_model,
+        str(args.seed),
+        f"use_sigma_{args.use_sigma}_grad_{args.use_grad}",
+    )
     os.makedirs(save_dir, exist_ok=True)
     save_path = save_dir + "ppo_agent.pth"
     save_path_zombie = save_dir + "ppo_zombie_agent.pth"
@@ -327,10 +348,21 @@ def main():
     torch.set_num_threads(torch.get_num_threads())
 
     # Load skills module
-    skill_vae_path = f"./results/saved_skill_models/{args.dataset_name}/seed_{args.seed}/skill_prior_{args.prior_model}/skill_vae.pth"
+    skill_model_dir = os.path.join(
+        curr_dir,
+        "results",
+        "saved_skill_models",
+        args.dataset_name,
+        f"seed_{args.seed}",
+        f"skill_prior_{args.prior_model}",
+    )
+    skill_vae_path = os.path.join(skill_model_dir, "skill_vae.pth")
+    skill_prior_path = os.path.join(skill_model_dir, "skill_prior.pth")
+
+    # skill_vae_path = f"./results/saved_skill_models/{args.dataset_name}/seed_{args.seed}/skill_prior_{args.prior_model}/skill_vae.pth"
+    # skill_prior_path = f"./results/saved_skill_models/{args.dataset_name}/seed_{args.seed}/skill_prior_{args.prior_model}/skill_prior.pth"
+
     skill_vae = torch.load(skill_vae_path, map_location=device)
-    # Load skill prior module
-    skill_prior_path = f"./results/saved_skill_models/{args.dataset_name}/seed_{args.seed}/skill_prior_{args.prior_model}/skill_prior.pth"
     skill_prior = torch.load(skill_prior_path, map_location=device)
     if args.prior_model == 'RNVP':
         for i in skill_prior.bijectors:

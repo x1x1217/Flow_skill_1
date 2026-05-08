@@ -2,7 +2,7 @@
 from torch.distributions.multivariate_normal import MultivariateNormal
 import torch.nn as nn 
 import torch
-from utils.general_utils import AttrDict
+from reskill.utils.general_utils import AttrDict
 import pdb
 
 

@@ -2,11 +2,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from utils.logger import logger
 
-from models.diffusion import Diffusion
-from models.model import MLP
-from utils.general_utils import AttrDict
+from reskill.utils.general_utils import AttrDict
 
 class CVAE(nn.Module):
     def __init__(self, z_dim, cond_dim, latent_dim, max_action, device, lr=2e-4):

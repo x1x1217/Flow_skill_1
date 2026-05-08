@@ -6,14 +6,12 @@ from tqdm import tqdm
 import time
 import numpy as np
 import os
-import sys
-sys.path.append("..")
-from rl.sac.sac import SAC
-from rl.sac.replay_memory import ReplayMemory
-from rl.utils.mpi_tools import num_procs, mpi_fork, proc_id
-from rl.agents.ppo import PPO
-from utils.general_utils import AttrDict
-import rl.envs
+from reskill.rl.sac.sac import SAC
+from reskill.rl.sac.replay_memory import ReplayMemory
+from reskill.rl.utils.mpi_tools import num_procs, mpi_fork, proc_id
+from reskill.rl.agents.ppo import PPO
+from reskill.utils.general_utils import AttrDict
+import reskill.rl.envs
 import math
 from tensorboardX import SummaryWriter
 
