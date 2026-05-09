@@ -39,6 +39,9 @@ class FlowTeacher(nn.Module):
         )
         
     def forward(self, cond, z_t, t):
+        if t.dim() == 2 and t.shape[1] == 1:
+            t = t.squeeze(1)
+            
         t_emb = self.time_mlp(t)
         x = torch.cat([cond, z_t, t_emb], dim=1)
         return self.net(x)
