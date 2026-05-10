@@ -6,5 +6,6 @@ log/
 dataset/
 
 results/
+reskill/results/
 *.pth
 
