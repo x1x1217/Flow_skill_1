@@ -74,7 +74,7 @@ class FlowStudent(nn.Module):
         x = torch.cat([cond, noise], dim=1)
         return self.net(x)
     
-def flow_loss(flow_teacher, cond, target_z):
+def compute_flow_loss(flow_teacher, cond, target_z):
     """
     flow_teacher: teacher model
     cond: [o, n], size: [B, cond_dim]
@@ -98,11 +98,12 @@ def flow_loss(flow_teacher, cond, target_z):
         "target_vel": vel.detach(),
         "pred_vel": pred.detach()
     }
-    
+   
     return loss, stats
 
 @torch.no_grad()
-def compute_flow_z(flow_teacher, cond, noises, flow_steps, batch_size):
+def compute_flow_z(flow_teacher, cond, noises, flow_steps):
+    batch_size = cond.shape[0]
     z = noises
     dt = 1.0 / float(flow_steps)
     
@@ -113,13 +114,13 @@ def compute_flow_z(flow_teacher, cond, noises, flow_steps, batch_size):
     
     return z
     
-def distill_loss(flow_teacher, flow_student, cond, flow_steps):
+def compute_distill_loss(flow_teacher, flow_student, cond, flow_steps):
     batch_size = cond.shape[0]
     latent_dim = flow_teacher.latent_dim    
     noises = torch.randn(batch_size, latent_dim, device=cond.device, dtype=cond.dtype)
     
     with torch.no_grad():
-        target_teacher = compute_flow_z(flow_teacher, cond, noises, flow_steps, batch_size)
+        target_teacher = compute_flow_z(flow_teacher, cond, noises, flow_steps)
         
     pred_student = flow_student(cond, noises)
     loss = F.mse_loss(pred_student, target_teacher)

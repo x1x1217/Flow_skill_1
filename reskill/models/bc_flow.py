@@ -1,6 +1,6 @@
 import torch
 
-from models.flow_prior import FlowTeacher, FlowStudent, flow_loss, distill_loss
+from models.flow_prior import FlowTeacher, FlowStudent, compute_flow_loss, compute_distill_loss
 
 class Flow_BC(object):
     """
@@ -29,7 +29,6 @@ class Flow_BC(object):
             latent_dim=latent_dim,
             hidden_dim=hidden_dim,
             time_dim=time_dim,
-            flow_steps=flow_steps,
             device=device
         ).to(device)
         
@@ -76,9 +75,9 @@ class Flow_BC(object):
         }
         
         for _ in range(iterations):
-            flow_loss, teacher_stats = flow_loss(self.teacher, cond, target_z)
-            distill_loss, student_stats = distill_loss(self.teacher, self.student, cond, self.flow_steps)
-            loss = flow_loss + self.distill_coef * distill_loss
+            bc_flow_loss, teacher_stats = compute_flow_loss(self.teacher, cond, target_z)
+            distill_loss, student_stats = compute_distill_loss(self.teacher, self.student, cond, self.flow_steps)
+            loss = bc_flow_loss + self.distill_coef * distill_loss
             
             self.optimizer.zero_grad()
             loss.backward()
@@ -89,7 +88,7 @@ class Flow_BC(object):
                 )
             self.optimizer.step()
             
-            metric["flow_loss"].append(flow_loss.item())
+            metric["flow_loss"].append(bc_flow_loss.item())
             metric["distill_loss"].append(distill_loss.item())
             metric["total_loss"].append(loss.item())
             
