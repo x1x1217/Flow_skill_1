@@ -15,3 +15,6 @@ skill_prior_nvp:
     k : 2 #int(d/2)
     sp_lr: 0.001
     n_hidden: 512
+
+loader:
+    num_workers: 8

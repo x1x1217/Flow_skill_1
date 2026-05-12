@@ -77,7 +77,7 @@ class SkillVAE(nn.Module):
         sample = mu + (eps*std)
         return sample
     
-    def vae_loss(self, inputs, output, beta=0.00000001):
+    def vae_loss(self, inputs, output, beta=1e-8):
         bc_loss = self.bc_criterion(output.reconstruction, inputs["actions"])
         kld_loss = (-0.5 * torch.sum(1 + output.q.log_var - output.q.mu.pow(2) - output.q.log_var.exp())) * beta
         return bc_loss, kld_loss

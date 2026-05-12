@@ -22,13 +22,15 @@ class CollectDemos():
     Class to generate a dataset of demonstrations for the Fetch environment tasks using a set of handcrafted controllers.
     
     """
-    def __init__(self, dataset_name, num_trajectories=5, subseq_len=10, task="block"):
+    def __init__(self, dataset_name, num_trajectories=5, subseq_len=10, task="block", push=999, pick=1):
 
         self.seqs = []
         self.task = task
-        self.dataset_dir = "dataset/" + dataset_name + "/"
+        self.push = push
+        self.pick = pick
+        self.dataset_dir = "../dataset/" + dataset_name + "/"
         os.makedirs(self.dataset_dir, exist_ok=True)
-        self.save_dir = "dataset/" + dataset_name + "/" + "demos.npy"
+        self.save_dir = "../dataset/" + dataset_name + "/" + "demos.npy"
         self.num_trajectories = num_trajectories
         self.subseq_len = subseq_len
         if self.task == "hook":
@@ -61,8 +63,8 @@ class CollectDemos():
             self.z_noise = PerlinNoise(octaves=3)
 
             if self.task == "block":
-                choices = [get_push_control for i in range(999)]
-                choices.append(get_pick_and_place_control)
+                choices = [get_push_control for _ in range(self.push)]
+                choices += [get_pick_and_place_control for _ in range(self.pick)]
                 controller = random.choice(choices)
                 #controller = random.choice([get_pick_and_place_control, get_pick_and_place_control, get_pick_and_place_control, get_pick_and_place_control, get_pick_and_place_control, get_pick_and_place_control, get_pick_and_place_control, get_pick_and_place_control, get_pick_and_place_control, get_push_control])
             else:
@@ -112,10 +114,19 @@ if __name__ == "__main__":
     parser.add_argument('--num_trajectories', type=int, default=10)
     parser.add_argument('--subseq_len', type=int, default=10)
     parser.add_argument('--task', type=str, default="block", choices=["block", "hook"])
+    parser.add_argument('--push', type=int, default=999)
+    parser.add_argument('--pick', type=int, default=1)
     args = parser.parse_args()
 
-    dataset_name = "fetch_" + args.task + "_push999_pick1"
-    collector = CollectDemos(dataset_name=dataset_name, num_trajectories=args.num_trajectories, subseq_len=args.subseq_len, task=args.task)
+    dataset_name = f"fetch_{args.task}_push{args.push}_pick{args.pick}"
+    print(f"Dataset name: {dataset_name}")
+    
+    collector = CollectDemos(
+        dataset_name=dataset_name,
+        num_trajectories=args.num_trajectories,
+        subseq_len=args.subseq_len,
+        task=args.task,
+        push=args.push,
+        pick=args.pick,
+    )
     collector.collect()
-
-

@@ -21,6 +21,7 @@ from reskill.models.normal_mlp import NMLP
 from reskill.models.rnvp import stacked_NVP
 from reskill.models.bc_diffusion import Diffusion_BC
 from reskill.utils.general_utils import AttrDict
+from reskill.models.bc_flow import Flow_BC
 
 
 
@@ -59,7 +60,7 @@ class ModelTrainer():
             shuffle = True,
             drop_last=True,
             prefetch_factor=30,
-            num_workers=8,
+            num_workers=conf.loader.num_workers,
             pin_memory=True)
 
         self.val_loader = DataLoader(
@@ -68,7 +69,7 @@ class ModelTrainer():
             shuffle = False,
             drop_last=True,
             prefetch_factor=30,
-            num_workers=8,
+            num_workers=conf.loader.num_workers,
             pin_memory=True)
 
         self.skill_vae = SkillVAE(n_actions=conf.skill_vae.n_actions, n_obs=conf.skill_vae.n_obs, n_hidden=conf.skill_vae.n_hidden,
@@ -84,6 +85,14 @@ class ModelTrainer():
             self.sp_optimizer = torch.optim.Adam(self.sp_nvp.parameters(), lr=conf.skill_prior_nvp.sp_lr)
             self.scheduler = torch.optim.lr_scheduler.ExponentialLR(self.sp_optimizer, 0.999)
         
+        elif self.prior_model == 'Flow':
+            self.sp_nvp = Flow_BC(
+                cond_dim=conf.skill_vae.n_obs+conf.skill_vae.n_actions,
+                latent_dim=conf.skill_vae.n_z,
+                max_action=10,
+                device=self.device
+            )
+        
         elif self.prior_model == 'Diffusion':
             self.sp_nvp = Diffusion_BC(state_dim=conf.skill_vae.n_actions+conf.skill_vae.n_obs, action_dim=conf.skill_vae.n_z, max_action=10, device=self.device)
         elif self.prior_model == 'MLP':
@@ -98,7 +107,7 @@ class ModelTrainer():
     def fit(self, epoch):
         self.skill_vae.train()
         running_loss = 0.0
-        for i, data in enumerate(self.train_loader):
+        for batch_idx, data in enumerate(self.train_loader):
 
             data["actions"] = data["actions"].to(self.device)
             data["obs"] = data["obs"].to(self.device)
@@ -123,15 +132,42 @@ class ModelTrainer():
                 sp_loss.backward()
                 self.sp_optimizer.step()
 
-                if i%500 == 0:
+                if batch_idx % 500 == 0:
                     self.scheduler.step()
                     self.writer.add_scalar('lr', self.scheduler.get_lr()[0], epoch)
 
-                if i % 100:
+                if batch_idx % 100 == 0:
                     self.writer.add_scalar('BC Loss_VAE', losses.bc_loss.item(), epoch)
                     self.writer.add_scalar('KL Loss_VAE', losses.kld_loss.item(), epoch)
                     self.writer.add_scalar('NVP_Loss', sp_loss.item(), epoch)
 
+            elif self.prior_model == 'Flow':
+                skill = output.z.detach()
+                state = data["obs"][:, 0, :]
+                action = data["actions"][:, 0, :] / 2.
+                
+                action_ori = action
+                state_ori = state
+                
+                for prior_iter in range(100):
+                    action = action_ori + 0.2 * torch.normal(0, 1, action.shape).to(self.device)
+                    condtion = torch.cat([state_ori, action], dim=1)
+                    
+                    metric = self.sp_nvp.train(condtion, skill, iterations=1)
+                    sp_loss = np.mean(metric['total_loss'])
+            
+                if batch_idx % 10 == 0:
+                    print(
+                        f"[epoch {epoch:03d} batch {batch_idx:04d}/{len(self.train_loader)}] "
+                        f"vae_total={losses.total_loss.item():.4f} "
+                        f"vae_bc={losses.bc_loss.item():.4f} "
+                        f"vae_kl={losses.kld_loss.item():.4f} "
+                        f"flow={np.mean(metric['flow_loss']):.4f} "
+                        f"distill={np.mean(metric['distill_loss']):.4f} "
+                        f"prior_total={np.mean(metric['total_loss']):.4f}",
+                        flush=True,
+                    )
+            
             elif self.prior_model == 'Diffusion':
                 skill = output.z.detach()
                 state = data["obs"][:, 0, :]
@@ -140,14 +176,14 @@ class ModelTrainer():
 
                 action_ori = action
                 state_ori = state
-                for i in range(100):
+                for prior_iter in range(100):
                     action = action_ori + 0.2 * torch.normal(0, 1, action.shape).to(self.device)
                     state = torch.cat([state_ori, action], dim=1)
 
                     metric = self.sp_nvp.train(state, skill, iterations=1, batch_size=128)
                     sp_loss = np.mean(metric['bc_loss'])
 
-                if i % 100:
+                if batch_idx % 100 == 0:
                     self.writer.add_scalar('BC Loss_VAE', losses.bc_loss.item(), epoch)
                     self.writer.add_scalar('KL Loss_VAE', losses.kld_loss.item(), epoch)
                     self.writer.add_scalar('NVP_Loss', sp_loss.item(), epoch)
@@ -176,7 +212,7 @@ class ModelTrainer():
                     self.sp_optimizer.step()
                     sp_loss = bc_loss+kld_loss
 
-                if i % 100:
+                if batch_idx % 100 == 0:
                     self.writer.add_scalar('BC Loss_VAE', losses.bc_loss.item(), epoch)
                     self.writer.add_scalar('KL Loss_VAE', losses.kld_loss.item(), epoch)
                     self.writer.add_scalar('NVP_Loss', sp_loss.item(), epoch)
@@ -204,12 +240,12 @@ class ModelTrainer():
                     loss.backward()
                     self.sp_optimizer.step()
                 
-                if i % 100:
+                if batch_idx % 100 == 0:
                     self.writer.add_scalar('BC Loss_VAE', losses.bc_loss.item(), epoch)
                     self.writer.add_scalar('KL Loss_VAE', losses.kld_loss.item(), epoch)
                     self.writer.add_scalar('NVP_Loss', loss.item(), epoch)
             
-        train_loss = running_loss/len(self.train_loader.dataset)
+        train_loss = running_loss / len(self.train_loader.dataset)
         return train_loss
 
 
@@ -235,9 +271,16 @@ class ModelTrainer():
     def train(self):
         print("Training...") 
         for epoch in tqdm(range(self.n_epochs)):
+            print(f"\n[start epoch {epoch:03d}/{self.n_epochs}]", flush=True)
+            
             train_epoch_loss = self.fit(epoch)
             if epoch % 5 == 0:
                 val_epoch_loss = self.validate()
+                print(
+                    f"[end epoch {epoch:03d}] train_loss={train_epoch_loss:.6f} "
+                    f"val_loss={val_epoch_loss:.6f}",
+                    flush=True,
+                )
 
             self.writer.add_scalar('train_loss', train_epoch_loss, epoch)
             self.writer.add_scalar('val_loss', val_epoch_loss, epoch)

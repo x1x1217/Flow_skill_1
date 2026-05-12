@@ -1,6 +1,6 @@
 import torch
 
-from models.flow_prior import FlowTeacher, FlowStudent, compute_flow_loss, compute_distill_loss
+from reskill.models.flow_prior import FlowTeacher, FlowStudent, compute_flow_loss, compute_distill_loss
 
 class Flow_BC(object):
     """
@@ -76,7 +76,7 @@ class Flow_BC(object):
         
         for _ in range(iterations):
             bc_flow_loss, teacher_stats = compute_flow_loss(self.teacher, cond, target_z)
-            distill_loss, student_stats = compute_distill_loss(self.teacher, self.student, cond, self.flow_steps)
+            distill_loss, student_stats = compute_distill_loss(self.teacher, self.student, cond, self.flow_steps, self.max_action)
             loss = bc_flow_loss + self.distill_coef * distill_loss
             
             self.optimizer.zero_grad()

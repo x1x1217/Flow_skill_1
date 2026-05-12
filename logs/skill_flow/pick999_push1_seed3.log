@@ -1,0 +1,1004 @@
+Device:  cuda
+Dataset size:  40000
+Dataset size:  40000
+Training...
+  0%|          | 0/203 [00:00<?, ?it/s]
+[start epoch 000/203]
+[epoch 000 batch 0000/309] vae_total=0.5754 vae_bc=0.5754 vae_kl=0.0000 flow=2.2490 distill=0.0086 prior_total=2.2575
+[epoch 000 batch 0010/309] vae_total=0.6047 vae_bc=0.6047 vae_kl=0.0000 flow=1.7520 distill=0.0124 prior_total=1.7643
+[epoch 000 batch 0020/309] vae_total=0.4898 vae_bc=0.4898 vae_kl=0.0000 flow=1.6527 distill=0.0113 prior_total=1.6640
+[epoch 000 batch 0030/309] vae_total=0.4959 vae_bc=0.4959 vae_kl=0.0000 flow=1.6972 distill=0.0160 prior_total=1.7132
+[epoch 000 batch 0040/309] vae_total=0.5154 vae_bc=0.5154 vae_kl=0.0000 flow=1.4397 distill=0.0181 prior_total=1.4577
+[epoch 000 batch 0050/309] vae_total=0.5402 vae_bc=0.5402 vae_kl=0.0000 flow=1.5642 distill=0.0155 prior_total=1.5797
+[epoch 000 batch 0060/309] vae_total=0.4516 vae_bc=0.4516 vae_kl=0.0000 flow=1.5898 distill=0.0201 prior_total=1.6099
+[epoch 000 batch 0070/309] vae_total=0.4426 vae_bc=0.4426 vae_kl=0.0000 flow=1.6377 distill=0.0322 prior_total=1.6700
+[epoch 000 batch 0080/309] vae_total=0.4324 vae_bc=0.4324 vae_kl=0.0000 flow=1.4839 distill=0.0224 prior_total=1.5064
+[epoch 000 batch 0090/309] vae_total=0.4074 vae_bc=0.4074 vae_kl=0.0000 flow=1.6012 distill=0.0209 prior_total=1.6220
+[epoch 000 batch 0100/309] vae_total=0.4960 vae_bc=0.4960 vae_kl=0.0000 flow=1.4636 distill=0.0307 prior_total=1.4942
+[epoch 000 batch 0110/309] vae_total=0.4151 vae_bc=0.4151 vae_kl=0.0000 flow=1.6405 distill=0.0192 prior_total=1.6597
+[epoch 000 batch 0120/309] vae_total=0.3765 vae_bc=0.3765 vae_kl=0.0000 flow=1.7805 distill=0.0165 prior_total=1.7969
+[epoch 000 batch 0130/309] vae_total=0.3689 vae_bc=0.3689 vae_kl=0.0000 flow=1.6590 distill=0.0313 prior_total=1.6904
+[epoch 000 batch 0140/309] vae_total=0.4759 vae_bc=0.4759 vae_kl=0.0000 flow=1.7451 distill=0.0159 prior_total=1.7609
+[epoch 000 batch 0150/309] vae_total=0.4443 vae_bc=0.4443 vae_kl=0.0000 flow=1.6621 distill=0.0100 prior_total=1.6721
+[epoch 000 batch 0160/309] vae_total=0.4031 vae_bc=0.4031 vae_kl=0.0000 flow=1.4146 distill=0.0179 prior_total=1.4325
+[epoch 000 batch 0170/309] vae_total=0.4124 vae_bc=0.4124 vae_kl=0.0000 flow=1.4807 distill=0.0329 prior_total=1.5136
+[epoch 000 batch 0180/309] vae_total=0.4167 vae_bc=0.4167 vae_kl=0.0000 flow=1.4928 distill=0.0226 prior_total=1.5155
+[epoch 000 batch 0190/309] vae_total=0.3367 vae_bc=0.3367 vae_kl=0.0000 flow=1.6183 distill=0.0351 prior_total=1.6534
+[epoch 000 batch 0200/309] vae_total=0.3705 vae_bc=0.3704 vae_kl=0.0000 flow=1.5304 distill=0.0191 prior_total=1.5495
+[epoch 000 batch 0210/309] vae_total=0.3527 vae_bc=0.3527 vae_kl=0.0000 flow=1.4408 distill=0.0295 prior_total=1.4702
+[epoch 000 batch 0220/309] vae_total=0.3392 vae_bc=0.3392 vae_kl=0.0000 flow=1.5343 distill=0.0541 prior_total=1.5884
+[epoch 000 batch 0230/309] vae_total=0.4315 vae_bc=0.4315 vae_kl=0.0000 flow=1.3765 distill=0.0185 prior_total=1.3950
+[epoch 000 batch 0240/309] vae_total=0.4095 vae_bc=0.4095 vae_kl=0.0000 flow=1.5107 distill=0.0190 prior_total=1.5297
+[epoch 000 batch 0250/309] vae_total=0.4086 vae_bc=0.4086 vae_kl=0.0000 flow=1.2937 distill=0.0193 prior_total=1.3130
+[epoch 000 batch 0260/309] vae_total=0.3219 vae_bc=0.3219 vae_kl=0.0000 flow=1.5236 distill=0.0198 prior_total=1.5435
+[epoch 000 batch 0270/309] vae_total=0.3560 vae_bc=0.3560 vae_kl=0.0000 flow=1.4769 distill=0.0180 prior_total=1.4949
+[epoch 000 batch 0280/309] vae_total=0.3306 vae_bc=0.3306 vae_kl=0.0000 flow=1.4051 distill=0.0286 prior_total=1.4337
+[epoch 000 batch 0290/309] vae_total=0.3744 vae_bc=0.3744 vae_kl=0.0000 flow=1.5942 distill=0.0161 prior_total=1.6103
+[epoch 000 batch 0300/309] vae_total=0.3363 vae_bc=0.3363 vae_kl=0.0000 flow=1.3656 distill=0.0131 prior_total=1.3786
+[end epoch 000] train_loss=0.003275 val_loss=0.004699
+  0%|          | 1/203 [07:07<23:59:24, 427.55s/it]
+[start epoch 001/203]
+[epoch 001 batch 0000/309] vae_total=0.3663 vae_bc=0.3663 vae_kl=0.0000 flow=1.4493 distill=0.0523 prior_total=1.5016
+[epoch 001 batch 0010/309] vae_total=0.3516 vae_bc=0.3516 vae_kl=0.0000 flow=1.3977 distill=0.0214 prior_total=1.4191
+[epoch 001 batch 0020/309] vae_total=0.3406 vae_bc=0.3405 vae_kl=0.0000 flow=1.4430 distill=0.0163 prior_total=1.4592
+[epoch 001 batch 0030/309] vae_total=0.3329 vae_bc=0.3329 vae_kl=0.0000 flow=1.3666 distill=0.0242 prior_total=1.3908
+[epoch 001 batch 0040/309] vae_total=0.3043 vae_bc=0.3042 vae_kl=0.0000 flow=1.2604 distill=0.0229 prior_total=1.2833
+[epoch 001 batch 0050/309] vae_total=0.3235 vae_bc=0.3235 vae_kl=0.0000 flow=1.3565 distill=0.0135 prior_total=1.3700
+[epoch 001 batch 0060/309] vae_total=0.2890 vae_bc=0.2890 vae_kl=0.0000 flow=1.3354 distill=0.0257 prior_total=1.3611
+[epoch 001 batch 0070/309] vae_total=0.3048 vae_bc=0.3048 vae_kl=0.0000 flow=1.2903 distill=0.0383 prior_total=1.3286
+[epoch 001 batch 0080/309] vae_total=0.3011 vae_bc=0.3011 vae_kl=0.0000 flow=1.3171 distill=0.0173 prior_total=1.3344
+[epoch 001 batch 0090/309] vae_total=0.2856 vae_bc=0.2856 vae_kl=0.0000 flow=1.3206 distill=0.0144 prior_total=1.3350
+[epoch 001 batch 0100/309] vae_total=0.2998 vae_bc=0.2998 vae_kl=0.0000 flow=1.1948 distill=0.0138 prior_total=1.2086
+[epoch 001 batch 0110/309] vae_total=0.3547 vae_bc=0.3547 vae_kl=0.0000 flow=1.2457 distill=0.0166 prior_total=1.2623
+[epoch 001 batch 0120/309] vae_total=0.2755 vae_bc=0.2755 vae_kl=0.0000 flow=1.2187 distill=0.0301 prior_total=1.2488
+[epoch 001 batch 0130/309] vae_total=0.3074 vae_bc=0.3074 vae_kl=0.0000 flow=1.3200 distill=0.0142 prior_total=1.3342
+[epoch 001 batch 0140/309] vae_total=0.3257 vae_bc=0.3257 vae_kl=0.0000 flow=1.2791 distill=0.0190 prior_total=1.2981
+[epoch 001 batch 0150/309] vae_total=0.2804 vae_bc=0.2804 vae_kl=0.0000 flow=1.1902 distill=0.0172 prior_total=1.2074
+[epoch 001 batch 0160/309] vae_total=0.3653 vae_bc=0.3653 vae_kl=0.0000 flow=1.1241 distill=0.0196 prior_total=1.1437
+[epoch 001 batch 0170/309] vae_total=0.3361 vae_bc=0.3361 vae_kl=0.0000 flow=1.2503 distill=0.0146 prior_total=1.2649
+[epoch 001 batch 0180/309] vae_total=0.3944 vae_bc=0.3944 vae_kl=0.0000 flow=1.1675 distill=0.0194 prior_total=1.1869
+[epoch 001 batch 0190/309] vae_total=0.3201 vae_bc=0.3201 vae_kl=0.0000 flow=1.2258 distill=0.0310 prior_total=1.2568
+[epoch 001 batch 0200/309] vae_total=0.3424 vae_bc=0.3424 vae_kl=0.0000 flow=1.1141 distill=0.0234 prior_total=1.1375
+[epoch 001 batch 0210/309] vae_total=0.3032 vae_bc=0.3032 vae_kl=0.0000 flow=1.1925 distill=0.0176 prior_total=1.2101
+[epoch 001 batch 0220/309] vae_total=0.2676 vae_bc=0.2676 vae_kl=0.0000 flow=1.2155 distill=0.0182 prior_total=1.2337
+[epoch 001 batch 0230/309] vae_total=0.3392 vae_bc=0.3392 vae_kl=0.0000 flow=1.1113 distill=0.0118 prior_total=1.1232
+[epoch 001 batch 0240/309] vae_total=0.3128 vae_bc=0.3128 vae_kl=0.0000 flow=1.1824 distill=0.0190 prior_total=1.2014
+[epoch 001 batch 0250/309] vae_total=0.2857 vae_bc=0.2857 vae_kl=0.0000 flow=1.2626 distill=0.0136 prior_total=1.2762
+[epoch 001 batch 0260/309] vae_total=0.3151 vae_bc=0.3151 vae_kl=0.0000 flow=1.1258 distill=0.0182 prior_total=1.1439
+[epoch 001 batch 0270/309] vae_total=0.3062 vae_bc=0.3061 vae_kl=0.0000 flow=1.1569 distill=0.0237 prior_total=1.1806
+[epoch 001 batch 0280/309] vae_total=0.3036 vae_bc=0.3036 vae_kl=0.0000 flow=1.3347 distill=0.0300 prior_total=1.3647
+[epoch 001 batch 0290/309] vae_total=0.3213 vae_bc=0.3213 vae_kl=0.0000 flow=1.0964 distill=0.0248 prior_total=1.1212
+[epoch 001 batch 0300/309] vae_total=0.3107 vae_bc=0.3106 vae_kl=0.0000 flow=1.3001 distill=0.0241 prior_total=1.3242
+  1%|          | 2/203 [14:02<23:26:41, 419.91s/it]
+[start epoch 002/203]
+[epoch 002 batch 0000/309] vae_total=0.2976 vae_bc=0.2976 vae_kl=0.0000 flow=1.0707 distill=0.0162 prior_total=1.0869
+[epoch 002 batch 0010/309] vae_total=0.3261 vae_bc=0.3260 vae_kl=0.0000 flow=1.3495 distill=0.0161 prior_total=1.3656
+[epoch 002 batch 0020/309] vae_total=0.3420 vae_bc=0.3420 vae_kl=0.0000 flow=1.2743 distill=0.0179 prior_total=1.2922
+[epoch 002 batch 0030/309] vae_total=0.2949 vae_bc=0.2949 vae_kl=0.0000 flow=1.1422 distill=0.0119 prior_total=1.1542
+[epoch 002 batch 0040/309] vae_total=0.3277 vae_bc=0.3277 vae_kl=0.0000 flow=1.0688 distill=0.0111 prior_total=1.0799
+[epoch 002 batch 0050/309] vae_total=0.2741 vae_bc=0.2741 vae_kl=0.0000 flow=1.3423 distill=0.0142 prior_total=1.3564
+[epoch 002 batch 0060/309] vae_total=0.2546 vae_bc=0.2546 vae_kl=0.0000 flow=1.1338 distill=0.0512 prior_total=1.1850
+[epoch 002 batch 0070/309] vae_total=0.2945 vae_bc=0.2945 vae_kl=0.0000 flow=1.1152 distill=0.0147 prior_total=1.1300
+[epoch 002 batch 0080/309] vae_total=0.2785 vae_bc=0.2785 vae_kl=0.0000 flow=0.9948 distill=0.0141 prior_total=1.0090
+[epoch 002 batch 0090/309] vae_total=0.3660 vae_bc=0.3660 vae_kl=0.0000 flow=1.1459 distill=0.0127 prior_total=1.1586
+[epoch 002 batch 0100/309] vae_total=0.3097 vae_bc=0.3097 vae_kl=0.0000 flow=1.1138 distill=0.0133 prior_total=1.1271
+[epoch 002 batch 0110/309] vae_total=0.2866 vae_bc=0.2866 vae_kl=0.0000 flow=1.1039 distill=0.0123 prior_total=1.1162
+[epoch 002 batch 0120/309] vae_total=0.2969 vae_bc=0.2969 vae_kl=0.0000 flow=1.1035 distill=0.0120 prior_total=1.1155
+[epoch 002 batch 0130/309] vae_total=0.3132 vae_bc=0.3132 vae_kl=0.0000 flow=1.0078 distill=0.0121 prior_total=1.0199
+[epoch 002 batch 0140/309] vae_total=0.3048 vae_bc=0.3048 vae_kl=0.0000 flow=1.0568 distill=0.0114 prior_total=1.0681
+[epoch 002 batch 0150/309] vae_total=0.2863 vae_bc=0.2863 vae_kl=0.0000 flow=1.0314 distill=0.0108 prior_total=1.0421
+[epoch 002 batch 0160/309] vae_total=0.2925 vae_bc=0.2925 vae_kl=0.0000 flow=1.3025 distill=0.0106 prior_total=1.3131
+[epoch 002 batch 0170/309] vae_total=0.2894 vae_bc=0.2894 vae_kl=0.0000 flow=1.1753 distill=0.0113 prior_total=1.1866
+[epoch 002 batch 0180/309] vae_total=0.2707 vae_bc=0.2707 vae_kl=0.0000 flow=1.1652 distill=0.0090 prior_total=1.1742
+[epoch 002 batch 0190/309] vae_total=0.3071 vae_bc=0.3071 vae_kl=0.0000 flow=0.9836 distill=0.0153 prior_total=0.9990
+[epoch 002 batch 0200/309] vae_total=0.2838 vae_bc=0.2838 vae_kl=0.0000 flow=0.9118 distill=0.0128 prior_total=0.9246
+[epoch 002 batch 0210/309] vae_total=0.2179 vae_bc=0.2179 vae_kl=0.0000 flow=1.0774 distill=0.0204 prior_total=1.0978
+[epoch 002 batch 0220/309] vae_total=0.2685 vae_bc=0.2685 vae_kl=0.0000 flow=1.0170 distill=0.0124 prior_total=1.0294
+[epoch 002 batch 0230/309] vae_total=0.3452 vae_bc=0.3452 vae_kl=0.0000 flow=0.9831 distill=0.0085 prior_total=0.9916
+[epoch 002 batch 0240/309] vae_total=0.2340 vae_bc=0.2340 vae_kl=0.0000 flow=1.1067 distill=0.0152 prior_total=1.1219
+[epoch 002 batch 0250/309] vae_total=0.2516 vae_bc=0.2516 vae_kl=0.0000 flow=1.0483 distill=0.0162 prior_total=1.0645
+[epoch 002 batch 0260/309] vae_total=0.2969 vae_bc=0.2969 vae_kl=0.0000 flow=0.9862 distill=0.0140 prior_total=1.0002
+[epoch 002 batch 0270/309] vae_total=0.2334 vae_bc=0.2334 vae_kl=0.0000 flow=0.8540 distill=0.0174 prior_total=0.8714
+[epoch 002 batch 0280/309] vae_total=0.2462 vae_bc=0.2462 vae_kl=0.0000 flow=0.9951 distill=0.0110 prior_total=1.0061
+[epoch 002 batch 0290/309] vae_total=0.3024 vae_bc=0.3024 vae_kl=0.0000 flow=1.0830 distill=0.0133 prior_total=1.0963
+[epoch 002 batch 0300/309] vae_total=0.2609 vae_bc=0.2609 vae_kl=0.0000 flow=1.0019 distill=0.0181 prior_total=1.0199
+  1%|▏         | 3/203 [20:57<23:12:34, 417.77s/it]
+[start epoch 003/203]
+[epoch 003 batch 0000/309] vae_total=0.2810 vae_bc=0.2810 vae_kl=0.0000 flow=0.9522 distill=0.0105 prior_total=0.9628
+[epoch 003 batch 0010/309] vae_total=0.2719 vae_bc=0.2719 vae_kl=0.0000 flow=1.1772 distill=0.0115 prior_total=1.1887
+[epoch 003 batch 0020/309] vae_total=0.2788 vae_bc=0.2788 vae_kl=0.0000 flow=1.0370 distill=0.0174 prior_total=1.0544
+[epoch 003 batch 0030/309] vae_total=0.2896 vae_bc=0.2896 vae_kl=0.0000 flow=1.0027 distill=0.0081 prior_total=1.0108
+[epoch 003 batch 0040/309] vae_total=0.2649 vae_bc=0.2649 vae_kl=0.0000 flow=1.0106 distill=0.0136 prior_total=1.0242
+[epoch 003 batch 0050/309] vae_total=0.2535 vae_bc=0.2535 vae_kl=0.0000 flow=0.8853 distill=0.0151 prior_total=0.9004
+[epoch 003 batch 0060/309] vae_total=0.3268 vae_bc=0.3268 vae_kl=0.0000 flow=1.0229 distill=0.0093 prior_total=1.0322
+[epoch 003 batch 0070/309] vae_total=0.2504 vae_bc=0.2504 vae_kl=0.0000 flow=1.0304 distill=0.0133 prior_total=1.0437
+[epoch 003 batch 0080/309] vae_total=0.2341 vae_bc=0.2341 vae_kl=0.0000 flow=1.1740 distill=0.0148 prior_total=1.1889
+[epoch 003 batch 0090/309] vae_total=0.2850 vae_bc=0.2850 vae_kl=0.0000 flow=1.0297 distill=0.0144 prior_total=1.0441
+[epoch 003 batch 0100/309] vae_total=0.2276 vae_bc=0.2276 vae_kl=0.0000 flow=0.9718 distill=0.0142 prior_total=0.9861
+[epoch 003 batch 0110/309] vae_total=0.3024 vae_bc=0.3023 vae_kl=0.0000 flow=0.9156 distill=0.0136 prior_total=0.9292
+[epoch 003 batch 0120/309] vae_total=0.2543 vae_bc=0.2543 vae_kl=0.0000 flow=0.9865 distill=0.0133 prior_total=0.9999
+[epoch 003 batch 0130/309] vae_total=0.2752 vae_bc=0.2752 vae_kl=0.0000 flow=0.7991 distill=0.0120 prior_total=0.8111
+[epoch 003 batch 0140/309] vae_total=0.2241 vae_bc=0.2241 vae_kl=0.0000 flow=0.8983 distill=0.0120 prior_total=0.9102
+[epoch 003 batch 0150/309] vae_total=0.1876 vae_bc=0.1876 vae_kl=0.0000 flow=1.0033 distill=0.0167 prior_total=1.0200
+[epoch 003 batch 0160/309] vae_total=0.2709 vae_bc=0.2709 vae_kl=0.0000 flow=0.9246 distill=0.0113 prior_total=0.9360
+[epoch 003 batch 0170/309] vae_total=0.2455 vae_bc=0.2455 vae_kl=0.0000 flow=0.9466 distill=0.0161 prior_total=0.9627
+[epoch 003 batch 0180/309] vae_total=0.2665 vae_bc=0.2665 vae_kl=0.0000 flow=0.8963 distill=0.0138 prior_total=0.9101
+[epoch 003 batch 0190/309] vae_total=0.2422 vae_bc=0.2422 vae_kl=0.0000 flow=0.8357 distill=0.0137 prior_total=0.8493
+[epoch 003 batch 0200/309] vae_total=0.2780 vae_bc=0.2780 vae_kl=0.0000 flow=1.0255 distill=0.0178 prior_total=1.0433
+[epoch 003 batch 0210/309] vae_total=0.2395 vae_bc=0.2395 vae_kl=0.0000 flow=0.8914 distill=0.0157 prior_total=0.9071
+[epoch 003 batch 0220/309] vae_total=0.2530 vae_bc=0.2530 vae_kl=0.0000 flow=0.8409 distill=0.0108 prior_total=0.8517
+[epoch 003 batch 0230/309] vae_total=0.2317 vae_bc=0.2317 vae_kl=0.0000 flow=0.7620 distill=0.0162 prior_total=0.7782
+[epoch 003 batch 0240/309] vae_total=0.2218 vae_bc=0.2218 vae_kl=0.0000 flow=0.8219 distill=0.0228 prior_total=0.8447
+[epoch 003 batch 0250/309] vae_total=0.2960 vae_bc=0.2960 vae_kl=0.0000 flow=1.0933 distill=0.0105 prior_total=1.1038
+[epoch 003 batch 0260/309] vae_total=0.2638 vae_bc=0.2638 vae_kl=0.0000 flow=0.8603 distill=0.0151 prior_total=0.8754
+[epoch 003 batch 0270/309] vae_total=0.2780 vae_bc=0.2780 vae_kl=0.0000 flow=0.8779 distill=0.0164 prior_total=0.8943
+[epoch 003 batch 0280/309] vae_total=0.2895 vae_bc=0.2895 vae_kl=0.0000 flow=0.9025 distill=0.0101 prior_total=0.9127
+[epoch 003 batch 0290/309] vae_total=0.2307 vae_bc=0.2307 vae_kl=0.0000 flow=0.9538 distill=0.0102 prior_total=0.9640
+[epoch 003 batch 0300/309] vae_total=0.3411 vae_bc=0.3410 vae_kl=0.0000 flow=0.8163 distill=0.0144 prior_total=0.8307
+  2%|▏         | 4/203 [27:54<23:05:21, 417.70s/it]
+[start epoch 004/203]
+[epoch 004 batch 0000/309] vae_total=0.2110 vae_bc=0.2110 vae_kl=0.0000 flow=0.9145 distill=0.0120 prior_total=0.9265
+[epoch 004 batch 0010/309] vae_total=0.3133 vae_bc=0.3133 vae_kl=0.0000 flow=0.8410 distill=0.0154 prior_total=0.8564
+[epoch 004 batch 0020/309] vae_total=0.2336 vae_bc=0.2336 vae_kl=0.0000 flow=0.7170 distill=0.0111 prior_total=0.7281
+[epoch 004 batch 0030/309] vae_total=0.2517 vae_bc=0.2517 vae_kl=0.0000 flow=0.8476 distill=0.0150 prior_total=0.8625
+[epoch 004 batch 0040/309] vae_total=0.2551 vae_bc=0.2551 vae_kl=0.0000 flow=0.9872 distill=0.0147 prior_total=1.0019
+[epoch 004 batch 0050/309] vae_total=0.2753 vae_bc=0.2753 vae_kl=0.0000 flow=0.8068 distill=0.0147 prior_total=0.8215
+[epoch 004 batch 0060/309] vae_total=0.2614 vae_bc=0.2614 vae_kl=0.0000 flow=0.7137 distill=0.0106 prior_total=0.7243
+[epoch 004 batch 0070/309] vae_total=0.2989 vae_bc=0.2989 vae_kl=0.0000 flow=0.8662 distill=0.0173 prior_total=0.8835
+[epoch 004 batch 0080/309] vae_total=0.2757 vae_bc=0.2757 vae_kl=0.0000 flow=0.8013 distill=0.0156 prior_total=0.8170
+[epoch 004 batch 0090/309] vae_total=0.2317 vae_bc=0.2317 vae_kl=0.0000 flow=0.8504 distill=0.0168 prior_total=0.8672
+[epoch 004 batch 0100/309] vae_total=0.3010 vae_bc=0.3010 vae_kl=0.0000 flow=0.8700 distill=0.0157 prior_total=0.8857
+[epoch 004 batch 0110/309] vae_total=0.2707 vae_bc=0.2707 vae_kl=0.0000 flow=0.8614 distill=0.0149 prior_total=0.8763
+[epoch 004 batch 0120/309] vae_total=0.2356 vae_bc=0.2356 vae_kl=0.0000 flow=0.8494 distill=0.0131 prior_total=0.8625
+[epoch 004 batch 0130/309] vae_total=0.2243 vae_bc=0.2243 vae_kl=0.0000 flow=0.9329 distill=0.0134 prior_total=0.9464
+[epoch 004 batch 0140/309] vae_total=0.2321 vae_bc=0.2321 vae_kl=0.0000 flow=0.6819 distill=0.0128 prior_total=0.6947
+[epoch 004 batch 0150/309] vae_total=0.2372 vae_bc=0.2372 vae_kl=0.0000 flow=0.7384 distill=0.0156 prior_total=0.7540
+[epoch 004 batch 0160/309] vae_total=0.2888 vae_bc=0.2888 vae_kl=0.0000 flow=0.7934 distill=0.0116 prior_total=0.8051
+[epoch 004 batch 0170/309] vae_total=0.2562 vae_bc=0.2562 vae_kl=0.0000 flow=0.7956 distill=0.0185 prior_total=0.8141
+[epoch 004 batch 0180/309] vae_total=0.2577 vae_bc=0.2577 vae_kl=0.0000 flow=0.8868 distill=0.0107 prior_total=0.8975
+[epoch 004 batch 0190/309] vae_total=0.2238 vae_bc=0.2238 vae_kl=0.0000 flow=0.8403 distill=0.0226 prior_total=0.8628
+[epoch 004 batch 0200/309] vae_total=0.2434 vae_bc=0.2434 vae_kl=0.0000 flow=0.7652 distill=0.0111 prior_total=0.7763
+[epoch 004 batch 0210/309] vae_total=0.2347 vae_bc=0.2347 vae_kl=0.0000 flow=0.6910 distill=0.0120 prior_total=0.7030
+[epoch 004 batch 0220/309] vae_total=0.2214 vae_bc=0.2214 vae_kl=0.0000 flow=0.8289 distill=0.0119 prior_total=0.8408
+[epoch 004 batch 0230/309] vae_total=0.2228 vae_bc=0.2228 vae_kl=0.0000 flow=0.7404 distill=0.0146 prior_total=0.7550
+[epoch 004 batch 0240/309] vae_total=0.2615 vae_bc=0.2615 vae_kl=0.0000 flow=0.7520 distill=0.0136 prior_total=0.7656
+[epoch 004 batch 0250/309] vae_total=0.2157 vae_bc=0.2157 vae_kl=0.0000 flow=0.7647 distill=0.0141 prior_total=0.7788
+[epoch 004 batch 0260/309] vae_total=0.2169 vae_bc=0.2169 vae_kl=0.0000 flow=0.8667 distill=0.0138 prior_total=0.8806
+[epoch 004 batch 0270/309] vae_total=0.2597 vae_bc=0.2597 vae_kl=0.0000 flow=0.8310 distill=0.0123 prior_total=0.8432
+[epoch 004 batch 0280/309] vae_total=0.2677 vae_bc=0.2677 vae_kl=0.0000 flow=0.7934 distill=0.0120 prior_total=0.8054
+[epoch 004 batch 0290/309] vae_total=0.2267 vae_bc=0.2267 vae_kl=0.0000 flow=0.8149 distill=0.0134 prior_total=0.8283
+[epoch 004 batch 0300/309] vae_total=0.2406 vae_bc=0.2406 vae_kl=0.0000 flow=0.8564 distill=0.0120 prior_total=0.8683
+  2%|▏         | 5/203 [34:49<22:54:38, 416.56s/it]
+[start epoch 005/203]
+[epoch 005 batch 0000/309] vae_total=0.2291 vae_bc=0.2290 vae_kl=0.0000 flow=0.7482 distill=0.0122 prior_total=0.7604
+[epoch 005 batch 0010/309] vae_total=0.3305 vae_bc=0.3305 vae_kl=0.0000 flow=0.8221 distill=0.0137 prior_total=0.8358
+[epoch 005 batch 0020/309] vae_total=0.2410 vae_bc=0.2410 vae_kl=0.0000 flow=0.7771 distill=0.0205 prior_total=0.7977
+[epoch 005 batch 0030/309] vae_total=0.2306 vae_bc=0.2306 vae_kl=0.0000 flow=0.8844 distill=0.0128 prior_total=0.8972
+[epoch 005 batch 0040/309] vae_total=0.2495 vae_bc=0.2495 vae_kl=0.0000 flow=0.7144 distill=0.0119 prior_total=0.7262
+[epoch 005 batch 0050/309] vae_total=0.2245 vae_bc=0.2245 vae_kl=0.0000 flow=0.7528 distill=0.0118 prior_total=0.7646
+[epoch 005 batch 0060/309] vae_total=0.2784 vae_bc=0.2784 vae_kl=0.0000 flow=0.6377 distill=0.0194 prior_total=0.6571
+[epoch 005 batch 0070/309] vae_total=0.2442 vae_bc=0.2442 vae_kl=0.0000 flow=0.8493 distill=0.0148 prior_total=0.8641
+[epoch 005 batch 0080/309] vae_total=0.2348 vae_bc=0.2348 vae_kl=0.0000 flow=0.6618 distill=0.0143 prior_total=0.6761
+[epoch 005 batch 0090/309] vae_total=0.1978 vae_bc=0.1978 vae_kl=0.0000 flow=0.8087 distill=0.0144 prior_total=0.8231
+[epoch 005 batch 0100/309] vae_total=0.2533 vae_bc=0.2533 vae_kl=0.0000 flow=0.7238 distill=0.0148 prior_total=0.7386
+[epoch 005 batch 0110/309] vae_total=0.2585 vae_bc=0.2584 vae_kl=0.0000 flow=0.6529 distill=0.0167 prior_total=0.6696
+[epoch 005 batch 0120/309] vae_total=0.2149 vae_bc=0.2149 vae_kl=0.0000 flow=0.7603 distill=0.0124 prior_total=0.7727
+[epoch 005 batch 0130/309] vae_total=0.3012 vae_bc=0.3012 vae_kl=0.0000 flow=0.6553 distill=0.0121 prior_total=0.6674
+[epoch 005 batch 0140/309] vae_total=0.2388 vae_bc=0.2388 vae_kl=0.0000 flow=0.6500 distill=0.0190 prior_total=0.6690
+[epoch 005 batch 0150/309] vae_total=0.2570 vae_bc=0.2570 vae_kl=0.0000 flow=0.6442 distill=0.0111 prior_total=0.6553
+[epoch 005 batch 0160/309] vae_total=0.2381 vae_bc=0.2381 vae_kl=0.0000 flow=0.7272 distill=0.0146 prior_total=0.7418
+[epoch 005 batch 0170/309] vae_total=0.2874 vae_bc=0.2873 vae_kl=0.0000 flow=0.7284 distill=0.0091 prior_total=0.7374
+[epoch 005 batch 0180/309] vae_total=0.2351 vae_bc=0.2351 vae_kl=0.0000 flow=0.7125 distill=0.0165 prior_total=0.7291
+[epoch 005 batch 0190/309] vae_total=0.2218 vae_bc=0.2218 vae_kl=0.0000 flow=0.6908 distill=0.0123 prior_total=0.7030
+[epoch 005 batch 0200/309] vae_total=0.2061 vae_bc=0.2061 vae_kl=0.0000 flow=0.7398 distill=0.0136 prior_total=0.7533
+[epoch 005 batch 0210/309] vae_total=0.2173 vae_bc=0.2173 vae_kl=0.0000 flow=0.7528 distill=0.0152 prior_total=0.7680
+[epoch 005 batch 0220/309] vae_total=0.1980 vae_bc=0.1980 vae_kl=0.0000 flow=0.7172 distill=0.0109 prior_total=0.7282
+[epoch 005 batch 0230/309] vae_total=0.2229 vae_bc=0.2229 vae_kl=0.0000 flow=0.6281 distill=0.0142 prior_total=0.6423
+[epoch 005 batch 0240/309] vae_total=0.2330 vae_bc=0.2330 vae_kl=0.0000 flow=0.7969 distill=0.0098 prior_total=0.8067
+[epoch 005 batch 0250/309] vae_total=0.2256 vae_bc=0.2256 vae_kl=0.0000 flow=0.6015 distill=0.0108 prior_total=0.6123
+[epoch 005 batch 0260/309] vae_total=0.2120 vae_bc=0.2120 vae_kl=0.0000 flow=0.7635 distill=0.0115 prior_total=0.7750
+[epoch 005 batch 0270/309] vae_total=0.2170 vae_bc=0.2170 vae_kl=0.0000 flow=0.6345 distill=0.0150 prior_total=0.6495
+[epoch 005 batch 0280/309] vae_total=0.2244 vae_bc=0.2244 vae_kl=0.0000 flow=0.7229 distill=0.0172 prior_total=0.7401
+[epoch 005 batch 0290/309] vae_total=0.1827 vae_bc=0.1827 vae_kl=0.0000 flow=0.7673 distill=0.0167 prior_total=0.7840
+[epoch 005 batch 0300/309] vae_total=0.2415 vae_bc=0.2415 vae_kl=0.0000 flow=0.6675 distill=0.0132 prior_total=0.6807
+[end epoch 005] train_loss=0.001879 val_loss=0.003285
+  3%|▎         | 6/203 [41:46<22:48:36, 416.84s/it]
+[start epoch 006/203]
+[epoch 006 batch 0000/309] vae_total=0.2058 vae_bc=0.2058 vae_kl=0.0000 flow=0.7112 distill=0.0122 prior_total=0.7235
+[epoch 006 batch 0010/309] vae_total=0.2397 vae_bc=0.2397 vae_kl=0.0000 flow=0.5831 distill=0.0115 prior_total=0.5946
+[epoch 006 batch 0020/309] vae_total=0.1800 vae_bc=0.1800 vae_kl=0.0000 flow=0.8315 distill=0.0164 prior_total=0.8479
+[epoch 006 batch 0030/309] vae_total=0.2477 vae_bc=0.2477 vae_kl=0.0000 flow=0.7201 distill=0.0114 prior_total=0.7315
+[epoch 006 batch 0040/309] vae_total=0.1927 vae_bc=0.1927 vae_kl=0.0000 flow=0.7455 distill=0.0142 prior_total=0.7597
+[epoch 006 batch 0050/309] vae_total=0.1686 vae_bc=0.1686 vae_kl=0.0000 flow=0.7205 distill=0.0138 prior_total=0.7343
+[epoch 006 batch 0060/309] vae_total=0.2799 vae_bc=0.2799 vae_kl=0.0000 flow=0.7717 distill=0.0130 prior_total=0.7847
+[epoch 006 batch 0070/309] vae_total=0.2549 vae_bc=0.2549 vae_kl=0.0000 flow=0.6941 distill=0.0109 prior_total=0.7050
+[epoch 006 batch 0080/309] vae_total=0.2380 vae_bc=0.2379 vae_kl=0.0000 flow=0.6388 distill=0.0107 prior_total=0.6495
+[epoch 006 batch 0090/309] vae_total=0.2304 vae_bc=0.2304 vae_kl=0.0000 flow=0.6815 distill=0.0133 prior_total=0.6949
+[epoch 006 batch 0100/309] vae_total=0.2284 vae_bc=0.2284 vae_kl=0.0000 flow=0.6689 distill=0.0134 prior_total=0.6823
+[epoch 006 batch 0110/309] vae_total=0.2648 vae_bc=0.2648 vae_kl=0.0000 flow=0.7222 distill=0.0150 prior_total=0.7373
+[epoch 006 batch 0120/309] vae_total=0.2643 vae_bc=0.2643 vae_kl=0.0000 flow=0.6109 distill=0.0127 prior_total=0.6235
+[epoch 006 batch 0130/309] vae_total=0.2238 vae_bc=0.2237 vae_kl=0.0000 flow=0.6533 distill=0.0140 prior_total=0.6673
+[epoch 006 batch 0140/309] vae_total=0.2495 vae_bc=0.2495 vae_kl=0.0000 flow=0.7841 distill=0.0145 prior_total=0.7986
+[epoch 006 batch 0150/309] vae_total=0.2119 vae_bc=0.2119 vae_kl=0.0000 flow=0.5808 distill=0.0126 prior_total=0.5934
+[epoch 006 batch 0160/309] vae_total=0.3062 vae_bc=0.3062 vae_kl=0.0000 flow=0.5393 distill=0.0123 prior_total=0.5515
+[epoch 006 batch 0170/309] vae_total=0.2497 vae_bc=0.2497 vae_kl=0.0000 flow=0.5434 distill=0.0137 prior_total=0.5571
+[epoch 006 batch 0180/309] vae_total=0.2296 vae_bc=0.2296 vae_kl=0.0000 flow=0.6933 distill=0.0095 prior_total=0.7028
+[epoch 006 batch 0190/309] vae_total=0.1954 vae_bc=0.1954 vae_kl=0.0000 flow=0.7489 distill=0.0103 prior_total=0.7593
+[epoch 006 batch 0200/309] vae_total=0.2080 vae_bc=0.2080 vae_kl=0.0000 flow=0.6650 distill=0.0102 prior_total=0.6752
+[epoch 006 batch 0210/309] vae_total=0.2039 vae_bc=0.2039 vae_kl=0.0000 flow=0.6382 distill=0.0152 prior_total=0.6533
+[epoch 006 batch 0220/309] vae_total=0.2091 vae_bc=0.2091 vae_kl=0.0000 flow=0.6465 distill=0.0098 prior_total=0.6563
+[epoch 006 batch 0230/309] vae_total=0.2246 vae_bc=0.2246 vae_kl=0.0000 flow=0.7261 distill=0.0105 prior_total=0.7365
+[epoch 006 batch 0240/309] vae_total=0.2439 vae_bc=0.2438 vae_kl=0.0000 flow=0.5174 distill=0.0105 prior_total=0.5279
+[epoch 006 batch 0250/309] vae_total=0.2643 vae_bc=0.2643 vae_kl=0.0000 flow=0.5910 distill=0.0115 prior_total=0.6025
+[epoch 006 batch 0260/309] vae_total=0.2561 vae_bc=0.2561 vae_kl=0.0000 flow=0.5276 distill=0.0108 prior_total=0.5384
+[epoch 006 batch 0270/309] vae_total=0.2361 vae_bc=0.2361 vae_kl=0.0000 flow=0.5900 distill=0.0143 prior_total=0.6043
+[epoch 006 batch 0280/309] vae_total=0.1664 vae_bc=0.1664 vae_kl=0.0000 flow=0.6194 distill=0.0136 prior_total=0.6330
+[epoch 006 batch 0290/309] vae_total=0.2156 vae_bc=0.2156 vae_kl=0.0000 flow=0.5030 distill=0.0126 prior_total=0.5156
+[epoch 006 batch 0300/309] vae_total=0.2717 vae_bc=0.2717 vae_kl=0.0000 flow=0.6737 distill=0.0095 prior_total=0.6832
+  3%|▎         | 7/203 [48:40<22:38:07, 415.75s/it]
+[start epoch 007/203]
+[epoch 007 batch 0000/309] vae_total=0.2130 vae_bc=0.2130 vae_kl=0.0000 flow=0.6251 distill=0.0150 prior_total=0.6401
+[epoch 007 batch 0010/309] vae_total=0.2383 vae_bc=0.2383 vae_kl=0.0000 flow=0.5596 distill=0.0116 prior_total=0.5712
+[epoch 007 batch 0020/309] vae_total=0.2465 vae_bc=0.2465 vae_kl=0.0000 flow=0.5686 distill=0.0135 prior_total=0.5821
+[epoch 007 batch 0030/309] vae_total=0.2428 vae_bc=0.2428 vae_kl=0.0000 flow=0.6074 distill=0.0095 prior_total=0.6168
+[epoch 007 batch 0040/309] vae_total=0.1781 vae_bc=0.1781 vae_kl=0.0000 flow=0.5326 distill=0.0150 prior_total=0.5475
+[epoch 007 batch 0050/309] vae_total=0.2040 vae_bc=0.2040 vae_kl=0.0000 flow=0.6121 distill=0.0133 prior_total=0.6253
+[epoch 007 batch 0060/309] vae_total=0.2237 vae_bc=0.2237 vae_kl=0.0000 flow=0.6634 distill=0.0115 prior_total=0.6748
+[epoch 007 batch 0070/309] vae_total=0.1943 vae_bc=0.1943 vae_kl=0.0000 flow=0.6174 distill=0.0144 prior_total=0.6318
+[epoch 007 batch 0080/309] vae_total=0.1959 vae_bc=0.1959 vae_kl=0.0000 flow=0.6343 distill=0.0104 prior_total=0.6447
+[epoch 007 batch 0090/309] vae_total=0.2016 vae_bc=0.2016 vae_kl=0.0000 flow=0.5413 distill=0.0138 prior_total=0.5551
+[epoch 007 batch 0100/309] vae_total=0.2086 vae_bc=0.2086 vae_kl=0.0000 flow=0.5322 distill=0.0105 prior_total=0.5427
+[epoch 007 batch 0110/309] vae_total=0.2480 vae_bc=0.2479 vae_kl=0.0000 flow=0.5688 distill=0.0126 prior_total=0.5814
+[epoch 007 batch 0120/309] vae_total=0.2591 vae_bc=0.2591 vae_kl=0.0000 flow=0.6599 distill=0.0088 prior_total=0.6687
+[epoch 007 batch 0130/309] vae_total=0.1894 vae_bc=0.1894 vae_kl=0.0000 flow=0.6205 distill=0.0127 prior_total=0.6332
+[epoch 007 batch 0140/309] vae_total=0.1830 vae_bc=0.1830 vae_kl=0.0000 flow=0.7626 distill=0.0093 prior_total=0.7719
+[epoch 007 batch 0150/309] vae_total=0.2057 vae_bc=0.2057 vae_kl=0.0000 flow=0.4790 distill=0.0118 prior_total=0.4908
+[epoch 007 batch 0160/309] vae_total=0.2490 vae_bc=0.2490 vae_kl=0.0000 flow=0.5800 distill=0.0115 prior_total=0.5915
+[epoch 007 batch 0170/309] vae_total=0.2161 vae_bc=0.2161 vae_kl=0.0000 flow=0.5305 distill=0.0183 prior_total=0.5489
+[epoch 007 batch 0180/309] vae_total=0.2158 vae_bc=0.2158 vae_kl=0.0000 flow=0.5370 distill=0.0096 prior_total=0.5467
+[epoch 007 batch 0190/309] vae_total=0.1969 vae_bc=0.1969 vae_kl=0.0000 flow=0.5802 distill=0.0126 prior_total=0.5928
+[epoch 007 batch 0200/309] vae_total=0.2667 vae_bc=0.2666 vae_kl=0.0000 flow=0.5591 distill=0.0125 prior_total=0.5716
+[epoch 007 batch 0210/309] vae_total=0.2637 vae_bc=0.2636 vae_kl=0.0000 flow=0.5619 distill=0.0117 prior_total=0.5736
+[epoch 007 batch 0220/309] vae_total=0.2347 vae_bc=0.2347 vae_kl=0.0000 flow=0.5885 distill=0.0122 prior_total=0.6007
+[epoch 007 batch 0230/309] vae_total=0.2648 vae_bc=0.2648 vae_kl=0.0000 flow=0.5312 distill=0.0125 prior_total=0.5438
+[epoch 007 batch 0240/309] vae_total=0.2447 vae_bc=0.2447 vae_kl=0.0000 flow=0.6363 distill=0.0129 prior_total=0.6493
+[epoch 007 batch 0250/309] vae_total=0.2270 vae_bc=0.2269 vae_kl=0.0000 flow=0.5554 distill=0.0135 prior_total=0.5688
+[epoch 007 batch 0260/309] vae_total=0.2319 vae_bc=0.2319 vae_kl=0.0000 flow=0.5640 distill=0.0138 prior_total=0.5778
+[epoch 007 batch 0270/309] vae_total=0.2475 vae_bc=0.2475 vae_kl=0.0000 flow=0.5510 distill=0.0107 prior_total=0.5618
+[epoch 007 batch 0280/309] vae_total=0.2773 vae_bc=0.2773 vae_kl=0.0000 flow=0.4672 distill=0.0094 prior_total=0.4766
+[epoch 007 batch 0290/309] vae_total=0.1987 vae_bc=0.1987 vae_kl=0.0000 flow=0.6573 distill=0.0145 prior_total=0.6718
+[epoch 007 batch 0300/309] vae_total=0.2402 vae_bc=0.2401 vae_kl=0.0000 flow=0.5692 distill=0.0106 prior_total=0.5798
+  4%|▍         | 8/203 [55:37<22:32:50, 416.26s/it]
+[start epoch 008/203]
+[epoch 008 batch 0000/309] vae_total=0.1966 vae_bc=0.1966 vae_kl=0.0000 flow=0.5683 distill=0.0143 prior_total=0.5826
+[epoch 008 batch 0010/309] vae_total=0.2363 vae_bc=0.2362 vae_kl=0.0000 flow=0.6496 distill=0.0108 prior_total=0.6604
+[epoch 008 batch 0020/309] vae_total=0.2757 vae_bc=0.2757 vae_kl=0.0000 flow=0.6299 distill=0.0104 prior_total=0.6403
+[epoch 008 batch 0030/309] vae_total=0.2104 vae_bc=0.2104 vae_kl=0.0000 flow=0.6284 distill=0.0100 prior_total=0.6384
+[epoch 008 batch 0040/309] vae_total=0.2322 vae_bc=0.2322 vae_kl=0.0000 flow=0.5982 distill=0.0092 prior_total=0.6074
+[epoch 008 batch 0050/309] vae_total=0.2215 vae_bc=0.2215 vae_kl=0.0000 flow=0.5304 distill=0.0105 prior_total=0.5409
+[epoch 008 batch 0060/309] vae_total=0.2306 vae_bc=0.2306 vae_kl=0.0000 flow=0.5758 distill=0.0127 prior_total=0.5885
+[epoch 008 batch 0070/309] vae_total=0.2355 vae_bc=0.2355 vae_kl=0.0000 flow=0.5195 distill=0.0070 prior_total=0.5266
+[epoch 008 batch 0080/309] vae_total=0.2115 vae_bc=0.2115 vae_kl=0.0000 flow=0.5740 distill=0.0085 prior_total=0.5824
+[epoch 008 batch 0090/309] vae_total=0.1889 vae_bc=0.1889 vae_kl=0.0000 flow=0.5299 distill=0.0146 prior_total=0.5445
+[epoch 008 batch 0100/309] vae_total=0.2247 vae_bc=0.2247 vae_kl=0.0000 flow=0.6385 distill=0.0107 prior_total=0.6492
+[epoch 008 batch 0110/309] vae_total=0.1982 vae_bc=0.1982 vae_kl=0.0000 flow=0.5239 distill=0.0125 prior_total=0.5364
+[epoch 008 batch 0120/309] vae_total=0.2099 vae_bc=0.2099 vae_kl=0.0000 flow=0.5204 distill=0.0100 prior_total=0.5304
+[epoch 008 batch 0130/309] vae_total=0.2149 vae_bc=0.2149 vae_kl=0.0000 flow=0.5282 distill=0.0101 prior_total=0.5384
+[epoch 008 batch 0140/309] vae_total=0.2283 vae_bc=0.2283 vae_kl=0.0000 flow=0.5600 distill=0.0136 prior_total=0.5737
+[epoch 008 batch 0150/309] vae_total=0.2028 vae_bc=0.2028 vae_kl=0.0000 flow=0.5387 distill=0.0116 prior_total=0.5503
+[epoch 008 batch 0160/309] vae_total=0.2352 vae_bc=0.2352 vae_kl=0.0000 flow=0.4743 distill=0.0132 prior_total=0.4875
+[epoch 008 batch 0170/309] vae_total=0.2200 vae_bc=0.2200 vae_kl=0.0000 flow=0.4925 distill=0.0131 prior_total=0.5057
+[epoch 008 batch 0180/309] vae_total=0.1976 vae_bc=0.1975 vae_kl=0.0000 flow=0.4578 distill=0.0095 prior_total=0.4674
+[epoch 008 batch 0190/309] vae_total=0.2114 vae_bc=0.2113 vae_kl=0.0000 flow=0.5809 distill=0.0085 prior_total=0.5894
+[epoch 008 batch 0200/309] vae_total=0.1974 vae_bc=0.1974 vae_kl=0.0000 flow=0.5647 distill=0.0064 prior_total=0.5710
+[epoch 008 batch 0210/309] vae_total=0.2057 vae_bc=0.2056 vae_kl=0.0000 flow=0.5860 distill=0.0105 prior_total=0.5965
+[epoch 008 batch 0220/309] vae_total=0.2178 vae_bc=0.2178 vae_kl=0.0000 flow=0.4887 distill=0.0098 prior_total=0.4985
+[epoch 008 batch 0230/309] vae_total=0.2078 vae_bc=0.2078 vae_kl=0.0000 flow=0.5852 distill=0.0120 prior_total=0.5971
+[epoch 008 batch 0240/309] vae_total=0.2239 vae_bc=0.2239 vae_kl=0.0000 flow=0.6261 distill=0.0110 prior_total=0.6370
+[epoch 008 batch 0250/309] vae_total=0.2249 vae_bc=0.2249 vae_kl=0.0000 flow=0.6268 distill=0.0117 prior_total=0.6385
+[epoch 008 batch 0260/309] vae_total=0.2086 vae_bc=0.2086 vae_kl=0.0000 flow=0.5299 distill=0.0125 prior_total=0.5424
+[epoch 008 batch 0270/309] vae_total=0.2413 vae_bc=0.2413 vae_kl=0.0000 flow=0.5474 distill=0.0125 prior_total=0.5598
+[epoch 008 batch 0280/309] vae_total=0.2280 vae_bc=0.2280 vae_kl=0.0000 flow=0.4540 distill=0.0098 prior_total=0.4638
+[epoch 008 batch 0290/309] vae_total=0.2441 vae_bc=0.2441 vae_kl=0.0000 flow=0.4309 distill=0.0083 prior_total=0.4393
+[epoch 008 batch 0300/309] vae_total=0.1990 vae_bc=0.1990 vae_kl=0.0000 flow=0.5097 distill=0.0122 prior_total=0.5219
+  4%|▍         | 9/203 [1:02:33<22:25:44, 416.21s/it]
+[start epoch 009/203]
+[epoch 009 batch 0000/309] vae_total=0.1968 vae_bc=0.1968 vae_kl=0.0000 flow=0.4253 distill=0.0105 prior_total=0.4358
+[epoch 009 batch 0010/309] vae_total=0.2229 vae_bc=0.2229 vae_kl=0.0000 flow=0.4820 distill=0.0124 prior_total=0.4945
+[epoch 009 batch 0020/309] vae_total=0.2292 vae_bc=0.2292 vae_kl=0.0000 flow=0.4947 distill=0.0112 prior_total=0.5059
+[epoch 009 batch 0030/309] vae_total=0.2322 vae_bc=0.2322 vae_kl=0.0000 flow=0.5412 distill=0.0091 prior_total=0.5503
+[epoch 009 batch 0040/309] vae_total=0.2247 vae_bc=0.2247 vae_kl=0.0000 flow=0.5630 distill=0.0136 prior_total=0.5766
+[epoch 009 batch 0050/309] vae_total=0.2483 vae_bc=0.2483 vae_kl=0.0000 flow=0.4876 distill=0.0087 prior_total=0.4964
+[epoch 009 batch 0060/309] vae_total=0.1782 vae_bc=0.1782 vae_kl=0.0000 flow=0.4400 distill=0.0088 prior_total=0.4488
+[epoch 009 batch 0070/309] vae_total=0.2158 vae_bc=0.2157 vae_kl=0.0000 flow=0.4668 distill=0.0101 prior_total=0.4769
+[epoch 009 batch 0080/309] vae_total=0.2255 vae_bc=0.2254 vae_kl=0.0000 flow=0.4289 distill=0.0109 prior_total=0.4398
+[epoch 009 batch 0090/309] vae_total=0.1911 vae_bc=0.1911 vae_kl=0.0000 flow=0.4415 distill=0.0117 prior_total=0.4532
+[epoch 009 batch 0100/309] vae_total=0.2340 vae_bc=0.2340 vae_kl=0.0000 flow=0.4473 distill=0.0107 prior_total=0.4580
+[epoch 009 batch 0110/309] vae_total=0.1839 vae_bc=0.1839 vae_kl=0.0000 flow=0.4707 distill=0.0114 prior_total=0.4821
+[epoch 009 batch 0120/309] vae_total=0.2088 vae_bc=0.2088 vae_kl=0.0000 flow=0.4381 distill=0.0077 prior_total=0.4458
+[epoch 009 batch 0130/309] vae_total=0.2488 vae_bc=0.2488 vae_kl=0.0000 flow=0.4754 distill=0.0098 prior_total=0.4853
+[epoch 009 batch 0140/309] vae_total=0.2515 vae_bc=0.2514 vae_kl=0.0000 flow=0.5090 distill=0.0098 prior_total=0.5188
+[epoch 009 batch 0150/309] vae_total=0.2590 vae_bc=0.2590 vae_kl=0.0000 flow=0.3728 distill=0.0102 prior_total=0.3830
+[epoch 009 batch 0160/309] vae_total=0.2009 vae_bc=0.2009 vae_kl=0.0000 flow=0.4646 distill=0.0138 prior_total=0.4784
+[epoch 009 batch 0170/309] vae_total=0.2546 vae_bc=0.2546 vae_kl=0.0000 flow=0.5152 distill=0.0140 prior_total=0.5292
+[epoch 009 batch 0180/309] vae_total=0.2044 vae_bc=0.2044 vae_kl=0.0000 flow=0.3975 distill=0.0097 prior_total=0.4072
+[epoch 009 batch 0190/309] vae_total=0.2344 vae_bc=0.2344 vae_kl=0.0000 flow=0.4903 distill=0.0108 prior_total=0.5011
+[epoch 009 batch 0200/309] vae_total=0.2246 vae_bc=0.2245 vae_kl=0.0000 flow=0.4514 distill=0.0120 prior_total=0.4634
+[epoch 009 batch 0210/309] vae_total=0.2393 vae_bc=0.2393 vae_kl=0.0000 flow=0.5225 distill=0.0110 prior_total=0.5335
+[epoch 009 batch 0220/309] vae_total=0.1962 vae_bc=0.1962 vae_kl=0.0000 flow=0.5312 distill=0.0126 prior_total=0.5438
+[epoch 009 batch 0230/309] vae_total=0.2295 vae_bc=0.2295 vae_kl=0.0000 flow=0.4159 distill=0.0123 prior_total=0.4282
+[epoch 009 batch 0240/309] vae_total=0.2408 vae_bc=0.2408 vae_kl=0.0000 flow=0.4896 distill=0.0150 prior_total=0.5046
+[epoch 009 batch 0250/309] vae_total=0.1876 vae_bc=0.1876 vae_kl=0.0000 flow=0.6044 distill=0.0143 prior_total=0.6187
+[epoch 009 batch 0260/309] vae_total=0.2621 vae_bc=0.2621 vae_kl=0.0000 flow=0.4401 distill=0.0114 prior_total=0.4516
+[epoch 009 batch 0270/309] vae_total=0.2332 vae_bc=0.2332 vae_kl=0.0000 flow=0.4596 distill=0.0159 prior_total=0.4754
+[epoch 009 batch 0280/309] vae_total=0.1952 vae_bc=0.1952 vae_kl=0.0000 flow=0.4066 distill=0.0095 prior_total=0.4161
+[epoch 009 batch 0290/309] vae_total=0.2171 vae_bc=0.2170 vae_kl=0.0000 flow=0.4369 distill=0.0114 prior_total=0.4483
+[epoch 009 batch 0300/309] vae_total=0.2629 vae_bc=0.2629 vae_kl=0.0000 flow=0.5106 distill=0.0109 prior_total=0.5215
+  5%|▍         | 10/203 [1:09:29<22:18:09, 416.01s/it]
+[start epoch 010/203]
+[epoch 010 batch 0000/309] vae_total=0.1762 vae_bc=0.1762 vae_kl=0.0000 flow=0.4316 distill=0.0101 prior_total=0.4418
+[epoch 010 batch 0010/309] vae_total=0.2070 vae_bc=0.2070 vae_kl=0.0000 flow=0.4541 distill=0.0153 prior_total=0.4694
+[epoch 010 batch 0020/309] vae_total=0.2434 vae_bc=0.2434 vae_kl=0.0000 flow=0.5919 distill=0.0134 prior_total=0.6053
+[epoch 010 batch 0030/309] vae_total=0.2062 vae_bc=0.2062 vae_kl=0.0000 flow=0.4984 distill=0.0097 prior_total=0.5081
+[epoch 010 batch 0040/309] vae_total=0.2225 vae_bc=0.2225 vae_kl=0.0000 flow=0.5086 distill=0.0095 prior_total=0.5181
+[epoch 010 batch 0050/309] vae_total=0.1845 vae_bc=0.1845 vae_kl=0.0000 flow=0.5234 distill=0.0093 prior_total=0.5328
+[epoch 010 batch 0060/309] vae_total=0.2215 vae_bc=0.2215 vae_kl=0.0000 flow=0.4938 distill=0.0187 prior_total=0.5125
+[epoch 010 batch 0070/309] vae_total=0.1875 vae_bc=0.1875 vae_kl=0.0000 flow=0.4271 distill=0.0094 prior_total=0.4365
+[epoch 010 batch 0080/309] vae_total=0.1833 vae_bc=0.1833 vae_kl=0.0000 flow=0.4743 distill=0.0085 prior_total=0.4828
+[epoch 010 batch 0090/309] vae_total=0.2152 vae_bc=0.2152 vae_kl=0.0000 flow=0.3843 distill=0.0108 prior_total=0.3951
+[epoch 010 batch 0100/309] vae_total=0.2222 vae_bc=0.2222 vae_kl=0.0000 flow=0.4669 distill=0.0118 prior_total=0.4787
+[epoch 010 batch 0110/309] vae_total=0.1662 vae_bc=0.1662 vae_kl=0.0000 flow=0.4839 distill=0.0102 prior_total=0.4942
+[epoch 010 batch 0120/309] vae_total=0.2120 vae_bc=0.2120 vae_kl=0.0000 flow=0.3815 distill=0.0101 prior_total=0.3915
+[epoch 010 batch 0130/309] vae_total=0.2534 vae_bc=0.2534 vae_kl=0.0000 flow=0.3681 distill=0.0105 prior_total=0.3786
+[epoch 010 batch 0140/309] vae_total=0.1985 vae_bc=0.1985 vae_kl=0.0000 flow=0.4271 distill=0.0112 prior_total=0.4384
+[epoch 010 batch 0150/309] vae_total=0.2415 vae_bc=0.2415 vae_kl=0.0000 flow=0.4833 distill=0.0081 prior_total=0.4914
+[epoch 010 batch 0160/309] vae_total=0.2313 vae_bc=0.2312 vae_kl=0.0000 flow=0.4650 distill=0.0094 prior_total=0.4744
+[epoch 010 batch 0170/309] vae_total=0.2765 vae_bc=0.2765 vae_kl=0.0000 flow=0.4028 distill=0.0084 prior_total=0.4112
+[epoch 010 batch 0180/309] vae_total=0.2268 vae_bc=0.2268 vae_kl=0.0000 flow=0.3742 distill=0.0095 prior_total=0.3838
+[epoch 010 batch 0190/309] vae_total=0.2111 vae_bc=0.2110 vae_kl=0.0000 flow=0.4720 distill=0.0103 prior_total=0.4823
+[epoch 010 batch 0200/309] vae_total=0.2047 vae_bc=0.2047 vae_kl=0.0000 flow=0.5188 distill=0.0141 prior_total=0.5329
+[epoch 010 batch 0210/309] vae_total=0.2070 vae_bc=0.2070 vae_kl=0.0000 flow=0.5006 distill=0.0132 prior_total=0.5138
+[epoch 010 batch 0220/309] vae_total=0.2394 vae_bc=0.2394 vae_kl=0.0000 flow=0.4275 distill=0.0121 prior_total=0.4396
+[epoch 010 batch 0230/309] vae_total=0.2302 vae_bc=0.2302 vae_kl=0.0000 flow=0.5048 distill=0.0107 prior_total=0.5155
+[epoch 010 batch 0240/309] vae_total=0.2055 vae_bc=0.2055 vae_kl=0.0000 flow=0.4501 distill=0.0103 prior_total=0.4604
+[epoch 010 batch 0250/309] vae_total=0.2358 vae_bc=0.2358 vae_kl=0.0000 flow=0.4230 distill=0.0096 prior_total=0.4326
+[epoch 010 batch 0260/309] vae_total=0.1965 vae_bc=0.1965 vae_kl=0.0000 flow=0.4748 distill=0.0143 prior_total=0.4891
+[epoch 010 batch 0270/309] vae_total=0.1879 vae_bc=0.1879 vae_kl=0.0000 flow=0.3904 distill=0.0080 prior_total=0.3985
+[epoch 010 batch 0280/309] vae_total=0.1790 vae_bc=0.1790 vae_kl=0.0000 flow=0.4886 distill=0.0204 prior_total=0.5090
+[epoch 010 batch 0290/309] vae_total=0.2265 vae_bc=0.2265 vae_kl=0.0000 flow=0.4681 distill=0.0139 prior_total=0.4820
+[epoch 010 batch 0300/309] vae_total=0.1860 vae_bc=0.1859 vae_kl=0.0000 flow=0.4060 distill=0.0111 prior_total=0.4171
+[end epoch 010] train_loss=0.001660 val_loss=0.002918
+  5%|▌         | 11/203 [1:16:26<22:12:12, 416.31s/it]
+[start epoch 011/203]
+[epoch 011 batch 0000/309] vae_total=0.1899 vae_bc=0.1899 vae_kl=0.0000 flow=0.3763 distill=0.0143 prior_total=0.3906
+[epoch 011 batch 0010/309] vae_total=0.1824 vae_bc=0.1824 vae_kl=0.0000 flow=0.3360 distill=0.0111 prior_total=0.3471
+[epoch 011 batch 0020/309] vae_total=0.2553 vae_bc=0.2552 vae_kl=0.0000 flow=0.4414 distill=0.0127 prior_total=0.4541
+[epoch 011 batch 0030/309] vae_total=0.2603 vae_bc=0.2603 vae_kl=0.0000 flow=0.3422 distill=0.0118 prior_total=0.3540
+[epoch 011 batch 0040/309] vae_total=0.1871 vae_bc=0.1871 vae_kl=0.0000 flow=0.4718 distill=0.0102 prior_total=0.4820
+[epoch 011 batch 0050/309] vae_total=0.1784 vae_bc=0.1784 vae_kl=0.0000 flow=0.3921 distill=0.0112 prior_total=0.4033
+[epoch 011 batch 0060/309] vae_total=0.2732 vae_bc=0.2732 vae_kl=0.0000 flow=0.4312 distill=0.0099 prior_total=0.4411
+[epoch 011 batch 0070/309] vae_total=0.2113 vae_bc=0.2113 vae_kl=0.0000 flow=0.4627 distill=0.0109 prior_total=0.4736
+[epoch 011 batch 0080/309] vae_total=0.1931 vae_bc=0.1931 vae_kl=0.0000 flow=0.3724 distill=0.0094 prior_total=0.3818
+[epoch 011 batch 0090/309] vae_total=0.2305 vae_bc=0.2305 vae_kl=0.0000 flow=0.4060 distill=0.0118 prior_total=0.4177
+[epoch 011 batch 0100/309] vae_total=0.2157 vae_bc=0.2157 vae_kl=0.0000 flow=0.4236 distill=0.0120 prior_total=0.4356
+[epoch 011 batch 0110/309] vae_total=0.1952 vae_bc=0.1952 vae_kl=0.0000 flow=0.5063 distill=0.0125 prior_total=0.5187
+[epoch 011 batch 0120/309] vae_total=0.1806 vae_bc=0.1806 vae_kl=0.0000 flow=0.3890 distill=0.0124 prior_total=0.4013
+[epoch 011 batch 0130/309] vae_total=0.1979 vae_bc=0.1979 vae_kl=0.0000 flow=0.3126 distill=0.0076 prior_total=0.3202
+[epoch 011 batch 0140/309] vae_total=0.2209 vae_bc=0.2209 vae_kl=0.0000 flow=0.4157 distill=0.0124 prior_total=0.4281
+[epoch 011 batch 0150/309] vae_total=0.2085 vae_bc=0.2085 vae_kl=0.0000 flow=0.4786 distill=0.0104 prior_total=0.4890
+[epoch 011 batch 0160/309] vae_total=0.2218 vae_bc=0.2218 vae_kl=0.0000 flow=0.4004 distill=0.0085 prior_total=0.4090
+[epoch 011 batch 0170/309] vae_total=0.1671 vae_bc=0.1671 vae_kl=0.0000 flow=0.4153 distill=0.0082 prior_total=0.4235
+[epoch 011 batch 0180/309] vae_total=0.1943 vae_bc=0.1943 vae_kl=0.0000 flow=0.4221 distill=0.0129 prior_total=0.4350
+[epoch 011 batch 0190/309] vae_total=0.2010 vae_bc=0.2010 vae_kl=0.0000 flow=0.4708 distill=0.0106 prior_total=0.4813
+[epoch 011 batch 0200/309] vae_total=0.2207 vae_bc=0.2207 vae_kl=0.0000 flow=0.3756 distill=0.0084 prior_total=0.3840
+[epoch 011 batch 0210/309] vae_total=0.1836 vae_bc=0.1836 vae_kl=0.0000 flow=0.3487 distill=0.0125 prior_total=0.3612
+[epoch 011 batch 0220/309] vae_total=0.1972 vae_bc=0.1972 vae_kl=0.0000 flow=0.4365 distill=0.0083 prior_total=0.4448
+[epoch 011 batch 0230/309] vae_total=0.1887 vae_bc=0.1887 vae_kl=0.0000 flow=0.2980 distill=0.0095 prior_total=0.3075
+[epoch 011 batch 0240/309] vae_total=0.1547 vae_bc=0.1547 vae_kl=0.0000 flow=0.4221 distill=0.0088 prior_total=0.4308
+[epoch 011 batch 0250/309] vae_total=0.1949 vae_bc=0.1949 vae_kl=0.0000 flow=0.4102 distill=0.0116 prior_total=0.4218
+[epoch 011 batch 0260/309] vae_total=0.2324 vae_bc=0.2324 vae_kl=0.0000 flow=0.3963 distill=0.0161 prior_total=0.4124
+[epoch 011 batch 0270/309] vae_total=0.1941 vae_bc=0.1941 vae_kl=0.0000 flow=0.3148 distill=0.0133 prior_total=0.3281
+[epoch 011 batch 0280/309] vae_total=0.2473 vae_bc=0.2473 vae_kl=0.0000 flow=0.3929 distill=0.0106 prior_total=0.4034
+[epoch 011 batch 0290/309] vae_total=0.1946 vae_bc=0.1945 vae_kl=0.0000 flow=0.3397 distill=0.0190 prior_total=0.3587
+[epoch 011 batch 0300/309] vae_total=0.1870 vae_bc=0.1870 vae_kl=0.0000 flow=0.4011 distill=0.0083 prior_total=0.4094
+  6%|▌         | 12/203 [1:23:21<22:04:19, 416.02s/it]
+[start epoch 012/203]
+[epoch 012 batch 0000/309] vae_total=0.2222 vae_bc=0.2222 vae_kl=0.0000 flow=0.3978 distill=0.0126 prior_total=0.4104
+[epoch 012 batch 0010/309] vae_total=0.1808 vae_bc=0.1808 vae_kl=0.0000 flow=0.2954 distill=0.0094 prior_total=0.3048
+[epoch 012 batch 0020/309] vae_total=0.2129 vae_bc=0.2128 vae_kl=0.0000 flow=0.2983 distill=0.0157 prior_total=0.3140
+[epoch 012 batch 0030/309] vae_total=0.2166 vae_bc=0.2166 vae_kl=0.0000 flow=0.3696 distill=0.0293 prior_total=0.3989
+[epoch 012 batch 0040/309] vae_total=0.2164 vae_bc=0.2164 vae_kl=0.0000 flow=0.4369 distill=0.0108 prior_total=0.4477
+[epoch 012 batch 0050/309] vae_total=0.2308 vae_bc=0.2308 vae_kl=0.0000 flow=0.3835 distill=0.0085 prior_total=0.3920
+[epoch 012 batch 0060/309] vae_total=0.1938 vae_bc=0.1938 vae_kl=0.0000 flow=0.3664 distill=0.0099 prior_total=0.3763
+[epoch 012 batch 0070/309] vae_total=0.1867 vae_bc=0.1867 vae_kl=0.0000 flow=0.3406 distill=0.0081 prior_total=0.3487
+[epoch 012 batch 0080/309] vae_total=0.2168 vae_bc=0.2168 vae_kl=0.0000 flow=0.3686 distill=0.0076 prior_total=0.3762
+[epoch 012 batch 0090/309] vae_total=0.2013 vae_bc=0.2013 vae_kl=0.0000 flow=0.3623 distill=0.0076 prior_total=0.3699
+[epoch 012 batch 0100/309] vae_total=0.1919 vae_bc=0.1919 vae_kl=0.0000 flow=0.3983 distill=0.0140 prior_total=0.4123
+[epoch 012 batch 0110/309] vae_total=0.2247 vae_bc=0.2247 vae_kl=0.0000 flow=0.3227 distill=0.0082 prior_total=0.3310
+[epoch 012 batch 0120/309] vae_total=0.1991 vae_bc=0.1990 vae_kl=0.0000 flow=0.3699 distill=0.0095 prior_total=0.3794
+[epoch 012 batch 0130/309] vae_total=0.2061 vae_bc=0.2061 vae_kl=0.0000 flow=0.3644 distill=0.0081 prior_total=0.3725
+[epoch 012 batch 0140/309] vae_total=0.2092 vae_bc=0.2092 vae_kl=0.0000 flow=0.4007 distill=0.0087 prior_total=0.4094
+[epoch 012 batch 0150/309] vae_total=0.1939 vae_bc=0.1939 vae_kl=0.0000 flow=0.4328 distill=0.0080 prior_total=0.4408
+[epoch 012 batch 0160/309] vae_total=0.2345 vae_bc=0.2345 vae_kl=0.0000 flow=0.3472 distill=0.0103 prior_total=0.3575
+[epoch 012 batch 0170/309] vae_total=0.2322 vae_bc=0.2322 vae_kl=0.0000 flow=0.3446 distill=0.0094 prior_total=0.3539
+[epoch 012 batch 0180/309] vae_total=0.1945 vae_bc=0.1945 vae_kl=0.0000 flow=0.3587 distill=0.0081 prior_total=0.3668
+[epoch 012 batch 0190/309] vae_total=0.2527 vae_bc=0.2527 vae_kl=0.0000 flow=0.4136 distill=0.0095 prior_total=0.4231
+[epoch 012 batch 0200/309] vae_total=0.2159 vae_bc=0.2159 vae_kl=0.0000 flow=0.3705 distill=0.0085 prior_total=0.3790
+[epoch 012 batch 0210/309] vae_total=0.2036 vae_bc=0.2036 vae_kl=0.0000 flow=0.3950 distill=0.0082 prior_total=0.4032
+[epoch 012 batch 0220/309] vae_total=0.2112 vae_bc=0.2112 vae_kl=0.0000 flow=0.3417 distill=0.0082 prior_total=0.3499
+[epoch 012 batch 0230/309] vae_total=0.1902 vae_bc=0.1902 vae_kl=0.0000 flow=0.3329 distill=0.0177 prior_total=0.3506
+[epoch 012 batch 0240/309] vae_total=0.2122 vae_bc=0.2122 vae_kl=0.0000 flow=0.3106 distill=0.0080 prior_total=0.3186
+[epoch 012 batch 0250/309] vae_total=0.2159 vae_bc=0.2159 vae_kl=0.0000 flow=0.3256 distill=0.0072 prior_total=0.3329
+[epoch 012 batch 0260/309] vae_total=0.2166 vae_bc=0.2166 vae_kl=0.0000 flow=0.3737 distill=0.0094 prior_total=0.3831
+[epoch 012 batch 0270/309] vae_total=0.2029 vae_bc=0.2029 vae_kl=0.0000 flow=0.3699 distill=0.0152 prior_total=0.3851
+[epoch 012 batch 0280/309] vae_total=0.2026 vae_bc=0.2026 vae_kl=0.0000 flow=0.3849 distill=0.0097 prior_total=0.3947
+[epoch 012 batch 0290/309] vae_total=0.2244 vae_bc=0.2244 vae_kl=0.0000 flow=0.3243 distill=0.0122 prior_total=0.3365
+[epoch 012 batch 0300/309] vae_total=0.1816 vae_bc=0.1816 vae_kl=0.0000 flow=0.3636 distill=0.0099 prior_total=0.3735
+  6%|▋         | 13/203 [1:30:18<21:57:52, 416.17s/it]
+[start epoch 013/203]
+[epoch 013 batch 0000/309] vae_total=0.1568 vae_bc=0.1568 vae_kl=0.0000 flow=0.3148 distill=0.0089 prior_total=0.3237
+[epoch 013 batch 0010/309] vae_total=0.2441 vae_bc=0.2441 vae_kl=0.0000 flow=0.3332 distill=0.0097 prior_total=0.3429
+[epoch 013 batch 0020/309] vae_total=0.2231 vae_bc=0.2231 vae_kl=0.0000 flow=0.2991 distill=0.0107 prior_total=0.3098
+[epoch 013 batch 0030/309] vae_total=0.2225 vae_bc=0.2225 vae_kl=0.0000 flow=0.3323 distill=0.0099 prior_total=0.3422
+[epoch 013 batch 0040/309] vae_total=0.1937 vae_bc=0.1937 vae_kl=0.0000 flow=0.3394 distill=0.0062 prior_total=0.3456
+[epoch 013 batch 0050/309] vae_total=0.2055 vae_bc=0.2055 vae_kl=0.0000 flow=0.3628 distill=0.0097 prior_total=0.3725
+[epoch 013 batch 0060/309] vae_total=0.1952 vae_bc=0.1952 vae_kl=0.0000 flow=0.3157 distill=0.0097 prior_total=0.3254
+[epoch 013 batch 0070/309] vae_total=0.2161 vae_bc=0.2161 vae_kl=0.0000 flow=0.3368 distill=0.0123 prior_total=0.3491
+[epoch 013 batch 0080/309] vae_total=0.2321 vae_bc=0.2320 vae_kl=0.0000 flow=0.3519 distill=0.0119 prior_total=0.3637
+[epoch 013 batch 0090/309] vae_total=0.1900 vae_bc=0.1899 vae_kl=0.0000 flow=0.3026 distill=0.0135 prior_total=0.3160
+[epoch 013 batch 0100/309] vae_total=0.2141 vae_bc=0.2141 vae_kl=0.0000 flow=0.4212 distill=0.0088 prior_total=0.4300
+[epoch 013 batch 0110/309] vae_total=0.1936 vae_bc=0.1936 vae_kl=0.0000 flow=0.3911 distill=0.0085 prior_total=0.3996
+[epoch 013 batch 0120/309] vae_total=0.1973 vae_bc=0.1973 vae_kl=0.0000 flow=0.2950 distill=0.0098 prior_total=0.3048
+[epoch 013 batch 0130/309] vae_total=0.2475 vae_bc=0.2475 vae_kl=0.0000 flow=0.3206 distill=0.0169 prior_total=0.3374
+[epoch 013 batch 0140/309] vae_total=0.1762 vae_bc=0.1762 vae_kl=0.0000 flow=0.3321 distill=0.0113 prior_total=0.3434
+[epoch 013 batch 0150/309] vae_total=0.1933 vae_bc=0.1933 vae_kl=0.0000 flow=0.2640 distill=0.0114 prior_total=0.2755
+[epoch 013 batch 0160/309] vae_total=0.1891 vae_bc=0.1891 vae_kl=0.0000 flow=0.3272 distill=0.0107 prior_total=0.3379
+[epoch 013 batch 0170/309] vae_total=0.1981 vae_bc=0.1981 vae_kl=0.0000 flow=0.3548 distill=0.0092 prior_total=0.3640
+[epoch 013 batch 0180/309] vae_total=0.1733 vae_bc=0.1733 vae_kl=0.0000 flow=0.3696 distill=0.0091 prior_total=0.3787
+[epoch 013 batch 0190/309] vae_total=0.1860 vae_bc=0.1860 vae_kl=0.0000 flow=0.3159 distill=0.0086 prior_total=0.3245
+[epoch 013 batch 0200/309] vae_total=0.1747 vae_bc=0.1747 vae_kl=0.0000 flow=0.3592 distill=0.0104 prior_total=0.3696
+[epoch 013 batch 0210/309] vae_total=0.2482 vae_bc=0.2482 vae_kl=0.0000 flow=0.3031 distill=0.0129 prior_total=0.3159
+[epoch 013 batch 0220/309] vae_total=0.2271 vae_bc=0.2271 vae_kl=0.0000 flow=0.3721 distill=0.0105 prior_total=0.3826
+[epoch 013 batch 0230/309] vae_total=0.1966 vae_bc=0.1966 vae_kl=0.0000 flow=0.2525 distill=0.0077 prior_total=0.2602
+[epoch 013 batch 0240/309] vae_total=0.2233 vae_bc=0.2232 vae_kl=0.0000 flow=0.3053 distill=0.0088 prior_total=0.3141
+[epoch 013 batch 0250/309] vae_total=0.2067 vae_bc=0.2067 vae_kl=0.0000 flow=0.3695 distill=0.0081 prior_total=0.3776
+[epoch 013 batch 0260/309] vae_total=0.1566 vae_bc=0.1566 vae_kl=0.0000 flow=0.4463 distill=0.0169 prior_total=0.4631
+[epoch 013 batch 0270/309] vae_total=0.2219 vae_bc=0.2218 vae_kl=0.0000 flow=0.3629 distill=0.0071 prior_total=0.3699
+[epoch 013 batch 0280/309] vae_total=0.2345 vae_bc=0.2345 vae_kl=0.0000 flow=0.3136 distill=0.0072 prior_total=0.3208
+[epoch 013 batch 0290/309] vae_total=0.2165 vae_bc=0.2165 vae_kl=0.0000 flow=0.3845 distill=0.0082 prior_total=0.3927
+[epoch 013 batch 0300/309] vae_total=0.2186 vae_bc=0.2186 vae_kl=0.0000 flow=0.2798 distill=0.0100 prior_total=0.2898
+  7%|▋         | 14/203 [1:37:15<21:51:38, 416.39s/it]
+[start epoch 014/203]
+[epoch 014 batch 0000/309] vae_total=0.1907 vae_bc=0.1906 vae_kl=0.0000 flow=0.3044 distill=0.0130 prior_total=0.3174
+[epoch 014 batch 0010/309] vae_total=0.1889 vae_bc=0.1889 vae_kl=0.0000 flow=0.3393 distill=0.0088 prior_total=0.3481
+[epoch 014 batch 0020/309] vae_total=0.2685 vae_bc=0.2685 vae_kl=0.0000 flow=0.2810 distill=0.0085 prior_total=0.2895
+[epoch 014 batch 0030/309] vae_total=0.2104 vae_bc=0.2104 vae_kl=0.0000 flow=0.3946 distill=0.0126 prior_total=0.4072
+[epoch 014 batch 0040/309] vae_total=0.1867 vae_bc=0.1867 vae_kl=0.0000 flow=0.2939 distill=0.0071 prior_total=0.3010
+[epoch 014 batch 0050/309] vae_total=0.1995 vae_bc=0.1995 vae_kl=0.0000 flow=0.3113 distill=0.0082 prior_total=0.3195
+[epoch 014 batch 0060/309] vae_total=0.2347 vae_bc=0.2346 vae_kl=0.0000 flow=0.3003 distill=0.0100 prior_total=0.3102
+[epoch 014 batch 0070/309] vae_total=0.2449 vae_bc=0.2448 vae_kl=0.0000 flow=0.3652 distill=0.0108 prior_total=0.3760
+[epoch 014 batch 0080/309] vae_total=0.1757 vae_bc=0.1757 vae_kl=0.0000 flow=0.3213 distill=0.0109 prior_total=0.3322
+[epoch 014 batch 0090/309] vae_total=0.2394 vae_bc=0.2394 vae_kl=0.0000 flow=0.2407 distill=0.0092 prior_total=0.2499
+[epoch 014 batch 0100/309] vae_total=0.2438 vae_bc=0.2438 vae_kl=0.0000 flow=0.3037 distill=0.0108 prior_total=0.3145
+[epoch 014 batch 0110/309] vae_total=0.1850 vae_bc=0.1850 vae_kl=0.0000 flow=0.3349 distill=0.0101 prior_total=0.3450
+[epoch 014 batch 0120/309] vae_total=0.2376 vae_bc=0.2376 vae_kl=0.0000 flow=0.2952 distill=0.0104 prior_total=0.3056
+[epoch 014 batch 0130/309] vae_total=0.2193 vae_bc=0.2193 vae_kl=0.0000 flow=0.2464 distill=0.0073 prior_total=0.2536
+[epoch 014 batch 0140/309] vae_total=0.1996 vae_bc=0.1996 vae_kl=0.0000 flow=0.3560 distill=0.0099 prior_total=0.3658
+[epoch 014 batch 0150/309] vae_total=0.1516 vae_bc=0.1516 vae_kl=0.0000 flow=0.2885 distill=0.0082 prior_total=0.2967
+[epoch 014 batch 0160/309] vae_total=0.1760 vae_bc=0.1760 vae_kl=0.0000 flow=0.3504 distill=0.0083 prior_total=0.3587
+[epoch 014 batch 0170/309] vae_total=0.1711 vae_bc=0.1710 vae_kl=0.0000 flow=0.3119 distill=0.0169 prior_total=0.3288
+[epoch 014 batch 0180/309] vae_total=0.1933 vae_bc=0.1933 vae_kl=0.0000 flow=0.3571 distill=0.0080 prior_total=0.3652
+[epoch 014 batch 0190/309] vae_total=0.2479 vae_bc=0.2479 vae_kl=0.0000 flow=0.3171 distill=0.0101 prior_total=0.3272
+[epoch 014 batch 0200/309] vae_total=0.1617 vae_bc=0.1617 vae_kl=0.0000 flow=0.2235 distill=0.0142 prior_total=0.2377
+[epoch 014 batch 0210/309] vae_total=0.2582 vae_bc=0.2582 vae_kl=0.0000 flow=0.2533 distill=0.0117 prior_total=0.2649
+[epoch 014 batch 0220/309] vae_total=0.1929 vae_bc=0.1929 vae_kl=0.0000 flow=0.2608 distill=0.0122 prior_total=0.2730
+[epoch 014 batch 0230/309] vae_total=0.1837 vae_bc=0.1837 vae_kl=0.0000 flow=0.2653 distill=0.0145 prior_total=0.2798
+[epoch 014 batch 0240/309] vae_total=0.2216 vae_bc=0.2216 vae_kl=0.0000 flow=0.3204 distill=0.0084 prior_total=0.3287
+[epoch 014 batch 0250/309] vae_total=0.1581 vae_bc=0.1581 vae_kl=0.0000 flow=0.2913 distill=0.0085 prior_total=0.2997
+[epoch 014 batch 0260/309] vae_total=0.1678 vae_bc=0.1678 vae_kl=0.0000 flow=0.2982 distill=0.0075 prior_total=0.3056
+[epoch 014 batch 0270/309] vae_total=0.1890 vae_bc=0.1890 vae_kl=0.0000 flow=0.2845 distill=0.0180 prior_total=0.3025
+[epoch 014 batch 0280/309] vae_total=0.1754 vae_bc=0.1754 vae_kl=0.0000 flow=0.3056 distill=0.0126 prior_total=0.3182
+[epoch 014 batch 0290/309] vae_total=0.1912 vae_bc=0.1912 vae_kl=0.0000 flow=0.3563 distill=0.0101 prior_total=0.3664
+[epoch 014 batch 0300/309] vae_total=0.1568 vae_bc=0.1568 vae_kl=0.0000 flow=0.3397 distill=0.0198 prior_total=0.3595
+  7%|▋         | 15/203 [1:44:09<21:42:37, 415.73s/it]
+[start epoch 015/203]
+[epoch 015 batch 0000/309] vae_total=0.1758 vae_bc=0.1757 vae_kl=0.0000 flow=0.2380 distill=0.0114 prior_total=0.2494
+[epoch 015 batch 0010/309] vae_total=0.2271 vae_bc=0.2271 vae_kl=0.0000 flow=0.2692 distill=0.0111 prior_total=0.2803
+[epoch 015 batch 0020/309] vae_total=0.1609 vae_bc=0.1609 vae_kl=0.0000 flow=0.2765 distill=0.0107 prior_total=0.2872
+[epoch 015 batch 0030/309] vae_total=0.1976 vae_bc=0.1976 vae_kl=0.0000 flow=0.3133 distill=0.0082 prior_total=0.3214
+[epoch 015 batch 0040/309] vae_total=0.2111 vae_bc=0.2111 vae_kl=0.0000 flow=0.2997 distill=0.0221 prior_total=0.3218
+[epoch 015 batch 0050/309] vae_total=0.2217 vae_bc=0.2217 vae_kl=0.0000 flow=0.2802 distill=0.0084 prior_total=0.2886
+[epoch 015 batch 0060/309] vae_total=0.2721 vae_bc=0.2721 vae_kl=0.0000 flow=0.2455 distill=0.0073 prior_total=0.2528
+[epoch 015 batch 0070/309] vae_total=0.1954 vae_bc=0.1954 vae_kl=0.0000 flow=0.2108 distill=0.0091 prior_total=0.2200
+[epoch 015 batch 0080/309] vae_total=0.1738 vae_bc=0.1738 vae_kl=0.0000 flow=0.3022 distill=0.0125 prior_total=0.3147
+[epoch 015 batch 0090/309] vae_total=0.1773 vae_bc=0.1773 vae_kl=0.0000 flow=0.2354 distill=0.0085 prior_total=0.2440
+[epoch 015 batch 0100/309] vae_total=0.1995 vae_bc=0.1995 vae_kl=0.0000 flow=0.3191 distill=0.0070 prior_total=0.3260
+[epoch 015 batch 0110/309] vae_total=0.2088 vae_bc=0.2088 vae_kl=0.0000 flow=0.2483 distill=0.0076 prior_total=0.2559
+[epoch 015 batch 0120/309] vae_total=0.2215 vae_bc=0.2215 vae_kl=0.0000 flow=0.2825 distill=0.0083 prior_total=0.2908
+[epoch 015 batch 0130/309] vae_total=0.1803 vae_bc=0.1803 vae_kl=0.0000 flow=0.3215 distill=0.0126 prior_total=0.3341
+[epoch 015 batch 0140/309] vae_total=0.2220 vae_bc=0.2219 vae_kl=0.0000 flow=0.2699 distill=0.0108 prior_total=0.2807
+[epoch 015 batch 0150/309] vae_total=0.1917 vae_bc=0.1916 vae_kl=0.0000 flow=0.2905 distill=0.0092 prior_total=0.2997
+[epoch 015 batch 0160/309] vae_total=0.1724 vae_bc=0.1724 vae_kl=0.0000 flow=0.3129 distill=0.0117 prior_total=0.3245
+[epoch 015 batch 0170/309] vae_total=0.1935 vae_bc=0.1934 vae_kl=0.0000 flow=0.2949 distill=0.0130 prior_total=0.3079
+[epoch 015 batch 0180/309] vae_total=0.1944 vae_bc=0.1944 vae_kl=0.0000 flow=0.3172 distill=0.0088 prior_total=0.3260
+[epoch 015 batch 0190/309] vae_total=0.1757 vae_bc=0.1757 vae_kl=0.0000 flow=0.3415 distill=0.0059 prior_total=0.3473
+[epoch 015 batch 0200/309] vae_total=0.2019 vae_bc=0.2019 vae_kl=0.0000 flow=0.2885 distill=0.0099 prior_total=0.2984
+[epoch 015 batch 0210/309] vae_total=0.2358 vae_bc=0.2358 vae_kl=0.0000 flow=0.2254 distill=0.0072 prior_total=0.2326
+[epoch 015 batch 0220/309] vae_total=0.2016 vae_bc=0.2015 vae_kl=0.0000 flow=0.2612 distill=0.0080 prior_total=0.2692
+[epoch 015 batch 0230/309] vae_total=0.1633 vae_bc=0.1632 vae_kl=0.0000 flow=0.2415 distill=0.0085 prior_total=0.2500
+[epoch 015 batch 0240/309] vae_total=0.2164 vae_bc=0.2164 vae_kl=0.0000 flow=0.2446 distill=0.0097 prior_total=0.2543
+[epoch 015 batch 0250/309] vae_total=0.1841 vae_bc=0.1841 vae_kl=0.0000 flow=0.2263 distill=0.0083 prior_total=0.2346
+[epoch 015 batch 0260/309] vae_total=0.1926 vae_bc=0.1926 vae_kl=0.0000 flow=0.3241 distill=0.0087 prior_total=0.3327
+[epoch 015 batch 0270/309] vae_total=0.2032 vae_bc=0.2032 vae_kl=0.0000 flow=0.2143 distill=0.0182 prior_total=0.2324
+[epoch 015 batch 0280/309] vae_total=0.2148 vae_bc=0.2147 vae_kl=0.0000 flow=0.2663 distill=0.0077 prior_total=0.2739
+[epoch 015 batch 0290/309] vae_total=0.1613 vae_bc=0.1613 vae_kl=0.0000 flow=0.2434 distill=0.0092 prior_total=0.2526
+[epoch 015 batch 0300/309] vae_total=0.1846 vae_bc=0.1846 vae_kl=0.0000 flow=0.3532 distill=0.0064 prior_total=0.3595
+[end epoch 015] train_loss=0.001554 val_loss=0.002646
+  8%|▊         | 16/203 [1:51:06<21:36:50, 416.10s/it]
+[start epoch 016/203]
+[epoch 016 batch 0000/309] vae_total=0.1816 vae_bc=0.1816 vae_kl=0.0000 flow=0.3761 distill=0.0119 prior_total=0.3880
+[epoch 016 batch 0010/309] vae_total=0.2003 vae_bc=0.2003 vae_kl=0.0000 flow=0.2300 distill=0.0186 prior_total=0.2487
+[epoch 016 batch 0020/309] vae_total=0.2170 vae_bc=0.2170 vae_kl=0.0000 flow=0.2249 distill=0.0066 prior_total=0.2315
+[epoch 016 batch 0030/309] vae_total=0.1919 vae_bc=0.1919 vae_kl=0.0000 flow=0.2238 distill=0.0115 prior_total=0.2353
+[epoch 016 batch 0040/309] vae_total=0.2248 vae_bc=0.2248 vae_kl=0.0000 flow=0.3078 distill=0.0111 prior_total=0.3189
+[epoch 016 batch 0050/309] vae_total=0.1892 vae_bc=0.1891 vae_kl=0.0000 flow=0.2956 distill=0.0266 prior_total=0.3222
+[epoch 016 batch 0060/309] vae_total=0.1519 vae_bc=0.1519 vae_kl=0.0000 flow=0.3293 distill=0.0116 prior_total=0.3409
+[epoch 016 batch 0070/309] vae_total=0.2040 vae_bc=0.2040 vae_kl=0.0000 flow=0.2590 distill=0.0123 prior_total=0.2713
+[epoch 016 batch 0080/309] vae_total=0.2149 vae_bc=0.2149 vae_kl=0.0000 flow=0.2671 distill=0.0129 prior_total=0.2800
+[epoch 016 batch 0090/309] vae_total=0.1710 vae_bc=0.1710 vae_kl=0.0000 flow=0.2830 distill=0.0097 prior_total=0.2927
+[epoch 016 batch 0100/309] vae_total=0.1767 vae_bc=0.1767 vae_kl=0.0000 flow=0.2717 distill=0.0129 prior_total=0.2846
+[epoch 016 batch 0110/309] vae_total=0.1994 vae_bc=0.1994 vae_kl=0.0000 flow=0.2730 distill=0.0084 prior_total=0.2814
+[epoch 016 batch 0120/309] vae_total=0.1781 vae_bc=0.1781 vae_kl=0.0000 flow=0.2673 distill=0.0125 prior_total=0.2798
+[epoch 016 batch 0130/309] vae_total=0.1878 vae_bc=0.1878 vae_kl=0.0000 flow=0.3226 distill=0.0084 prior_total=0.3310
+[epoch 016 batch 0140/309] vae_total=0.2045 vae_bc=0.2045 vae_kl=0.0000 flow=0.2061 distill=0.0066 prior_total=0.2128
+[epoch 016 batch 0150/309] vae_total=0.2367 vae_bc=0.2367 vae_kl=0.0000 flow=0.2662 distill=0.0054 prior_total=0.2716
+[epoch 016 batch 0160/309] vae_total=0.1888 vae_bc=0.1888 vae_kl=0.0000 flow=0.3058 distill=0.0096 prior_total=0.3155
+[epoch 016 batch 0170/309] vae_total=0.1586 vae_bc=0.1586 vae_kl=0.0000 flow=0.2509 distill=0.0081 prior_total=0.2589
+[epoch 016 batch 0180/309] vae_total=0.1695 vae_bc=0.1695 vae_kl=0.0000 flow=0.2449 distill=0.0230 prior_total=0.2679
+[epoch 016 batch 0190/309] vae_total=0.2269 vae_bc=0.2268 vae_kl=0.0000 flow=0.2059 distill=0.0290 prior_total=0.2349
+[epoch 016 batch 0200/309] vae_total=0.2395 vae_bc=0.2395 vae_kl=0.0000 flow=0.2348 distill=0.0302 prior_total=0.2650
+[epoch 016 batch 0210/309] vae_total=0.2059 vae_bc=0.2059 vae_kl=0.0000 flow=0.1617 distill=0.0071 prior_total=0.1688
+[epoch 016 batch 0220/309] vae_total=0.1973 vae_bc=0.1973 vae_kl=0.0000 flow=0.2874 distill=0.0065 prior_total=0.2938
+[epoch 016 batch 0230/309] vae_total=0.2319 vae_bc=0.2319 vae_kl=0.0000 flow=0.2742 distill=0.0152 prior_total=0.2894
+[epoch 016 batch 0240/309] vae_total=0.1811 vae_bc=0.1811 vae_kl=0.0000 flow=0.2393 distill=0.0107 prior_total=0.2500
+[epoch 016 batch 0250/309] vae_total=0.1661 vae_bc=0.1661 vae_kl=0.0000 flow=0.1924 distill=0.0099 prior_total=0.2023
+[epoch 016 batch 0260/309] vae_total=0.1693 vae_bc=0.1693 vae_kl=0.0000 flow=0.1857 distill=0.0066 prior_total=0.1923
+[epoch 016 batch 0270/309] vae_total=0.1691 vae_bc=0.1691 vae_kl=0.0000 flow=0.2970 distill=0.0075 prior_total=0.3045
+[epoch 016 batch 0280/309] vae_total=0.2222 vae_bc=0.2222 vae_kl=0.0000 flow=0.2701 distill=0.0095 prior_total=0.2797
+[epoch 016 batch 0290/309] vae_total=0.1611 vae_bc=0.1611 vae_kl=0.0000 flow=0.2777 distill=0.0089 prior_total=0.2866
+[epoch 016 batch 0300/309] vae_total=0.2144 vae_bc=0.2144 vae_kl=0.0000 flow=0.2719 distill=0.0101 prior_total=0.2819
+  8%|▊         | 17/203 [1:58:02<21:30:02, 416.14s/it]
+[start epoch 017/203]
+[epoch 017 batch 0000/309] vae_total=0.2070 vae_bc=0.2070 vae_kl=0.0000 flow=0.2480 distill=0.0244 prior_total=0.2724
+[epoch 017 batch 0010/309] vae_total=0.1759 vae_bc=0.1759 vae_kl=0.0000 flow=0.2719 distill=0.0157 prior_total=0.2877
+[epoch 017 batch 0020/309] vae_total=0.1594 vae_bc=0.1594 vae_kl=0.0000 flow=0.2489 distill=0.0121 prior_total=0.2610
+[epoch 017 batch 0030/309] vae_total=0.2165 vae_bc=0.2165 vae_kl=0.0000 flow=0.3579 distill=0.0089 prior_total=0.3669
+[epoch 017 batch 0040/309] vae_total=0.1840 vae_bc=0.1839 vae_kl=0.0000 flow=0.2906 distill=0.0085 prior_total=0.2991
+[epoch 017 batch 0050/309] vae_total=0.1592 vae_bc=0.1591 vae_kl=0.0000 flow=0.2294 distill=0.0091 prior_total=0.2385
+[epoch 017 batch 0060/309] vae_total=0.1815 vae_bc=0.1815 vae_kl=0.0000 flow=0.2489 distill=0.0078 prior_total=0.2567
+[epoch 017 batch 0070/309] vae_total=0.1784 vae_bc=0.1784 vae_kl=0.0000 flow=0.2650 distill=0.0062 prior_total=0.2712
+[epoch 017 batch 0080/309] vae_total=0.2087 vae_bc=0.2087 vae_kl=0.0000 flow=0.2184 distill=0.0082 prior_total=0.2266
+[epoch 017 batch 0090/309] vae_total=0.1669 vae_bc=0.1669 vae_kl=0.0000 flow=0.2801 distill=0.0141 prior_total=0.2942
+[epoch 017 batch 0100/309] vae_total=0.1773 vae_bc=0.1773 vae_kl=0.0000 flow=0.2568 distill=0.0164 prior_total=0.2732
+[epoch 017 batch 0110/309] vae_total=0.1846 vae_bc=0.1846 vae_kl=0.0000 flow=0.1955 distill=0.0085 prior_total=0.2040
+[epoch 017 batch 0120/309] vae_total=0.2092 vae_bc=0.2092 vae_kl=0.0000 flow=0.2025 distill=0.0089 prior_total=0.2114
+[epoch 017 batch 0130/309] vae_total=0.1965 vae_bc=0.1965 vae_kl=0.0000 flow=0.3179 distill=0.0110 prior_total=0.3289
+[epoch 017 batch 0140/309] vae_total=0.2290 vae_bc=0.2290 vae_kl=0.0000 flow=0.2341 distill=0.0070 prior_total=0.2410
+[epoch 017 batch 0150/309] vae_total=0.1587 vae_bc=0.1587 vae_kl=0.0000 flow=0.3148 distill=0.0063 prior_total=0.3211
+[epoch 017 batch 0160/309] vae_total=0.2430 vae_bc=0.2430 vae_kl=0.0000 flow=0.2227 distill=0.0165 prior_total=0.2392
+[epoch 017 batch 0170/309] vae_total=0.1753 vae_bc=0.1753 vae_kl=0.0000 flow=0.1771 distill=0.0202 prior_total=0.1973
+[epoch 017 batch 0180/309] vae_total=0.1996 vae_bc=0.1996 vae_kl=0.0000 flow=0.2560 distill=0.0169 prior_total=0.2729
+[epoch 017 batch 0190/309] vae_total=0.1929 vae_bc=0.1929 vae_kl=0.0000 flow=0.2297 distill=0.0055 prior_total=0.2352
+[epoch 017 batch 0200/309] vae_total=0.1498 vae_bc=0.1498 vae_kl=0.0000 flow=0.2630 distill=0.0191 prior_total=0.2822
+[epoch 017 batch 0210/309] vae_total=0.1610 vae_bc=0.1610 vae_kl=0.0000 flow=0.2381 distill=0.0074 prior_total=0.2455
+[epoch 017 batch 0220/309] vae_total=0.1647 vae_bc=0.1646 vae_kl=0.0000 flow=0.2000 distill=0.0076 prior_total=0.2076
+[epoch 017 batch 0230/309] vae_total=0.2301 vae_bc=0.2301 vae_kl=0.0000 flow=0.1940 distill=0.0086 prior_total=0.2026
+[epoch 017 batch 0240/309] vae_total=0.1869 vae_bc=0.1869 vae_kl=0.0000 flow=0.2169 distill=0.0069 prior_total=0.2237
+[epoch 017 batch 0250/309] vae_total=0.1732 vae_bc=0.1731 vae_kl=0.0000 flow=0.2287 distill=0.0079 prior_total=0.2366
+[epoch 017 batch 0260/309] vae_total=0.1921 vae_bc=0.1921 vae_kl=0.0000 flow=0.3001 distill=0.0240 prior_total=0.3240
+[epoch 017 batch 0270/309] vae_total=0.1826 vae_bc=0.1826 vae_kl=0.0000 flow=0.2097 distill=0.0103 prior_total=0.2199
+[epoch 017 batch 0280/309] vae_total=0.1625 vae_bc=0.1625 vae_kl=0.0000 flow=0.2267 distill=0.0083 prior_total=0.2351
+[epoch 017 batch 0290/309] vae_total=0.1835 vae_bc=0.1835 vae_kl=0.0000 flow=0.2165 distill=0.0071 prior_total=0.2236
+[epoch 017 batch 0300/309] vae_total=0.2361 vae_bc=0.2361 vae_kl=0.0000 flow=0.1720 distill=0.0061 prior_total=0.1781
+  9%|▉         | 18/203 [2:04:58<21:22:56, 416.09s/it]
+[start epoch 018/203]
+[epoch 018 batch 0000/309] vae_total=0.2024 vae_bc=0.2024 vae_kl=0.0000 flow=0.2073 distill=0.0056 prior_total=0.2129
+[epoch 018 batch 0010/309] vae_total=0.1955 vae_bc=0.1955 vae_kl=0.0000 flow=0.2166 distill=0.0063 prior_total=0.2229
+[epoch 018 batch 0020/309] vae_total=0.1662 vae_bc=0.1662 vae_kl=0.0000 flow=0.2697 distill=0.0133 prior_total=0.2830
+[epoch 018 batch 0030/309] vae_total=0.2247 vae_bc=0.2247 vae_kl=0.0000 flow=0.2401 distill=0.0068 prior_total=0.2469
+[epoch 018 batch 0040/309] vae_total=0.1467 vae_bc=0.1467 vae_kl=0.0000 flow=0.2619 distill=0.0157 prior_total=0.2776
+[epoch 018 batch 0050/309] vae_total=0.2106 vae_bc=0.2106 vae_kl=0.0000 flow=0.1696 distill=0.0125 prior_total=0.1821
+[epoch 018 batch 0060/309] vae_total=0.2353 vae_bc=0.2353 vae_kl=0.0000 flow=0.1923 distill=0.0070 prior_total=0.1992
+[epoch 018 batch 0070/309] vae_total=0.1772 vae_bc=0.1772 vae_kl=0.0000 flow=0.2265 distill=0.0097 prior_total=0.2362
+[epoch 018 batch 0080/309] vae_total=0.1853 vae_bc=0.1853 vae_kl=0.0000 flow=0.2259 distill=0.0084 prior_total=0.2343
+[epoch 018 batch 0090/309] vae_total=0.1825 vae_bc=0.1825 vae_kl=0.0000 flow=0.1694 distill=0.0086 prior_total=0.1779
+[epoch 018 batch 0100/309] vae_total=0.2045 vae_bc=0.2045 vae_kl=0.0000 flow=0.1723 distill=0.0057 prior_total=0.1780
+[epoch 018 batch 0110/309] vae_total=0.1632 vae_bc=0.1632 vae_kl=0.0000 flow=0.2331 distill=0.0050 prior_total=0.2380
+[epoch 018 batch 0120/309] vae_total=0.1973 vae_bc=0.1973 vae_kl=0.0000 flow=0.2153 distill=0.0089 prior_total=0.2242
+[epoch 018 batch 0130/309] vae_total=0.1530 vae_bc=0.1530 vae_kl=0.0000 flow=0.2506 distill=0.0112 prior_total=0.2617
+[epoch 018 batch 0140/309] vae_total=0.2325 vae_bc=0.2325 vae_kl=0.0000 flow=0.2392 distill=0.0064 prior_total=0.2456
+[epoch 018 batch 0150/309] vae_total=0.1681 vae_bc=0.1681 vae_kl=0.0000 flow=0.2315 distill=0.0132 prior_total=0.2447
+[epoch 018 batch 0160/309] vae_total=0.1681 vae_bc=0.1681 vae_kl=0.0000 flow=0.1732 distill=0.0099 prior_total=0.1832
+[epoch 018 batch 0170/309] vae_total=0.2007 vae_bc=0.2007 vae_kl=0.0000 flow=0.2412 distill=0.0086 prior_total=0.2498
+[epoch 018 batch 0180/309] vae_total=0.1673 vae_bc=0.1673 vae_kl=0.0000 flow=0.1876 distill=0.0098 prior_total=0.1974
+[epoch 018 batch 0190/309] vae_total=0.2487 vae_bc=0.2487 vae_kl=0.0000 flow=0.2182 distill=0.0568 prior_total=0.2750
+[epoch 018 batch 0200/309] vae_total=0.1881 vae_bc=0.1881 vae_kl=0.0000 flow=0.2055 distill=0.0056 prior_total=0.2111
+[epoch 018 batch 0210/309] vae_total=0.1575 vae_bc=0.1574 vae_kl=0.0000 flow=0.2633 distill=0.0072 prior_total=0.2704
+[epoch 018 batch 0220/309] vae_total=0.1913 vae_bc=0.1913 vae_kl=0.0000 flow=0.2211 distill=0.0372 prior_total=0.2583
+[epoch 018 batch 0230/309] vae_total=0.1766 vae_bc=0.1766 vae_kl=0.0000 flow=0.2063 distill=0.0072 prior_total=0.2135
+[epoch 018 batch 0240/309] vae_total=0.1879 vae_bc=0.1879 vae_kl=0.0000 flow=0.2134 distill=0.0093 prior_total=0.2226
+[epoch 018 batch 0250/309] vae_total=0.2540 vae_bc=0.2540 vae_kl=0.0000 flow=0.2428 distill=0.0079 prior_total=0.2506
+[epoch 018 batch 0260/309] vae_total=0.2195 vae_bc=0.2195 vae_kl=0.0000 flow=0.1879 distill=0.0062 prior_total=0.1941
+[epoch 018 batch 0270/309] vae_total=0.1916 vae_bc=0.1916 vae_kl=0.0000 flow=0.1459 distill=0.0042 prior_total=0.1501
+[epoch 018 batch 0280/309] vae_total=0.1651 vae_bc=0.1651 vae_kl=0.0000 flow=0.1999 distill=0.0056 prior_total=0.2055
+[epoch 018 batch 0290/309] vae_total=0.2425 vae_bc=0.2424 vae_kl=0.0000 flow=0.2375 distill=0.0134 prior_total=0.2509
+[epoch 018 batch 0300/309] vae_total=0.2439 vae_bc=0.2439 vae_kl=0.0000 flow=0.1843 distill=0.0074 prior_total=0.1917
+  9%|▉         | 19/203 [2:11:54<21:15:51, 416.04s/it]
+[start epoch 019/203]
+[epoch 019 batch 0000/309] vae_total=0.1640 vae_bc=0.1640 vae_kl=0.0000 flow=0.1918 distill=0.0072 prior_total=0.1990
+[epoch 019 batch 0010/309] vae_total=0.2294 vae_bc=0.2293 vae_kl=0.0000 flow=0.1952 distill=0.0075 prior_total=0.2027
+[epoch 019 batch 0020/309] vae_total=0.2119 vae_bc=0.2119 vae_kl=0.0000 flow=0.1871 distill=0.0060 prior_total=0.1931
+[epoch 019 batch 0030/309] vae_total=0.2253 vae_bc=0.2253 vae_kl=0.0000 flow=0.2280 distill=0.0078 prior_total=0.2358
+[epoch 019 batch 0040/309] vae_total=0.1874 vae_bc=0.1874 vae_kl=0.0000 flow=0.1532 distill=0.0095 prior_total=0.1628
+[epoch 019 batch 0050/309] vae_total=0.2169 vae_bc=0.2169 vae_kl=0.0000 flow=0.1688 distill=0.0057 prior_total=0.1745
+[epoch 019 batch 0060/309] vae_total=0.2265 vae_bc=0.2265 vae_kl=0.0000 flow=0.2051 distill=0.0071 prior_total=0.2122
+[epoch 019 batch 0070/309] vae_total=0.2318 vae_bc=0.2318 vae_kl=0.0000 flow=0.2072 distill=0.0090 prior_total=0.2162
+[epoch 019 batch 0080/309] vae_total=0.1713 vae_bc=0.1713 vae_kl=0.0000 flow=0.1996 distill=0.0172 prior_total=0.2168
+[epoch 019 batch 0090/309] vae_total=0.1951 vae_bc=0.1951 vae_kl=0.0000 flow=0.2643 distill=0.0128 prior_total=0.2771
+[epoch 019 batch 0100/309] vae_total=0.1394 vae_bc=0.1394 vae_kl=0.0000 flow=0.1895 distill=0.0076 prior_total=0.1971
+[epoch 019 batch 0110/309] vae_total=0.2158 vae_bc=0.2157 vae_kl=0.0000 flow=0.1835 distill=0.0046 prior_total=0.1882
+[epoch 019 batch 0120/309] vae_total=0.1621 vae_bc=0.1621 vae_kl=0.0000 flow=0.1820 distill=0.0070 prior_total=0.1890
+[epoch 019 batch 0130/309] vae_total=0.1574 vae_bc=0.1574 vae_kl=0.0000 flow=0.2633 distill=0.0146 prior_total=0.2778
+[epoch 019 batch 0140/309] vae_total=0.1622 vae_bc=0.1622 vae_kl=0.0000 flow=0.2625 distill=0.0095 prior_total=0.2720
+[epoch 019 batch 0150/309] vae_total=0.1699 vae_bc=0.1699 vae_kl=0.0000 flow=0.1257 distill=0.0073 prior_total=0.1331
+[epoch 019 batch 0160/309] vae_total=0.1826 vae_bc=0.1825 vae_kl=0.0000 flow=0.1904 distill=0.0060 prior_total=0.1964
+[epoch 019 batch 0170/309] vae_total=0.1552 vae_bc=0.1552 vae_kl=0.0000 flow=0.2116 distill=0.0069 prior_total=0.2185
+[epoch 019 batch 0180/309] vae_total=0.2100 vae_bc=0.2100 vae_kl=0.0000 flow=0.1747 distill=0.0116 prior_total=0.1862
+[epoch 019 batch 0190/309] vae_total=0.2197 vae_bc=0.2197 vae_kl=0.0000 flow=0.1951 distill=0.0040 prior_total=0.1992
+[epoch 019 batch 0200/309] vae_total=0.1566 vae_bc=0.1566 vae_kl=0.0000 flow=0.2294 distill=0.0058 prior_total=0.2352
+[epoch 019 batch 0210/309] vae_total=0.1395 vae_bc=0.1395 vae_kl=0.0000 flow=0.1569 distill=0.0048 prior_total=0.1616
+[epoch 019 batch 0220/309] vae_total=0.1790 vae_bc=0.1790 vae_kl=0.0000 flow=0.2263 distill=0.0040 prior_total=0.2303
+[epoch 019 batch 0230/309] vae_total=0.1923 vae_bc=0.1923 vae_kl=0.0000 flow=0.2131 distill=0.0043 prior_total=0.2174
+[epoch 019 batch 0240/309] vae_total=0.2040 vae_bc=0.2040 vae_kl=0.0000 flow=0.2445 distill=0.0073 prior_total=0.2519
+[epoch 019 batch 0250/309] vae_total=0.1817 vae_bc=0.1817 vae_kl=0.0000 flow=0.2129 distill=0.0046 prior_total=0.2176
+[epoch 019 batch 0260/309] vae_total=0.2431 vae_bc=0.2431 vae_kl=0.0000 flow=0.1758 distill=0.0056 prior_total=0.1814
+[epoch 019 batch 0270/309] vae_total=0.1702 vae_bc=0.1702 vae_kl=0.0000 flow=0.2051 distill=0.0063 prior_total=0.2114
+[epoch 019 batch 0280/309] vae_total=0.1978 vae_bc=0.1978 vae_kl=0.0000 flow=0.2091 distill=0.0124 prior_total=0.2215
+[epoch 019 batch 0290/309] vae_total=0.2336 vae_bc=0.2336 vae_kl=0.0000 flow=0.1954 distill=0.0371 prior_total=0.2325
+[epoch 019 batch 0300/309] vae_total=0.2176 vae_bc=0.2176 vae_kl=0.0000 flow=0.2194 distill=0.0099 prior_total=0.2294
+ 10%|▉         | 20/203 [2:18:50<21:08:37, 415.94s/it]
+[start epoch 020/203]
+[epoch 020 batch 0000/309] vae_total=0.2291 vae_bc=0.2291 vae_kl=0.0000 flow=0.1778 distill=0.0059 prior_total=0.1837
+[epoch 020 batch 0010/309] vae_total=0.2069 vae_bc=0.2069 vae_kl=0.0000 flow=0.2237 distill=0.0080 prior_total=0.2316
+[epoch 020 batch 0020/309] vae_total=0.1999 vae_bc=0.1999 vae_kl=0.0000 flow=0.2296 distill=0.0075 prior_total=0.2371
+[epoch 020 batch 0030/309] vae_total=0.2038 vae_bc=0.2038 vae_kl=0.0000 flow=0.2066 distill=0.0047 prior_total=0.2113
+[epoch 020 batch 0040/309] vae_total=0.1880 vae_bc=0.1879 vae_kl=0.0000 flow=0.1516 distill=0.0095 prior_total=0.1611
+[epoch 020 batch 0050/309] vae_total=0.2155 vae_bc=0.2155 vae_kl=0.0000 flow=0.2170 distill=0.0150 prior_total=0.2320
+[epoch 020 batch 0060/309] vae_total=0.1854 vae_bc=0.1853 vae_kl=0.0000 flow=0.2493 distill=0.0071 prior_total=0.2564
+[epoch 020 batch 0070/309] vae_total=0.2234 vae_bc=0.2234 vae_kl=0.0000 flow=0.2125 distill=0.0063 prior_total=0.2188
+[epoch 020 batch 0080/309] vae_total=0.1751 vae_bc=0.1751 vae_kl=0.0000 flow=0.1896 distill=0.0112 prior_total=0.2008
+[epoch 020 batch 0090/309] vae_total=0.1927 vae_bc=0.1927 vae_kl=0.0000 flow=0.2249 distill=0.0056 prior_total=0.2304
+[epoch 020 batch 0100/309] vae_total=0.2043 vae_bc=0.2043 vae_kl=0.0000 flow=0.1894 distill=0.0056 prior_total=0.1950
+[epoch 020 batch 0110/309] vae_total=0.1744 vae_bc=0.1744 vae_kl=0.0000 flow=0.1616 distill=0.0174 prior_total=0.1791
+[epoch 020 batch 0120/309] vae_total=0.1943 vae_bc=0.1943 vae_kl=0.0000 flow=0.1811 distill=0.0109 prior_total=0.1920
+[epoch 020 batch 0130/309] vae_total=0.2041 vae_bc=0.2041 vae_kl=0.0000 flow=0.2064 distill=0.0055 prior_total=0.2119
+[epoch 020 batch 0140/309] vae_total=0.1793 vae_bc=0.1793 vae_kl=0.0000 flow=0.2198 distill=0.0054 prior_total=0.2252
+[epoch 020 batch 0150/309] vae_total=0.2355 vae_bc=0.2355 vae_kl=0.0000 flow=0.2225 distill=0.0077 prior_total=0.2301
+[epoch 020 batch 0160/309] vae_total=0.1576 vae_bc=0.1576 vae_kl=0.0000 flow=0.1884 distill=0.0080 prior_total=0.1964
+[epoch 020 batch 0170/309] vae_total=0.1872 vae_bc=0.1872 vae_kl=0.0000 flow=0.1857 distill=0.0054 prior_total=0.1911
+[epoch 020 batch 0180/309] vae_total=0.1902 vae_bc=0.1902 vae_kl=0.0000 flow=0.2125 distill=0.0158 prior_total=0.2283
+[epoch 020 batch 0190/309] vae_total=0.2524 vae_bc=0.2524 vae_kl=0.0000 flow=0.1310 distill=0.0066 prior_total=0.1376
+[epoch 020 batch 0200/309] vae_total=0.1651 vae_bc=0.1651 vae_kl=0.0000 flow=0.1594 distill=0.0072 prior_total=0.1666
+[epoch 020 batch 0210/309] vae_total=0.1416 vae_bc=0.1416 vae_kl=0.0000 flow=0.1590 distill=0.0090 prior_total=0.1680
+[epoch 020 batch 0220/309] vae_total=0.1934 vae_bc=0.1934 vae_kl=0.0000 flow=0.1637 distill=0.0061 prior_total=0.1698
+[epoch 020 batch 0230/309] vae_total=0.1755 vae_bc=0.1755 vae_kl=0.0000 flow=0.1550 distill=0.0075 prior_total=0.1626
+[epoch 020 batch 0240/309] vae_total=0.1911 vae_bc=0.1910 vae_kl=0.0000 flow=0.1176 distill=0.0042 prior_total=0.1219
+[epoch 020 batch 0250/309] vae_total=0.1967 vae_bc=0.1967 vae_kl=0.0000 flow=0.1598 distill=0.0040 prior_total=0.1638
+[epoch 020 batch 0260/309] vae_total=0.1983 vae_bc=0.1983 vae_kl=0.0000 flow=0.1941 distill=0.0097 prior_total=0.2038
+[epoch 020 batch 0270/309] vae_total=0.2192 vae_bc=0.2192 vae_kl=0.0000 flow=0.1407 distill=0.0093 prior_total=0.1500
+[epoch 020 batch 0280/309] vae_total=0.1819 vae_bc=0.1819 vae_kl=0.0000 flow=0.2133 distill=0.0348 prior_total=0.2481
+[epoch 020 batch 0290/309] vae_total=0.1856 vae_bc=0.1856 vae_kl=0.0000 flow=0.1342 distill=0.0055 prior_total=0.1397
+[epoch 020 batch 0300/309] vae_total=0.1738 vae_bc=0.1738 vae_kl=0.0000 flow=0.1823 distill=0.0076 prior_total=0.1899
+[end epoch 020] train_loss=0.001490 val_loss=0.002737
+ 10%|█         | 21/203 [2:25:46<21:01:59, 416.04s/it]
+[start epoch 021/203]
+[epoch 021 batch 0000/309] vae_total=0.2114 vae_bc=0.2114 vae_kl=0.0000 flow=0.1606 distill=0.0059 prior_total=0.1665
+[epoch 021 batch 0010/309] vae_total=0.2374 vae_bc=0.2374 vae_kl=0.0000 flow=0.1502 distill=0.0048 prior_total=0.1550
+[epoch 021 batch 0020/309] vae_total=0.1914 vae_bc=0.1914 vae_kl=0.0000 flow=0.1800 distill=0.0431 prior_total=0.2230
+[epoch 021 batch 0030/309] vae_total=0.1846 vae_bc=0.1846 vae_kl=0.0000 flow=0.2207 distill=0.0047 prior_total=0.2254
+[epoch 021 batch 0040/309] vae_total=0.1788 vae_bc=0.1788 vae_kl=0.0000 flow=0.1586 distill=0.0057 prior_total=0.1642
+[epoch 021 batch 0050/309] vae_total=0.1857 vae_bc=0.1857 vae_kl=0.0000 flow=0.1600 distill=0.0051 prior_total=0.1652
+[epoch 021 batch 0060/309] vae_total=0.2462 vae_bc=0.2462 vae_kl=0.0000 flow=0.1831 distill=0.0194 prior_total=0.2025
+[epoch 021 batch 0070/309] vae_total=0.2290 vae_bc=0.2290 vae_kl=0.0000 flow=0.1344 distill=0.0053 prior_total=0.1397
+[epoch 021 batch 0080/309] vae_total=0.1733 vae_bc=0.1733 vae_kl=0.0000 flow=0.2002 distill=0.0041 prior_total=0.2043
+[epoch 021 batch 0090/309] vae_total=0.1698 vae_bc=0.1698 vae_kl=0.0000 flow=0.1865 distill=0.0058 prior_total=0.1923
+[epoch 021 batch 0100/309] vae_total=0.1737 vae_bc=0.1737 vae_kl=0.0000 flow=0.2094 distill=0.0065 prior_total=0.2159
+[epoch 021 batch 0110/309] vae_total=0.1712 vae_bc=0.1712 vae_kl=0.0000 flow=0.1668 distill=0.0067 prior_total=0.1735
+[epoch 021 batch 0120/309] vae_total=0.1848 vae_bc=0.1848 vae_kl=0.0000 flow=0.1606 distill=0.0047 prior_total=0.1653
+[epoch 021 batch 0130/309] vae_total=0.1809 vae_bc=0.1809 vae_kl=0.0000 flow=0.1668 distill=0.0147 prior_total=0.1815
+[epoch 021 batch 0140/309] vae_total=0.2069 vae_bc=0.2069 vae_kl=0.0000 flow=0.1798 distill=0.0044 prior_total=0.1842
+[epoch 021 batch 0150/309] vae_total=0.2011 vae_bc=0.2011 vae_kl=0.0000 flow=0.1950 distill=0.0065 prior_total=0.2015
+[epoch 021 batch 0160/309] vae_total=0.1864 vae_bc=0.1864 vae_kl=0.0000 flow=0.1261 distill=0.0057 prior_total=0.1318
+[epoch 021 batch 0170/309] vae_total=0.1822 vae_bc=0.1821 vae_kl=0.0000 flow=0.1704 distill=0.0229 prior_total=0.1933
+[epoch 021 batch 0180/309] vae_total=0.1987 vae_bc=0.1987 vae_kl=0.0000 flow=0.1725 distill=0.0034 prior_total=0.1759
+[epoch 021 batch 0190/309] vae_total=0.2073 vae_bc=0.2073 vae_kl=0.0000 flow=0.1625 distill=0.0040 prior_total=0.1666
+[epoch 021 batch 0200/309] vae_total=0.1886 vae_bc=0.1886 vae_kl=0.0000 flow=0.2077 distill=0.0085 prior_total=0.2161
+[epoch 021 batch 0210/309] vae_total=0.1617 vae_bc=0.1616 vae_kl=0.0000 flow=0.1225 distill=0.0373 prior_total=0.1598
+[epoch 021 batch 0220/309] vae_total=0.2498 vae_bc=0.2497 vae_kl=0.0000 flow=0.1576 distill=0.0048 prior_total=0.1625
+[epoch 021 batch 0230/309] vae_total=0.1885 vae_bc=0.1885 vae_kl=0.0000 flow=0.1925 distill=0.0092 prior_total=0.2017
+[epoch 021 batch 0240/309] vae_total=0.2022 vae_bc=0.2021 vae_kl=0.0000 flow=0.1465 distill=0.0056 prior_total=0.1521
+[epoch 021 batch 0250/309] vae_total=0.1634 vae_bc=0.1634 vae_kl=0.0000 flow=0.1761 distill=0.0063 prior_total=0.1824
+[epoch 021 batch 0260/309] vae_total=0.1828 vae_bc=0.1828 vae_kl=0.0000 flow=0.1268 distill=0.0040 prior_total=0.1308
+[epoch 021 batch 0270/309] vae_total=0.1667 vae_bc=0.1667 vae_kl=0.0000 flow=0.1467 distill=0.0060 prior_total=0.1527
+[epoch 021 batch 0280/309] vae_total=0.1849 vae_bc=0.1849 vae_kl=0.0000 flow=0.1283 distill=0.0076 prior_total=0.1359
+[epoch 021 batch 0290/309] vae_total=0.1883 vae_bc=0.1883 vae_kl=0.0000 flow=0.1365 distill=0.0061 prior_total=0.1426
+[epoch 021 batch 0300/309] vae_total=0.1890 vae_bc=0.1890 vae_kl=0.0000 flow=0.1853 distill=0.0084 prior_total=0.1937
+ 11%|█         | 22/203 [2:32:43<20:55:47, 416.29s/it]
+[start epoch 022/203]
+[epoch 022 batch 0000/309] vae_total=0.1774 vae_bc=0.1773 vae_kl=0.0000 flow=0.1294 distill=0.0042 prior_total=0.1336
+[epoch 022 batch 0010/309] vae_total=0.1924 vae_bc=0.1924 vae_kl=0.0000 flow=0.1341 distill=0.0043 prior_total=0.1384
+[epoch 022 batch 0020/309] vae_total=0.1661 vae_bc=0.1661 vae_kl=0.0000 flow=0.1434 distill=0.0046 prior_total=0.1480
+[epoch 022 batch 0030/309] vae_total=0.1747 vae_bc=0.1747 vae_kl=0.0000 flow=0.1654 distill=0.0065 prior_total=0.1719
+[epoch 022 batch 0040/309] vae_total=0.1470 vae_bc=0.1470 vae_kl=0.0000 flow=0.1831 distill=0.0117 prior_total=0.1949
+[epoch 022 batch 0050/309] vae_total=0.1747 vae_bc=0.1747 vae_kl=0.0000 flow=0.1838 distill=0.0079 prior_total=0.1917
+[epoch 022 batch 0060/309] vae_total=0.1744 vae_bc=0.1744 vae_kl=0.0000 flow=0.2378 distill=0.0067 prior_total=0.2445
+[epoch 022 batch 0070/309] vae_total=0.1803 vae_bc=0.1803 vae_kl=0.0000 flow=0.1806 distill=0.0056 prior_total=0.1862
+[epoch 022 batch 0080/309] vae_total=0.1904 vae_bc=0.1904 vae_kl=0.0000 flow=0.2104 distill=0.0113 prior_total=0.2217
+[epoch 022 batch 0090/309] vae_total=0.1521 vae_bc=0.1520 vae_kl=0.0000 flow=0.1683 distill=0.0046 prior_total=0.1729
+[epoch 022 batch 0100/309] vae_total=0.2044 vae_bc=0.2044 vae_kl=0.0000 flow=0.1541 distill=0.0046 prior_total=0.1587
+[epoch 022 batch 0110/309] vae_total=0.1740 vae_bc=0.1740 vae_kl=0.0000 flow=0.2178 distill=0.0076 prior_total=0.2255
+[epoch 022 batch 0120/309] vae_total=0.1842 vae_bc=0.1842 vae_kl=0.0000 flow=0.1132 distill=0.0060 prior_total=0.1191
+[epoch 022 batch 0130/309] vae_total=0.1831 vae_bc=0.1831 vae_kl=0.0000 flow=0.1359 distill=0.0056 prior_total=0.1415
+[epoch 022 batch 0140/309] vae_total=0.2028 vae_bc=0.2028 vae_kl=0.0000 flow=0.2119 distill=0.0077 prior_total=0.2196
+[epoch 022 batch 0150/309] vae_total=0.1608 vae_bc=0.1608 vae_kl=0.0000 flow=0.1822 distill=0.0070 prior_total=0.1892
+[epoch 022 batch 0160/309] vae_total=0.1590 vae_bc=0.1590 vae_kl=0.0000 flow=0.1703 distill=0.0093 prior_total=0.1796
+[epoch 022 batch 0170/309] vae_total=0.1978 vae_bc=0.1977 vae_kl=0.0000 flow=0.1109 distill=0.0049 prior_total=0.1158
+[epoch 022 batch 0180/309] vae_total=0.1917 vae_bc=0.1917 vae_kl=0.0000 flow=0.1418 distill=0.0053 prior_total=0.1471
+[epoch 022 batch 0190/309] vae_total=0.1674 vae_bc=0.1674 vae_kl=0.0000 flow=0.1276 distill=0.0052 prior_total=0.1329
+[epoch 022 batch 0200/309] vae_total=0.1680 vae_bc=0.1680 vae_kl=0.0000 flow=0.1616 distill=0.0066 prior_total=0.1682
+[epoch 022 batch 0210/309] vae_total=0.1474 vae_bc=0.1474 vae_kl=0.0000 flow=0.1478 distill=0.0092 prior_total=0.1570
+[epoch 022 batch 0220/309] vae_total=0.1924 vae_bc=0.1924 vae_kl=0.0000 flow=0.2224 distill=0.0206 prior_total=0.2431
+[epoch 022 batch 0230/309] vae_total=0.1712 vae_bc=0.1712 vae_kl=0.0000 flow=0.1302 distill=0.0049 prior_total=0.1351
+[epoch 022 batch 0240/309] vae_total=0.1907 vae_bc=0.1907 vae_kl=0.0000 flow=0.1336 distill=0.0146 prior_total=0.1482
+[epoch 022 batch 0250/309] vae_total=0.1909 vae_bc=0.1908 vae_kl=0.0000 flow=0.1046 distill=0.0082 prior_total=0.1129
+[epoch 022 batch 0260/309] vae_total=0.1901 vae_bc=0.1900 vae_kl=0.0000 flow=0.1530 distill=0.0049 prior_total=0.1579
+[epoch 022 batch 0270/309] vae_total=0.2006 vae_bc=0.2006 vae_kl=0.0000 flow=0.1338 distill=0.0049 prior_total=0.1387
+[epoch 022 batch 0280/309] vae_total=0.1931 vae_bc=0.1931 vae_kl=0.0000 flow=0.1360 distill=0.0046 prior_total=0.1405
+[epoch 022 batch 0290/309] vae_total=0.1803 vae_bc=0.1803 vae_kl=0.0000 flow=0.1656 distill=0.0062 prior_total=0.1718
+[epoch 022 batch 0300/309] vae_total=0.2376 vae_bc=0.2376 vae_kl=0.0000 flow=0.1861 distill=0.0157 prior_total=0.2018
+ 11%|█▏        | 23/203 [2:39:39<20:48:35, 416.20s/it]
+[start epoch 023/203]
+[epoch 023 batch 0000/309] vae_total=0.2149 vae_bc=0.2149 vae_kl=0.0000 flow=0.2268 distill=0.0077 prior_total=0.2345
+[epoch 023 batch 0010/309] vae_total=0.1993 vae_bc=0.1993 vae_kl=0.0000 flow=0.1444 distill=0.0119 prior_total=0.1563
+[epoch 023 batch 0020/309] vae_total=0.1783 vae_bc=0.1783 vae_kl=0.0000 flow=0.2039 distill=0.0056 prior_total=0.2095
+[epoch 023 batch 0030/309] vae_total=0.2827 vae_bc=0.2826 vae_kl=0.0000 flow=0.1243 distill=0.0085 prior_total=0.1329
+[epoch 023 batch 0040/309] vae_total=0.1922 vae_bc=0.1922 vae_kl=0.0000 flow=0.1433 distill=0.0059 prior_total=0.1492
+[epoch 023 batch 0050/309] vae_total=0.1868 vae_bc=0.1867 vae_kl=0.0000 flow=0.1442 distill=0.0054 prior_total=0.1496
+[epoch 023 batch 0060/309] vae_total=0.1614 vae_bc=0.1614 vae_kl=0.0000 flow=0.1824 distill=0.0068 prior_total=0.1892
+[epoch 023 batch 0070/309] vae_total=0.1523 vae_bc=0.1522 vae_kl=0.0000 flow=0.1248 distill=0.0040 prior_total=0.1289
+[epoch 023 batch 0080/309] vae_total=0.1514 vae_bc=0.1514 vae_kl=0.0000 flow=0.1759 distill=0.0154 prior_total=0.1913
+[epoch 023 batch 0090/309] vae_total=0.3006 vae_bc=0.3005 vae_kl=0.0000 flow=0.1018 distill=0.0238 prior_total=0.1256
+[epoch 023 batch 0100/309] vae_total=0.2097 vae_bc=0.2097 vae_kl=0.0000 flow=0.1082 distill=0.0048 prior_total=0.1130
+[epoch 023 batch 0110/309] vae_total=0.1889 vae_bc=0.1889 vae_kl=0.0000 flow=0.1417 distill=0.0079 prior_total=0.1496
+[epoch 023 batch 0120/309] vae_total=0.1774 vae_bc=0.1774 vae_kl=0.0000 flow=0.1752 distill=0.0058 prior_total=0.1810
+[epoch 023 batch 0130/309] vae_total=0.2123 vae_bc=0.2123 vae_kl=0.0000 flow=0.1684 distill=0.0042 prior_total=0.1726
+[epoch 023 batch 0140/309] vae_total=0.1765 vae_bc=0.1764 vae_kl=0.0000 flow=0.1293 distill=0.0067 prior_total=0.1360
+[epoch 023 batch 0150/309] vae_total=0.1762 vae_bc=0.1762 vae_kl=0.0000 flow=0.1339 distill=0.0166 prior_total=0.1505
+[epoch 023 batch 0160/309] vae_total=0.1901 vae_bc=0.1900 vae_kl=0.0000 flow=0.1524 distill=0.0045 prior_total=0.1569
+[epoch 023 batch 0170/309] vae_total=0.2210 vae_bc=0.2210 vae_kl=0.0000 flow=0.1637 distill=0.0172 prior_total=0.1809
+[epoch 023 batch 0180/309] vae_total=0.1954 vae_bc=0.1954 vae_kl=0.0000 flow=0.1626 distill=0.0065 prior_total=0.1691
+[epoch 023 batch 0190/309] vae_total=0.2309 vae_bc=0.2309 vae_kl=0.0000 flow=0.1582 distill=0.0057 prior_total=0.1639
+[epoch 023 batch 0200/309] vae_total=0.1560 vae_bc=0.1559 vae_kl=0.0000 flow=0.1031 distill=0.0056 prior_total=0.1087
+[epoch 023 batch 0210/309] vae_total=0.1518 vae_bc=0.1518 vae_kl=0.0000 flow=0.1923 distill=0.0056 prior_total=0.1979
+[epoch 023 batch 0220/309] vae_total=0.2212 vae_bc=0.2212 vae_kl=0.0000 flow=0.1587 distill=0.0061 prior_total=0.1648
+[epoch 023 batch 0230/309] vae_total=0.1560 vae_bc=0.1560 vae_kl=0.0000 flow=0.1837 distill=0.0173 prior_total=0.2010
+[epoch 023 batch 0240/309] vae_total=0.1994 vae_bc=0.1994 vae_kl=0.0000 flow=0.1548 distill=0.0048 prior_total=0.1596
+[epoch 023 batch 0250/309] vae_total=0.1631 vae_bc=0.1631 vae_kl=0.0000 flow=0.1498 distill=0.0068 prior_total=0.1566
+[epoch 023 batch 0260/309] vae_total=0.1593 vae_bc=0.1593 vae_kl=0.0000 flow=0.1790 distill=0.0062 prior_total=0.1852
+[epoch 023 batch 0270/309] vae_total=0.2126 vae_bc=0.2126 vae_kl=0.0000 flow=0.1426 distill=0.0047 prior_total=0.1474
+[epoch 023 batch 0280/309] vae_total=0.2015 vae_bc=0.2015 vae_kl=0.0000 flow=0.1956 distill=0.0049 prior_total=0.2005
+[epoch 023 batch 0290/309] vae_total=0.2112 vae_bc=0.2112 vae_kl=0.0000 flow=0.1538 distill=0.0054 prior_total=0.1592
+[epoch 023 batch 0300/309] vae_total=0.1875 vae_bc=0.1875 vae_kl=0.0000 flow=0.1612 distill=0.0053 prior_total=0.1664
+ 12%|█▏        | 24/203 [2:46:35<20:41:42, 416.21s/it]
+[start epoch 024/203]
+[epoch 024 batch 0000/309] vae_total=0.1723 vae_bc=0.1723 vae_kl=0.0000 flow=0.1503 distill=0.0048 prior_total=0.1550
+[epoch 024 batch 0010/309] vae_total=0.1541 vae_bc=0.1541 vae_kl=0.0000 flow=0.1499 distill=0.0048 prior_total=0.1547
+[epoch 024 batch 0020/309] vae_total=0.1841 vae_bc=0.1840 vae_kl=0.0000 flow=0.1505 distill=0.0041 prior_total=0.1546
+[epoch 024 batch 0030/309] vae_total=0.1755 vae_bc=0.1755 vae_kl=0.0000 flow=0.1709 distill=0.0066 prior_total=0.1775
+[epoch 024 batch 0040/309] vae_total=0.1744 vae_bc=0.1744 vae_kl=0.0000 flow=0.1441 distill=0.0117 prior_total=0.1558
+[epoch 024 batch 0050/309] vae_total=0.1571 vae_bc=0.1571 vae_kl=0.0000 flow=0.1535 distill=0.0070 prior_total=0.1605
+[epoch 024 batch 0060/309] vae_total=0.1815 vae_bc=0.1815 vae_kl=0.0000 flow=0.1323 distill=0.0130 prior_total=0.1453
+[epoch 024 batch 0070/309] vae_total=0.1514 vae_bc=0.1514 vae_kl=0.0000 flow=0.1222 distill=0.0035 prior_total=0.1257
+[epoch 024 batch 0080/309] vae_total=0.1918 vae_bc=0.1917 vae_kl=0.0000 flow=0.1625 distill=0.0159 prior_total=0.1784
+[epoch 024 batch 0090/309] vae_total=0.1776 vae_bc=0.1775 vae_kl=0.0000 flow=0.1497 distill=0.0051 prior_total=0.1549
+[epoch 024 batch 0100/309] vae_total=0.1538 vae_bc=0.1538 vae_kl=0.0000 flow=0.1624 distill=0.0047 prior_total=0.1671
+[epoch 024 batch 0110/309] vae_total=0.1423 vae_bc=0.1423 vae_kl=0.0000 flow=0.1466 distill=0.0055 prior_total=0.1520
+[epoch 024 batch 0120/309] vae_total=0.2005 vae_bc=0.2005 vae_kl=0.0000 flow=0.1507 distill=0.0085 prior_total=0.1592
+[epoch 024 batch 0130/309] vae_total=0.1374 vae_bc=0.1373 vae_kl=0.0000 flow=0.1371 distill=0.0105 prior_total=0.1476
+[epoch 024 batch 0140/309] vae_total=0.1799 vae_bc=0.1799 vae_kl=0.0000 flow=0.1650 distill=0.0078 prior_total=0.1728
+[epoch 024 batch 0150/309] vae_total=0.1487 vae_bc=0.1486 vae_kl=0.0000 flow=0.1382 distill=0.0073 prior_total=0.1455
+[epoch 024 batch 0160/309] vae_total=0.1584 vae_bc=0.1584 vae_kl=0.0000 flow=0.1511 distill=0.0058 prior_total=0.1569
+[epoch 024 batch 0170/309] vae_total=0.2157 vae_bc=0.2157 vae_kl=0.0000 flow=0.1744 distill=0.0074 prior_total=0.1818
+[epoch 024 batch 0180/309] vae_total=0.1702 vae_bc=0.1702 vae_kl=0.0000 flow=0.1228 distill=0.0066 prior_total=0.1294
+[epoch 024 batch 0190/309] vae_total=0.1867 vae_bc=0.1867 vae_kl=0.0000 flow=0.1475 distill=0.0058 prior_total=0.1533
+[epoch 024 batch 0200/309] vae_total=0.1932 vae_bc=0.1932 vae_kl=0.0000 flow=0.1389 distill=0.0131 prior_total=0.1520
+[epoch 024 batch 0210/309] vae_total=0.1521 vae_bc=0.1520 vae_kl=0.0000 flow=0.1176 distill=0.0043 prior_total=0.1219
+[epoch 024 batch 0220/309] vae_total=0.1958 vae_bc=0.1958 vae_kl=0.0000 flow=0.2595 distill=0.0398 prior_total=0.2993
+[epoch 024 batch 0230/309] vae_total=0.1337 vae_bc=0.1337 vae_kl=0.0000 flow=0.2251 distill=0.0113 prior_total=0.2363
+[epoch 024 batch 0240/309] vae_total=0.1506 vae_bc=0.1505 vae_kl=0.0000 flow=0.1237 distill=0.0116 prior_total=0.1354
+[epoch 024 batch 0250/309] vae_total=0.1758 vae_bc=0.1758 vae_kl=0.0000 flow=0.1102 distill=0.0082 prior_total=0.1184
+[epoch 024 batch 0260/309] vae_total=0.1560 vae_bc=0.1560 vae_kl=0.0000 flow=0.1542 distill=0.0237 prior_total=0.1779
+[epoch 024 batch 0270/309] vae_total=0.2234 vae_bc=0.2234 vae_kl=0.0000 flow=0.1166 distill=0.0080 prior_total=0.1247
+[epoch 024 batch 0280/309] vae_total=0.2168 vae_bc=0.2168 vae_kl=0.0000 flow=0.1586 distill=0.0055 prior_total=0.1641
+[epoch 024 batch 0290/309] vae_total=0.1674 vae_bc=0.1674 vae_kl=0.0000 flow=0.1821 distill=0.0126 prior_total=0.1946
+[epoch 024 batch 0300/309] vae_total=0.1601 vae_bc=0.1601 vae_kl=0.0000 flow=0.1337 distill=0.0052 prior_total=0.1389
+ 12%|█▏        | 25/203 [2:53:31<20:34:33, 416.14s/it]
+[start epoch 025/203]
+[epoch 025 batch 0000/309] vae_total=0.1620 vae_bc=0.1620 vae_kl=0.0000 flow=0.1625 distill=0.0059 prior_total=0.1684
+[epoch 025 batch 0010/309] vae_total=0.2014 vae_bc=0.2014 vae_kl=0.0000 flow=0.1307 distill=0.0042 prior_total=0.1349
+[epoch 025 batch 0020/309] vae_total=0.1678 vae_bc=0.1677 vae_kl=0.0000 flow=0.0979 distill=0.0068 prior_total=0.1047
+[epoch 025 batch 0030/309] vae_total=0.1942 vae_bc=0.1942 vae_kl=0.0000 flow=0.1315 distill=0.0062 prior_total=0.1377
+[epoch 025 batch 0040/309] vae_total=0.1791 vae_bc=0.1791 vae_kl=0.0000 flow=0.1914 distill=0.0178 prior_total=0.2092
+[epoch 025 batch 0050/309] vae_total=0.1922 vae_bc=0.1922 vae_kl=0.0000 flow=0.1345 distill=0.0051 prior_total=0.1396
+[epoch 025 batch 0060/309] vae_total=0.1339 vae_bc=0.1339 vae_kl=0.0000 flow=0.1446 distill=0.0259 prior_total=0.1705
+[epoch 025 batch 0070/309] vae_total=0.2211 vae_bc=0.2211 vae_kl=0.0000 flow=0.1607 distill=0.0040 prior_total=0.1647
+[epoch 025 batch 0080/309] vae_total=0.1655 vae_bc=0.1655 vae_kl=0.0000 flow=0.1220 distill=0.0046 prior_total=0.1266
+[epoch 025 batch 0090/309] vae_total=0.1673 vae_bc=0.1672 vae_kl=0.0000 flow=0.0919 distill=0.0054 prior_total=0.0974
+[epoch 025 batch 0100/309] vae_total=0.1783 vae_bc=0.1783 vae_kl=0.0000 flow=0.1830 distill=0.0072 prior_total=0.1903
+[epoch 025 batch 0110/309] vae_total=0.1323 vae_bc=0.1323 vae_kl=0.0000 flow=0.1569 distill=0.0066 prior_total=0.1635
+[epoch 025 batch 0120/309] vae_total=0.1716 vae_bc=0.1716 vae_kl=0.0000 flow=0.1813 distill=0.0039 prior_total=0.1852
+[epoch 025 batch 0130/309] vae_total=0.1690 vae_bc=0.1690 vae_kl=0.0000 flow=0.1001 distill=0.0068 prior_total=0.1069
+[epoch 025 batch 0140/309] vae_total=0.1432 vae_bc=0.1432 vae_kl=0.0000 flow=0.1138 distill=0.0059 prior_total=0.1197
+[epoch 025 batch 0150/309] vae_total=0.1605 vae_bc=0.1605 vae_kl=0.0000 flow=0.1396 distill=0.0033 prior_total=0.1430
+[epoch 025 batch 0160/309] vae_total=0.1774 vae_bc=0.1773 vae_kl=0.0000 flow=0.1613 distill=0.0084 prior_total=0.1697
+[epoch 025 batch 0170/309] vae_total=0.2125 vae_bc=0.2125 vae_kl=0.0000 flow=0.1252 distill=0.0076 prior_total=0.1327
+[epoch 025 batch 0180/309] vae_total=0.1798 vae_bc=0.1798 vae_kl=0.0000 flow=0.1401 distill=0.0077 prior_total=0.1478
+[epoch 025 batch 0190/309] vae_total=0.1755 vae_bc=0.1755 vae_kl=0.0000 flow=0.1477 distill=0.0080 prior_total=0.1557
+[epoch 025 batch 0200/309] vae_total=0.1553 vae_bc=0.1553 vae_kl=0.0000 flow=0.1328 distill=0.0074 prior_total=0.1402
+[epoch 025 batch 0210/309] vae_total=0.1664 vae_bc=0.1663 vae_kl=0.0000 flow=0.1593 distill=0.0070 prior_total=0.1664
+[epoch 025 batch 0220/309] vae_total=0.1891 vae_bc=0.1891 vae_kl=0.0000 flow=0.1002 distill=0.0049 prior_total=0.1051
+[epoch 025 batch 0230/309] vae_total=0.1357 vae_bc=0.1357 vae_kl=0.0000 flow=0.1740 distill=0.0083 prior_total=0.1823
+[epoch 025 batch 0240/309] vae_total=0.1389 vae_bc=0.1388 vae_kl=0.0000 flow=0.1473 distill=0.0043 prior_total=0.1515
+[epoch 025 batch 0250/309] vae_total=0.2415 vae_bc=0.2415 vae_kl=0.0000 flow=0.1130 distill=0.0058 prior_total=0.1188
+[epoch 025 batch 0260/309] vae_total=0.1783 vae_bc=0.1783 vae_kl=0.0000 flow=0.1303 distill=0.0040 prior_total=0.1343
+[epoch 025 batch 0270/309] vae_total=0.1909 vae_bc=0.1908 vae_kl=0.0000 flow=0.1444 distill=0.0042 prior_total=0.1485
+[epoch 025 batch 0280/309] vae_total=0.1518 vae_bc=0.1518 vae_kl=0.0000 flow=0.1339 distill=0.0050 prior_total=0.1389
+[epoch 025 batch 0290/309] vae_total=0.1694 vae_bc=0.1694 vae_kl=0.0000 flow=0.1121 distill=0.0040 prior_total=0.1161
+[epoch 025 batch 0300/309] vae_total=0.1623 vae_bc=0.1622 vae_kl=0.0000 flow=0.1172 distill=0.0060 prior_total=0.1231
+[end epoch 025] train_loss=0.001411 val_loss=0.002599
+ 13%|█▎        | 26/203 [3:00:29<20:29:00, 416.61s/it]
+[start epoch 026/203]
+[epoch 026 batch 0000/309] vae_total=0.1328 vae_bc=0.1327 vae_kl=0.0000 flow=0.1176 distill=0.0034 prior_total=0.1211
+[epoch 026 batch 0010/309] vae_total=0.1501 vae_bc=0.1501 vae_kl=0.0000 flow=0.0986 distill=0.0053 prior_total=0.1039
+[epoch 026 batch 0020/309] vae_total=0.2026 vae_bc=0.2026 vae_kl=0.0000 flow=0.1078 distill=0.0095 prior_total=0.1174
+[epoch 026 batch 0030/309] vae_total=0.2268 vae_bc=0.2267 vae_kl=0.0000 flow=0.1593 distill=0.0057 prior_total=0.1649
+[epoch 026 batch 0040/309] vae_total=0.1662 vae_bc=0.1662 vae_kl=0.0000 flow=0.1595 distill=0.0097 prior_total=0.1693
+[epoch 026 batch 0050/309] vae_total=0.2054 vae_bc=0.2054 vae_kl=0.0000 flow=0.0962 distill=0.0027 prior_total=0.0989
+[epoch 026 batch 0060/309] vae_total=0.1321 vae_bc=0.1321 vae_kl=0.0000 flow=0.1345 distill=0.0080 prior_total=0.1425
+[epoch 026 batch 0070/309] vae_total=0.1626 vae_bc=0.1625 vae_kl=0.0000 flow=0.1389 distill=0.0046 prior_total=0.1435
+[epoch 026 batch 0080/309] vae_total=0.1136 vae_bc=0.1135 vae_kl=0.0000 flow=0.1816 distill=0.0076 prior_total=0.1891
+[epoch 026 batch 0090/309] vae_total=0.1691 vae_bc=0.1691 vae_kl=0.0000 flow=0.1863 distill=0.0056 prior_total=0.1919
+[epoch 026 batch 0100/309] vae_total=0.1499 vae_bc=0.1499 vae_kl=0.0000 flow=0.1419 distill=0.0065 prior_total=0.1485
+[epoch 026 batch 0110/309] vae_total=0.1913 vae_bc=0.1913 vae_kl=0.0000 flow=0.1202 distill=0.0034 prior_total=0.1236
+[epoch 026 batch 0120/309] vae_total=0.1639 vae_bc=0.1639 vae_kl=0.0000 flow=0.1973 distill=0.0052 prior_total=0.2025
+[epoch 026 batch 0130/309] vae_total=0.2175 vae_bc=0.2175 vae_kl=0.0000 flow=0.1704 distill=0.0052 prior_total=0.1756
+[epoch 026 batch 0140/309] vae_total=0.1875 vae_bc=0.1875 vae_kl=0.0000 flow=0.1451 distill=0.0053 prior_total=0.1504
+[epoch 026 batch 0150/309] vae_total=0.2106 vae_bc=0.2106 vae_kl=0.0000 flow=0.2167 distill=0.0158 prior_total=0.2325
+[epoch 026 batch 0160/309] vae_total=0.1971 vae_bc=0.1971 vae_kl=0.0000 flow=0.0990 distill=0.0036 prior_total=0.1027
+[epoch 026 batch 0170/309] vae_total=0.1802 vae_bc=0.1802 vae_kl=0.0000 flow=0.0906 distill=0.0053 prior_total=0.0959
+[epoch 026 batch 0180/309] vae_total=0.1723 vae_bc=0.1722 vae_kl=0.0000 flow=0.1298 distill=0.0065 prior_total=0.1363
+[epoch 026 batch 0190/309] vae_total=0.2076 vae_bc=0.2076 vae_kl=0.0000 flow=0.1229 distill=0.0039 prior_total=0.1268
+[epoch 026 batch 0200/309] vae_total=0.2223 vae_bc=0.2223 vae_kl=0.0000 flow=0.1498 distill=0.0057 prior_total=0.1555
+[epoch 026 batch 0210/309] vae_total=0.1455 vae_bc=0.1455 vae_kl=0.0000 flow=0.1183 distill=0.0045 prior_total=0.1228
+[epoch 026 batch 0220/309] vae_total=0.1437 vae_bc=0.1437 vae_kl=0.0000 flow=0.1281 distill=0.0046 prior_total=0.1327
+[epoch 026 batch 0230/309] vae_total=0.1978 vae_bc=0.1978 vae_kl=0.0000 flow=0.2039 distill=0.0258 prior_total=0.2297
+[epoch 026 batch 0240/309] vae_total=0.2025 vae_bc=0.2025 vae_kl=0.0000 flow=0.1185 distill=0.0142 prior_total=0.1327
+[epoch 026 batch 0250/309] vae_total=0.2094 vae_bc=0.2093 vae_kl=0.0000 flow=0.1574 distill=0.0065 prior_total=0.1639
+[epoch 026 batch 0260/309] vae_total=0.1642 vae_bc=0.1642 vae_kl=0.0000 flow=0.1900 distill=0.0058 prior_total=0.1958
+[epoch 026 batch 0270/309] vae_total=0.1664 vae_bc=0.1664 vae_kl=0.0000 flow=0.2758 distill=0.0035 prior_total=0.2793
+[epoch 026 batch 0280/309] vae_total=0.1700 vae_bc=0.1700 vae_kl=0.0000 flow=0.0964 distill=0.0108 prior_total=0.1072
+[epoch 026 batch 0290/309] vae_total=0.1578 vae_bc=0.1578 vae_kl=0.0000 flow=0.1286 distill=0.0140 prior_total=0.1426
+[epoch 026 batch 0300/309] vae_total=0.1705 vae_bc=0.1705 vae_kl=0.0000 flow=0.1074 distill=0.0230 prior_total=0.1304
+ 13%|█▎        | 27/203 [3:07:23<20:20:18, 416.01s/it]
+[start epoch 027/203]
+[epoch 027 batch 0000/309] vae_total=0.1771 vae_bc=0.1770 vae_kl=0.0000 flow=0.1406 distill=0.0082 prior_total=0.1488
+[epoch 027 batch 0010/309] vae_total=0.1787 vae_bc=0.1787 vae_kl=0.0000 flow=0.1160 distill=0.0435 prior_total=0.1596
+[epoch 027 batch 0020/309] vae_total=0.1754 vae_bc=0.1754 vae_kl=0.0000 flow=0.1582 distill=0.0039 prior_total=0.1621
+[epoch 027 batch 0030/309] vae_total=0.2121 vae_bc=0.2121 vae_kl=0.0000 flow=0.1175 distill=0.0040 prior_total=0.1215
+[epoch 027 batch 0040/309] vae_total=0.1741 vae_bc=0.1741 vae_kl=0.0000 flow=0.1355 distill=0.0066 prior_total=0.1421
+[epoch 027 batch 0050/309] vae_total=0.1530 vae_bc=0.1530 vae_kl=0.0000 flow=0.1731 distill=0.0050 prior_total=0.1781
+[epoch 027 batch 0060/309] vae_total=0.2092 vae_bc=0.2092 vae_kl=0.0000 flow=0.1579 distill=0.0066 prior_total=0.1645
+[epoch 027 batch 0070/309] vae_total=0.1729 vae_bc=0.1729 vae_kl=0.0000 flow=0.1353 distill=0.0057 prior_total=0.1410
+[epoch 027 batch 0080/309] vae_total=0.1723 vae_bc=0.1723 vae_kl=0.0000 flow=0.1051 distill=0.0067 prior_total=0.1118
+[epoch 027 batch 0090/309] vae_total=0.1757 vae_bc=0.1757 vae_kl=0.0000 flow=0.1163 distill=0.0037 prior_total=0.1200
+[epoch 027 batch 0100/309] vae_total=0.2653 vae_bc=0.2652 vae_kl=0.0000 flow=0.1261 distill=0.0048 prior_total=0.1309
+[epoch 027 batch 0110/309] vae_total=0.1532 vae_bc=0.1532 vae_kl=0.0000 flow=0.1737 distill=0.0061 prior_total=0.1797
+[epoch 027 batch 0120/309] vae_total=0.2073 vae_bc=0.2072 vae_kl=0.0000 flow=0.1167 distill=0.0040 prior_total=0.1207
+[epoch 027 batch 0130/309] vae_total=0.1682 vae_bc=0.1682 vae_kl=0.0000 flow=0.1009 distill=0.0045 prior_total=0.1054
+[epoch 027 batch 0140/309] vae_total=0.1649 vae_bc=0.1649 vae_kl=0.0000 flow=0.1578 distill=0.0052 prior_total=0.1630
+[epoch 027 batch 0150/309] vae_total=0.1523 vae_bc=0.1523 vae_kl=0.0000 flow=0.1207 distill=0.0041 prior_total=0.1248
+[epoch 027 batch 0160/309] vae_total=0.1752 vae_bc=0.1752 vae_kl=0.0000 flow=0.1044 distill=0.0046 prior_total=0.1089
+[epoch 027 batch 0170/309] vae_total=0.1688 vae_bc=0.1687 vae_kl=0.0000 flow=0.1013 distill=0.0045 prior_total=0.1058
+[epoch 027 batch 0180/309] vae_total=0.2192 vae_bc=0.2192 vae_kl=0.0000 flow=0.1205 distill=0.0099 prior_total=0.1305
+[epoch 027 batch 0190/309] vae_total=0.2256 vae_bc=0.2256 vae_kl=0.0000 flow=0.1240 distill=0.0055 prior_total=0.1295
+[epoch 027 batch 0200/309] vae_total=0.2055 vae_bc=0.2055 vae_kl=0.0000 flow=0.1575 distill=0.0073 prior_total=0.1648
+[epoch 027 batch 0210/309] vae_total=0.1877 vae_bc=0.1877 vae_kl=0.0000 flow=0.1001 distill=0.0039 prior_total=0.1041
+[epoch 027 batch 0220/309] vae_total=0.1637 vae_bc=0.1636 vae_kl=0.0000 flow=0.1150 distill=0.0090 prior_total=0.1241
+[epoch 027 batch 0230/309] vae_total=0.1795 vae_bc=0.1795 vae_kl=0.0000 flow=0.1250 distill=0.0047 prior_total=0.1297
+[epoch 027 batch 0240/309] vae_total=0.1766 vae_bc=0.1766 vae_kl=0.0000 flow=0.0902 distill=0.0051 prior_total=0.0953
+[epoch 027 batch 0250/309] vae_total=0.1747 vae_bc=0.1747 vae_kl=0.0000 flow=0.0975 distill=0.0041 prior_total=0.1016
+[epoch 027 batch 0260/309] vae_total=0.1849 vae_bc=0.1848 vae_kl=0.0000 flow=0.0971 distill=0.0036 prior_total=0.1007
+[epoch 027 batch 0270/309] vae_total=0.1636 vae_bc=0.1636 vae_kl=0.0000 flow=0.1381 distill=0.0041 prior_total=0.1422
+[epoch 027 batch 0280/309] vae_total=0.1788 vae_bc=0.1788 vae_kl=0.0000 flow=0.1534 distill=0.0158 prior_total=0.1692
+[epoch 027 batch 0290/309] vae_total=0.1579 vae_bc=0.1579 vae_kl=0.0000 flow=0.1396 distill=0.0072 prior_total=0.1468
+[epoch 027 batch 0300/309] vae_total=0.1745 vae_bc=0.1744 vae_kl=0.0000 flow=0.1375 distill=0.0055 prior_total=0.1430
+ 14%|█▍        | 28/203 [3:14:17<20:11:33, 415.39s/it]
+[start epoch 028/203]
+[epoch 028 batch 0000/309] vae_total=0.1647 vae_bc=0.1647 vae_kl=0.0000 flow=0.0966 distill=0.0045 prior_total=0.1011
+[epoch 028 batch 0010/309] vae_total=0.1514 vae_bc=0.1513 vae_kl=0.0000 flow=0.1241 distill=0.0042 prior_total=0.1284
+[epoch 028 batch 0020/309] vae_total=0.1799 vae_bc=0.1799 vae_kl=0.0000 flow=0.1135 distill=0.0049 prior_total=0.1184
+[epoch 028 batch 0030/309] vae_total=0.1874 vae_bc=0.1873 vae_kl=0.0000 flow=0.1915 distill=0.0075 prior_total=0.1990
+[epoch 028 batch 0040/309] vae_total=0.1484 vae_bc=0.1484 vae_kl=0.0000 flow=0.1928 distill=0.0069 prior_total=0.1997
+[epoch 028 batch 0050/309] vae_total=0.1161 vae_bc=0.1160 vae_kl=0.0000 flow=0.1485 distill=0.0048 prior_total=0.1533
+[epoch 028 batch 0060/309] vae_total=0.1883 vae_bc=0.1883 vae_kl=0.0000 flow=0.1400 distill=0.0095 prior_total=0.1495
+[epoch 028 batch 0070/309] vae_total=0.2175 vae_bc=0.2175 vae_kl=0.0000 flow=0.1253 distill=0.0039 prior_total=0.1292
+[epoch 028 batch 0080/309] vae_total=0.1511 vae_bc=0.1511 vae_kl=0.0000 flow=0.1572 distill=0.0070 prior_total=0.1642
+[epoch 028 batch 0090/309] vae_total=0.1673 vae_bc=0.1673 vae_kl=0.0000 flow=0.1067 distill=0.0043 prior_total=0.1110
+[epoch 028 batch 0100/309] vae_total=0.2271 vae_bc=0.2271 vae_kl=0.0000 flow=0.2287 distill=0.0056 prior_total=0.2343
+[epoch 028 batch 0110/309] vae_total=0.2012 vae_bc=0.2011 vae_kl=0.0000 flow=0.2202 distill=0.0053 prior_total=0.2256
+[epoch 028 batch 0120/309] vae_total=0.1485 vae_bc=0.1484 vae_kl=0.0000 flow=0.1316 distill=0.0240 prior_total=0.1555
+[epoch 028 batch 0130/309] vae_total=0.2144 vae_bc=0.2144 vae_kl=0.0000 flow=0.1197 distill=0.0056 prior_total=0.1253
+[epoch 028 batch 0140/309] vae_total=0.1855 vae_bc=0.1855 vae_kl=0.0000 flow=0.1582 distill=0.0049 prior_total=0.1631
+[epoch 028 batch 0150/309] vae_total=0.1795 vae_bc=0.1795 vae_kl=0.0000 flow=0.1241 distill=0.0091 prior_total=0.1332
+[epoch 028 batch 0160/309] vae_total=0.1725 vae_bc=0.1725 vae_kl=0.0000 flow=0.1213 distill=0.0170 prior_total=0.1383
+[epoch 028 batch 0170/309] vae_total=0.2253 vae_bc=0.2253 vae_kl=0.0000 flow=0.1210 distill=0.0060 prior_total=0.1270
+[epoch 028 batch 0180/309] vae_total=0.1482 vae_bc=0.1482 vae_kl=0.0000 flow=0.1514 distill=0.0044 prior_total=0.1558
+[epoch 028 batch 0190/309] vae_total=0.2158 vae_bc=0.2157 vae_kl=0.0000 flow=0.1486 distill=0.0045 prior_total=0.1532
+[epoch 028 batch 0200/309] vae_total=0.1398 vae_bc=0.1398 vae_kl=0.0000 flow=0.1227 distill=0.0068 prior_total=0.1294
+[epoch 028 batch 0210/309] vae_total=0.2374 vae_bc=0.2374 vae_kl=0.0000 flow=0.1159 distill=0.0097 prior_total=0.1256
+[epoch 028 batch 0220/309] vae_total=0.1337 vae_bc=0.1337 vae_kl=0.0000 flow=0.1149 distill=0.0046 prior_total=0.1195
+[epoch 028 batch 0230/309] vae_total=0.1580 vae_bc=0.1580 vae_kl=0.0000 flow=0.1316 distill=0.0048 prior_total=0.1364
+[epoch 028 batch 0240/309] vae_total=0.2172 vae_bc=0.2172 vae_kl=0.0000 flow=0.1217 distill=0.0043 prior_total=0.1260
+[epoch 028 batch 0250/309] vae_total=0.1737 vae_bc=0.1737 vae_kl=0.0000 flow=0.1174 distill=0.0048 prior_total=0.1222
+[epoch 028 batch 0260/309] vae_total=0.1555 vae_bc=0.1555 vae_kl=0.0000 flow=0.1193 distill=0.0053 prior_total=0.1246
+[epoch 028 batch 0270/309] vae_total=0.1627 vae_bc=0.1626 vae_kl=0.0000 flow=0.1287 distill=0.0069 prior_total=0.1356
+[epoch 028 batch 0280/309] vae_total=0.1692 vae_bc=0.1692 vae_kl=0.0000 flow=0.1297 distill=0.0059 prior_total=0.1356
+[epoch 028 batch 0290/309] vae_total=0.1823 vae_bc=0.1823 vae_kl=0.0000 flow=0.0813 distill=0.0065 prior_total=0.0878
+[epoch 028 batch 0300/309] vae_total=0.1541 vae_bc=0.1540 vae_kl=0.0000 flow=0.1142 distill=0.0085 prior_total=0.1227
+ 14%|█▍        | 29/203 [3:21:13<20:05:16, 415.61s/it]
+[start epoch 029/203]
+[epoch 029 batch 0000/309] vae_total=0.1482 vae_bc=0.1482 vae_kl=0.0000 flow=0.1175 distill=0.0060 prior_total=0.1234
+[epoch 029 batch 0010/309] vae_total=0.2029 vae_bc=0.2028 vae_kl=0.0000 flow=0.1235 distill=0.0048 prior_total=0.1283
+[epoch 029 batch 0020/309] vae_total=0.1526 vae_bc=0.1526 vae_kl=0.0000 flow=0.1665 distill=0.0082 prior_total=0.1747
+[epoch 029 batch 0030/309] vae_total=0.1911 vae_bc=0.1911 vae_kl=0.0000 flow=0.1981 distill=0.0060 prior_total=0.2041
+[epoch 029 batch 0040/309] vae_total=0.2006 vae_bc=0.2005 vae_kl=0.0000 flow=0.1318 distill=0.0038 prior_total=0.1355
+[epoch 029 batch 0050/309] vae_total=0.1570 vae_bc=0.1570 vae_kl=0.0000 flow=0.0799 distill=0.0045 prior_total=0.0844
+[epoch 029 batch 0060/309] vae_total=0.1579 vae_bc=0.1579 vae_kl=0.0000 flow=0.1088 distill=0.0039 prior_total=0.1126
+[epoch 029 batch 0070/309] vae_total=0.1763 vae_bc=0.1763 vae_kl=0.0000 flow=0.1077 distill=0.0081 prior_total=0.1158
+[epoch 029 batch 0080/309] vae_total=0.1593 vae_bc=0.1593 vae_kl=0.0000 flow=0.1120 distill=0.0056 prior_total=0.1176
+[epoch 029 batch 0090/309] vae_total=0.1653 vae_bc=0.1653 vae_kl=0.0000 flow=0.0540 distill=0.0034 prior_total=0.0574
+[epoch 029 batch 0100/309] vae_total=0.2018 vae_bc=0.2017 vae_kl=0.0000 flow=0.1120 distill=0.0063 prior_total=0.1184
+[epoch 029 batch 0110/309] vae_total=0.1731 vae_bc=0.1731 vae_kl=0.0000 flow=0.1089 distill=0.0030 prior_total=0.1119
+[epoch 029 batch 0120/309] vae_total=0.1446 vae_bc=0.1446 vae_kl=0.0000 flow=0.1309 distill=0.0055 prior_total=0.1364
+[epoch 029 batch 0130/309] vae_total=0.1788 vae_bc=0.1788 vae_kl=0.0000 flow=0.1596 distill=0.0040 prior_total=0.1636
+[epoch 029 batch 0140/309] vae_total=0.1945 vae_bc=0.1945 vae_kl=0.0000 flow=0.1231 distill=0.0075 prior_total=0.1306
+[epoch 029 batch 0150/309] vae_total=0.1754 vae_bc=0.1754 vae_kl=0.0000 flow=0.1047 distill=0.0033 prior_total=0.1080
+[epoch 029 batch 0160/309] vae_total=0.1755 vae_bc=0.1755 vae_kl=0.0000 flow=0.1622 distill=0.0167 prior_total=0.1789
+[epoch 029 batch 0170/309] vae_total=0.1477 vae_bc=0.1477 vae_kl=0.0000 flow=0.1129 distill=0.0055 prior_total=0.1185
+[epoch 029 batch 0180/309] vae_total=0.1998 vae_bc=0.1998 vae_kl=0.0000 flow=0.1026 distill=0.0033 prior_total=0.1059
+[epoch 029 batch 0190/309] vae_total=0.1499 vae_bc=0.1499 vae_kl=0.0000 flow=0.1101 distill=0.0043 prior_total=0.1144
+[epoch 029 batch 0200/309] vae_total=0.1603 vae_bc=0.1603 vae_kl=0.0000 flow=0.1320 distill=0.0051 prior_total=0.1371
+[epoch 029 batch 0210/309] vae_total=0.1698 vae_bc=0.1698 vae_kl=0.0000 flow=0.1039 distill=0.0145 prior_total=0.1184
+[epoch 029 batch 0220/309] vae_total=0.1371 vae_bc=0.1371 vae_kl=0.0000 flow=0.1533 distill=0.0201 prior_total=0.1734
+[epoch 029 batch 0230/309] vae_total=0.1518 vae_bc=0.1518 vae_kl=0.0000 flow=0.1354 distill=0.0064 prior_total=0.1417
+[epoch 029 batch 0240/309] vae_total=0.1564 vae_bc=0.1564 vae_kl=0.0000 flow=0.1363 distill=0.0052 prior_total=0.1416
+[epoch 029 batch 0250/309] vae_total=0.1804 vae_bc=0.1803 vae_kl=0.0000 flow=0.0853 distill=0.0054 prior_total=0.0906
+[epoch 029 batch 0260/309] vae_total=0.1789 vae_bc=0.1789 vae_kl=0.0000 flow=0.0870 distill=0.0036 prior_total=0.0906
+[epoch 029 batch 0270/309] vae_total=0.1750 vae_bc=0.1749 vae_kl=0.0000 flow=0.1388 distill=0.0046 prior_total=0.1434
+[epoch 029 batch 0280/309] vae_total=0.1549 vae_bc=0.1549 vae_kl=0.0000 flow=0.1217 distill=0.0046 prior_total=0.1263
+[epoch 029 batch 0290/309] vae_total=0.1538 vae_bc=0.1538 vae_kl=0.0000 flow=0.1306 distill=0.0170 prior_total=0.1475
+[epoch 029 batch 0300/309] vae_total=0.1704 vae_bc=0.1703 vae_kl=0.0000 flow=0.1584 distill=0.0046 prior_total=0.1630
+ 15%|█▍        | 30/203 [3:28:09<19:58:39, 415.72s/it]
+[start epoch 030/203]
+[epoch 030 batch 0000/309] vae_total=0.1450 vae_bc=0.1450 vae_kl=0.0000 flow=0.0944 distill=0.0051 prior_total=0.0995
+[epoch 030 batch 0010/309] vae_total=0.1463 vae_bc=0.1462 vae_kl=0.0000 flow=0.1266 distill=0.0172 prior_total=0.1438

@@ -102,7 +102,7 @@ def compute_flow_loss(flow_teacher, cond, target_z):
     return loss, stats
 
 @torch.no_grad()
-def compute_flow_z(flow_teacher, cond, noises, flow_steps):
+def compute_flow_z(flow_teacher, cond, noises, flow_steps, max_action):
     batch_size = cond.shape[0]
     z = noises
     dt = 1.0 / float(flow_steps)
@@ -111,16 +111,17 @@ def compute_flow_z(flow_teacher, cond, noises, flow_steps):
         t = torch.full((batch_size, 1), float(i) / float(flow_steps), device=cond.device, dtype=cond.dtype)
         vel = flow_teacher(cond, z, t)
         z = z + dt * vel
+        z = z.clamp(-max_action, max_action)
     
     return z
     
-def compute_distill_loss(flow_teacher, flow_student, cond, flow_steps):
+def compute_distill_loss(flow_teacher, flow_student, cond, flow_steps, max_action):
     batch_size = cond.shape[0]
     latent_dim = flow_teacher.latent_dim    
     noises = torch.randn(batch_size, latent_dim, device=cond.device, dtype=cond.dtype)
     
     with torch.no_grad():
-        target_teacher = compute_flow_z(flow_teacher, cond, noises, flow_steps)
+        target_teacher = compute_flow_z(flow_teacher, cond, noises, flow_steps, max_action)
         
     pred_student = flow_student(cond, noises)
     loss = F.mse_loss(pred_student, target_teacher)
