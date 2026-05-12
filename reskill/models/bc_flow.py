@@ -9,6 +9,8 @@ class Flow_BC(object):
         
     Online sample condition:
         cond = [o, n]
+        
+    latent: z, size: [B, latent_dim]
     """
     
     def __init__(

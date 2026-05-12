@@ -51,6 +51,9 @@ def train(agent, zombie_agent, residual_agent, env, skill_vae, skill_prior, logi
                 sample = AttrDict(noise=n, state=o)
                 # Warp noise vector to latent space skill
                 z = skill_prior.inverse(sample).noise.detach()
+            elif prior_model == 'Flow':
+                cond = torch.cat((o, n), dim=1).to(device)
+                z = skill_prior.sample_z_torch(cond).detach()
             elif prior_model == 'Diffusion':
                 state_ = torch.cat((o, n), dim=1).to(device)
                 #print(state_)
@@ -70,7 +73,7 @@ def train(agent, zombie_agent, residual_agent, env, skill_vae, skill_prior, logi
 
             o2, skill_r = o, 0
         
-            for _ in range(skill_vae.seq_len):
+            for step in range(skill_vae.seq_len):
                 """if len(sac_replay) > args.batch_size:
                     critic_1_loss, critic_2_loss, policy_loss, ent_loss, alpha = skill_distill.update_parameters(sac_replay, args.batch_size, updates)
                     writer.add_scalar('loss/critic_1', critic_1_loss, updates)
@@ -80,10 +83,10 @@ def train(agent, zombie_agent, residual_agent, env, skill_vae, skill_prior, logi
                     writer.add_scalar('entropy_temprature/alpha', alpha, updates)
                     updates += 1"""
                 
-                obs_z = torch.cat((o2,z), 1)
+                obs_z = torch.cat((o2, z), 1)
                 a_dec = skill_vae.decoder(obs_z)
 
-                o_res = torch.cat((o2,z,a_dec), 1)
+                o_res = torch.cat((o2,z, a_dec), 1)
                 a_res, v_res, logp_res, _, _ = residual_agent.ac.step(o_res)
                 
                 a = (a_dec.cpu().detach().numpy() + (a_res.cpu().detach().numpy() * residual_factor))[0]
@@ -103,8 +106,10 @@ def train(agent, zombie_agent, residual_agent, env, skill_vae, skill_prior, logi
                 #sac_replay.push(o2.cpu().detach().numpy()[0], a, skill_r, o_next.cpu().detach().numpy()[0], mask)
 
                 o2 = o_next
-                a_dec = skill_vae.decoder(torch.cat((o2,z), 1))
-                o2_res = torch.cat((o2,z,a_dec), 1)
+                
+                if step == skill_vae.seq_len - 1:
+                    a_dec_next = skill_vae.decoder(torch.cat((o2, z), 1))
+                    o2_res = torch.cat((o2, z, a_dec_next), 1)
 
                 residual_agent.buf.store(o_res.cpu().detach(), a_res.cpu().detach(), r, v_res, logp_res)
                 
@@ -183,6 +188,10 @@ def train(agent, zombie_agent, residual_agent, env, skill_vae, skill_prior, logi
                 if prior_model == "RNVP":
                     skill = AttrDict(noise=n, state=obs)
                     z = skill_prior.inverse(skill).noise.detach()
+                elif prior_model == "Flow":
+                    n = n.cuda()
+                    cond = torch.cat((obs, n), dim=1).cuda()
+                    z = skill_prior.sample_z_torch(cond).detach()
                 elif prior_model == "Diffusion":
                     n = n.cuda()
                     state_ = torch.cat((obs, n), dim=1).cuda()
@@ -341,9 +350,9 @@ def main():
         f"use_sigma_{args.use_sigma}_grad_{args.use_grad}",
     )
     os.makedirs(save_dir, exist_ok=True)
-    save_path = save_dir + "ppo_agent.pth"
-    save_path_zombie = save_dir + "ppo_zombie_agent.pth"
-    save_path_residual = save_dir + "ppo_residual_agent.pth"
+    save_path = os.path.join(save_dir, "ppo_agent.pth")
+    save_path_zombie = os.path.join(save_dir, "ppo_zombie_agent.pth")
+    save_path_residual = os.path.join(save_dir, "ppo_residual_agent.pth")
 
     torch.set_num_threads(torch.get_num_threads())
 
@@ -384,7 +393,7 @@ def main():
     args.n_obs = n_obs
 
     if args.prior_model == 'RNVP':
-        skill_agent = PPO(ac_kwargs=dict(hidden_sizes=[conf.skill_agent.hid]*conf.skill_agent.l),
+        skill_agent = PPO(ac_kwargs=dict(hidden_sizes=[conf.skill_agent.hid] * conf.skill_agent.l),
                     gamma=conf.skill_agent.gamma, 
                     seed=args.seed, 
                     steps_per_epoch=conf.skill_agent.steps_per_epoch, 
@@ -399,9 +408,26 @@ def main():
                     target_kl=conf.skill_agent.target_kl, 
                     obs_dim=n_obs, 
                     act_dim=n_features, 
+                    act_limit=2)
+    elif args.prior_model == 'Flow':
+        skill_agent = PPO(ac_kwargs=dict(hidden_sizes=[conf.skill_agent.hid]*conf.skill_agent.l),
+                    gamma=conf.skill_agent.gamma,
+                    seed=args.seed,
+                    steps_per_epoch=conf.skill_agent.steps_per_epoch,
+                    epochs=conf.setup.epochs,
+                    clip_ratio=conf.skill_agent.clip_ratio,
+                    pi_lr=conf.skill_agent.pi_lr,
+                    vf_lr=conf.skill_agent.vf_lr,
+                    train_pi_iters=conf.skill_agent.train_pi_iters,
+                    train_v_iters=conf.skill_agent.train_v_iters,
+                    lam=conf.skill_agent.lam,
+                    max_ep_len=conf.setup.max_ep_len,
+                    target_kl=conf.skill_agent.target_kl,
+                    obs_dim=n_obs,
+                    act_dim=n_actions,
                     act_limit=2)
     elif args.prior_model == 'Diffusion':
-        skill_zombie_agent = PPO(ac_kwargs=dict(hidden_sizes=[conf.skill_agent.hid]*conf.skill_agent.l),
+        skill_zombie_agent = PPO(ac_kwargs=dict(hidden_sizes=[conf.skill_agent.hid] * conf.skill_agent.l),
                     gamma=conf.skill_agent.gamma, 
                     seed=args.seed, 
                     steps_per_epoch=conf.skill_agent.steps_per_epoch, 
@@ -417,7 +443,7 @@ def main():
                     obs_dim=n_obs, 
                     act_dim=n_features, 
                     act_limit=2)
-        skill_agent = PPO(ac_kwargs=dict(hidden_sizes=[conf.skill_agent.hid]*conf.skill_agent.l),
+        skill_agent = PPO(ac_kwargs=dict(hidden_sizes=[conf.skill_agent.hid] * conf.skill_agent.l),
                     gamma=conf.skill_agent.gamma, 
                     seed=args.seed, 
                     steps_per_epoch=conf.skill_agent.steps_per_epoch, 
@@ -434,7 +460,7 @@ def main():
                     act_dim=n_actions, 
                     act_limit=2)
     else:
-        skill_agent = PPO(ac_kwargs=dict(hidden_sizes=[conf.skill_agent.hid]*conf.skill_agent.l),
+        skill_agent = PPO(ac_kwargs=dict(hidden_sizes=[conf.skill_agent.hid] * conf.skill_agent.l),
                     gamma=conf.skill_agent.gamma, 
                     seed=args.seed, 
                     steps_per_epoch=conf.skill_agent.steps_per_epoch, 
