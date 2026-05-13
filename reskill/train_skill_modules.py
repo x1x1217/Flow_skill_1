@@ -30,7 +30,7 @@ class ModelTrainer():
         self.dataset_name = dataset_name
         self.prior_model = prior_model
         self.seed = seed
-        self.save_dir = f"./results/saved_skill_models/{dataset_name}/seed_{seed}/skill_prior_{prior_model}" 
+        self.save_dir = f"./reskill/results/saved_skill_models/{dataset_name}/seed_{seed}/skill_prior_{prior_model}" 
         os.makedirs(self.save_dir, exist_ok=True)
         self.vae_save_path = self.save_dir + "/skill_vae.pth"
         self.sp_save_path = self.save_dir + "/skill_prior.pth"
