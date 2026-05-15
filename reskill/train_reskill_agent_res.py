@@ -14,7 +14,7 @@ from reskill.utils.general_utils import AttrDict
 import reskill.rl.envs
 from reskill.models.bc_diffusion import Diffusion_BC
 import math
-from tensorboardX import SummaryWriter
+from reskill.utils.swanlab_writer import SwanLabWriter
 
 
 device = torch.device('cuda')
@@ -46,7 +46,7 @@ def train(agent, zombie_agent, residual_agent, env, skill_vae, skill_prior, logi
     for epoch in tqdm(range(agent.epochs)):
         for t in range(local_steps_per_epoch):
             # Select noise vector using high-level policy
-            n, v, logp, mu, std = agent.ac.step(torch.as_tensor(o, dtype=torch.float32))
+            n, v_agent, logp_agent, mu, std = agent.ac.step(torch.as_tensor(o, dtype=torch.float32))
             if prior_model == 'RNVP':
                 sample = AttrDict(noise=n, state=o)
                 # Warp noise vector to latent space skill
@@ -61,7 +61,7 @@ def train(agent, zombie_agent, residual_agent, env, skill_vae, skill_prior, logi
                     z = skill_prior.sample_action_guide_repeat(state_, zombie_agent.ac.q, args.n_obs, 1)
                 else:
                     z = skill_prior.sample_action_torch(state_)
-                v, logp = zombie_agent.ac.v_logp(torch.as_tensor(o, dtype=torch.float32), z)
+                v_zombie, logp_zombie = zombie_agent.ac.v_logp(torch.as_tensor(o, dtype=torch.float32), z)
             elif prior_model == 'CVAE':
                 state_ = torch.cat((o, n), dim=1).to(device)
                 lat = torch.normal(0, 1, (skill_prior.latent_dim, )).unsqueeze(0).cuda()
@@ -121,9 +121,9 @@ def train(agent, zombie_agent, residual_agent, env, skill_vae, skill_prior, logi
                 writer.add_scalar('ppo/logistic_fn', residual_factor, env_step_cnt)
 
             # save and log
-            agent.buf.store(o.cpu().detach(), n.cpu().detach(), skill_r, v, logp)
+            agent.buf.store(o.cpu().detach(), n.cpu().detach(), skill_r, v_agent, logp_agent)
             if prior_model == 'Diffusion':
-                zombie_agent.buf.store(o.cpu().detach(), z.cpu().detach(), skill_r, v, logp)
+                zombie_agent.buf.store(o.cpu().detach(), z.cpu().detach(), skill_r, v_zombie, logp_zombie)
 
             o = o2
             t += 1
@@ -137,16 +137,16 @@ def train(agent, zombie_agent, residual_agent, env, skill_vae, skill_prior, logi
                     print('Warning: trajectory cut off by epoch at %d steps.'%ep_len, flush=True)
                 # if trajectory didn't reach terminal state, bootstrap value target
                 if timeout or epoch_ended:
-                    _, v, _, _, _ = agent.ac.step(o)
+                    _, v_agent, _, _, _ = agent.ac.step(o)
                     if prior_model == 'Diffusion':
                         _, v_zombie, _, _, _ = zombie_agent.ac.step(o)
                     _, v_res, _, _, _ = residual_agent.ac.step(o2_res)
                 else:
-                    v = 0
+                    v_agent = 0
                     if prior_model == 'Diffusion':
                         v_zombie = 0
                     v_res = 0
-                agent.buf.finish_path(v)
+                agent.buf.finish_path(v_agent)
                 if prior_model == 'Diffusion':
                     zombie_agent.buf.finish_path(v_zombie)
                 residual_agent.buf.finish_path(v_res)
@@ -252,16 +252,17 @@ def train(agent, zombie_agent, residual_agent, env, skill_vae, skill_prior, logi
             writer.add_scalar('clip_frac', losses.ClipFrac, env_step_cnt)
             writer.add_scalar('delta_loss_pi', losses.DeltaLossPi, env_step_cnt)
             writer.add_scalar('delta_loss_v', losses.DeltaLossV, env_step_cnt)
-            writer.add_scalar('success_traj_epoch', success_traj, epoch)
-            writer.add_scalar('success_traj_step', success_traj, env_step_cnt)
-            writer.add_scalar('success_rate_epoch', success_traj / 50, epoch)
-            writer.add_scalar('success_rate_step', success_traj / 50, env_step_cnt)
-            writer.add_scalar('r_epoch', total_r, epoch)
-            writer.add_scalar('r_step', total_r, env_step_cnt)
-            writer.add_scalar('avg_r_epoch', total_r / 50, epoch)
-            writer.add_scalar('avg_r_step', total_r / 50, env_step_cnt)
-            writer.add_scalar('avg_rtime_epoch', r_time / 50, epoch)
-            writer.add_scalar('avg_rtime_step', r_time / 50, env_step_cnt)
+            writer.add_scalar('eval_epoch/success_traj', success_traj, epoch)
+            writer.add_scalar('eval_epoch/success_rate', success_traj / 50, epoch)
+            writer.add_scalar('eval_epoch/reward_sum', total_r, epoch)
+            writer.add_scalar('eval_epoch/avg_reward', total_r / 50, epoch)
+            writer.add_scalar('eval_epoch/avg_reward_time', r_time / 50, epoch)
+
+            writer.add_scalar('eval_step/success_traj', success_traj, env_step_cnt)
+            writer.add_scalar('eval_step/success_rate', success_traj / 50, env_step_cnt)
+            writer.add_scalar('eval_step/reward_sum', total_r, env_step_cnt)
+            writer.add_scalar('eval_step/avg_reward', total_r / 50, env_step_cnt)
+            writer.add_scalar('eval_step/avg_reward_time', r_time / 50, env_step_cnt)
 
 
 def main():
@@ -302,9 +303,18 @@ def main():
     parser.add_argument('--push', type=int, default=1)
     parser.add_argument('--use_sigma', type=int, default=1)
     parser.add_argument('--use_grad', type=int, default=1)
+    parser.add_argument('--use_student', type=int, default=1)
+    parser.add_argument('--swanlab_project', type=str, default="Flow_skill_1")
+    parser.add_argument('--swanlab_workspace', type=str, default="x1x1217")
+    parser.add_argument('--swanlab_mode', type=str, default=None)
     args=parser.parse_args()
 
     args.dataset_name = f'fetch_block_push{args.push}_pick{args.pick}'
+    args.prior_run_name = args.prior_model
+    args.run_variant = f"use_sigma_{args.use_sigma}_grad_{args.use_grad}"
+    if args.prior_model == 'Flow':
+        args.prior_run_name = f"{args.prior_model}_student{args.use_student}"
+        args.run_variant = f"use_student_{args.use_student}_grad_{args.use_grad}"
     curr_dir = os.path.dirname(__file__)
     config_path = os.path.join(curr_dir, "configs", "rl", args.config_file)
     
@@ -319,35 +329,55 @@ def main():
     if proc_id() == 0:
         #wandb.init(project=conf.setup.exp_name)
         #wandb.run.name = conf.setup.env + "_reskill_seed_" + str(conf.setup.seed) + '_' + time.asctime().replace(' ', '_')
-        # log_file = f'./log/agent/{conf.setup.env}/{args.dataset_name}/seed_{args.seed}/{args.prior_model}/sigma_{args.use_sigma}_grad_{args.use_grad}/'
+        
         log_file = os.path.join(
             curr_dir,
-            "log",
+            "swanlog",
             "agent",
             conf.setup.env,
             args.dataset_name,
             f"seed_{args.seed}",
-            args.prior_model,
-            f"sigma_{args.use_sigma}_grad_{args.use_grad}",
+            args.prior_run_name,
+            args.run_variant,
         )
 
         os.makedirs(log_file, exist_ok=True)
-        writer = SummaryWriter(log_file)
+        swanlab_config = vars(args).copy()
+        swanlab_config.update(
+            {
+                "env": conf.setup.env,
+                "cpu": conf.setup.cpu,
+                "steps_per_epoch": conf.skill_agent.steps_per_epoch,
+                "epochs": conf.setup.epochs,
+                "max_ep_len": conf.setup.max_ep_len,
+            }
+        )
+        writer = SwanLabWriter(
+            project=args.swanlab_project,
+            workspace=args.swanlab_workspace,
+            experiment_name=(
+                f"agent_{conf.setup.env}_{args.dataset_name}_seed{args.seed}_"
+                f"{args.prior_run_name}_{args.run_variant}"
+            ),
+            config=swanlab_config,
+            logdir=log_file,
+            mode=args.swanlab_mode,
+            tags=["agent", args.prior_run_name, conf.setup.env],
+        )
     else:
         writer = None
 
     env = gym.make(conf.setup.env)
 
-    # save_dir = f"./results/saved_rl_models/{conf.setup.env}/{args.dataset_name}/{args.prior_model}/{args.seed}/use_sigma_{args.use_sigma}_grad_{args.use_grad}/"
     save_dir = os.path.join(
         curr_dir,
         "results",
         "saved_rl_models",
         conf.setup.env,
         args.dataset_name,
-        args.prior_model,
+        args.prior_run_name,
         str(args.seed),
-        f"use_sigma_{args.use_sigma}_grad_{args.use_grad}",
+        args.run_variant,
     )
     os.makedirs(save_dir, exist_ok=True)
     save_path = os.path.join(save_dir, "ppo_agent.pth")
@@ -362,8 +392,9 @@ def main():
         "results",
         "saved_skill_models",
         args.dataset_name,
+        args.prior_model,
         f"seed_{args.seed}",
-        f"skill_prior_{args.prior_model}",
+        f"skill_prior_{args.prior_run_name}",
     )
     skill_vae_path = os.path.join(skill_model_dir, "skill_vae.pth")
     skill_prior_path = os.path.join(skill_model_dir, "skill_prior.pth")
@@ -384,6 +415,9 @@ def main():
         skill_prior2.model = skill_prior.model
         skill_prior2.actor.model = skill_prior.actor.model
         skill_prior = skill_prior2
+    if args.prior_model == 'Flow':
+        skill_prior.use_student = bool(args.use_student)
+        skill_prior.actor = skill_prior.student if skill_prior.use_student else skill_prior.teacher
 
     n_features = skill_vae.n_z
     n_actions = skill_vae.n_actions
@@ -518,6 +552,9 @@ def main():
           writer=writer,
           prior_model=args.prior_model,
           args=args)
+    
+    if proc_id() == 0 and writer is not None:
+        writer.close()
     
     #sac_memory.save_buffer(env.spec.id, str(args.seed)+"_"+args.prior_model)
 

@@ -7,7 +7,6 @@ from tqdm import tqdm
 from torchvision import transforms
 from torch.utils.data import DataLoader
 import pdb
-from tensorboardX import SummaryWriter
 from tqdm import tqdm
 import os
 import time
@@ -22,21 +21,33 @@ from reskill.models.rnvp import stacked_NVP
 from reskill.models.bc_diffusion import Diffusion_BC
 from reskill.utils.general_utils import AttrDict
 from reskill.models.bc_flow import Flow_BC
-
+from reskill.utils.swanlab_writer import SwanLabWriter
 
 
 class ModelTrainer():
-    def __init__(self, dataset_name, config_file, prior_model, seed, writer):
+    def __init__(self, dataset_name, config_file, prior_model, seed, writer, use_student=True):
         self.dataset_name = dataset_name
         self.prior_model = prior_model
         self.seed = seed
-        self.save_dir = f"./reskill/results/saved_skill_models/{dataset_name}/seed_{seed}/skill_prior_{prior_model}" 
+        self.use_student = use_student
+        curr_dir = os.path.dirname(__file__)
+        prior_dir_name = prior_model
+        if prior_model == 'Flow':
+            prior_dir_name = f"{prior_model}_student{int(use_student)}"
+        self.save_dir = os.path.join(
+            curr_dir,
+            "results",
+            "saved_skill_models",
+            dataset_name,
+            self.prior_model,
+            f"seed_{seed}",
+            f"skill_prior_{prior_dir_name}",
+        )
         os.makedirs(self.save_dir, exist_ok=True)
         self.vae_save_path = self.save_dir + "/skill_vae.pth"
         self.sp_save_path = self.save_dir + "/skill_prior.pth"
         
         # config_path = "configs/skill_mdl/" + config_file
-        curr_dir = os.path.dirname(__file__)
         config_path = os.path.join(curr_dir, "configs", "skill_mdl", config_file)
 
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -90,7 +101,8 @@ class ModelTrainer():
                 cond_dim=conf.skill_vae.n_obs+conf.skill_vae.n_actions,
                 latent_dim=conf.skill_vae.n_z,
                 max_action=10,
-                device=self.device
+                device=self.device,
+                use_student=self.use_student
             )
         
         elif self.prior_model == 'Diffusion':
@@ -108,6 +120,7 @@ class ModelTrainer():
         self.skill_vae.train()
         running_loss = 0.0
         for batch_idx, data in enumerate(self.train_loader):
+            log_step = epoch * len(self.train_loader) + batch_idx
 
             data["actions"] = data["actions"].to(self.device)
             data["obs"] = data["obs"].to(self.device)
@@ -134,12 +147,12 @@ class ModelTrainer():
 
                 if batch_idx % 500 == 0:
                     self.scheduler.step()
-                    self.writer.add_scalar('lr', self.scheduler.get_lr()[0], epoch)
+                    self.writer.add_scalar('rnvp_prior/lr', self.scheduler.get_lr()[0], log_step)
 
                 if batch_idx % 100 == 0:
-                    self.writer.add_scalar('BC Loss_VAE', losses.bc_loss.item(), epoch)
-                    self.writer.add_scalar('KL Loss_VAE', losses.kld_loss.item(), epoch)
-                    self.writer.add_scalar('NVP_Loss', sp_loss.item(), epoch)
+                    self.writer.add_scalar('train_batch/vae_bc_loss', losses.bc_loss.item(), log_step)
+                    self.writer.add_scalar('train_batch/vae_kl_loss', losses.kld_loss.item(), log_step)
+                    self.writer.add_scalar('rnvp_prior/loss', sp_loss.item(), log_step)
 
             elif self.prior_model == 'Flow':
                 skill = output.z.detach()
@@ -157,16 +170,25 @@ class ModelTrainer():
                     sp_loss = np.mean(metric['total_loss'])
             
                 if batch_idx % 10 == 0:
+                    flow_loss = np.mean(metric['flow_loss'])
+                    distill_loss = np.mean(metric['distill_loss'])
+                    prior_total_loss = np.mean(metric['total_loss'])
                     print(
                         f"[epoch {epoch:03d} batch {batch_idx:04d}/{len(self.train_loader)}] "
                         f"vae_total={losses.total_loss.item():.4f} "
                         f"vae_bc={losses.bc_loss.item():.4f} "
                         f"vae_kl={losses.kld_loss.item():.4f} "
-                        f"flow={np.mean(metric['flow_loss']):.4f} "
-                        f"distill={np.mean(metric['distill_loss']):.4f} "
-                        f"prior_total={np.mean(metric['total_loss']):.4f}",
+                        f"flow={flow_loss:.4f} "
+                        f"distill={distill_loss:.4f} "
+                        f"prior_total={prior_total_loss:.4f}",
                         flush=True,
                     )
+                    self.writer.add_scalar('train_batch/vae_bc_loss', losses.bc_loss.item(), log_step)
+                    self.writer.add_scalar('train_batch/vae_kl_loss', losses.kld_loss.item(), log_step)
+                    self.writer.add_scalar('train_batch/vae_total_loss', losses.total_loss.item(), log_step)
+                    self.writer.add_scalar('flow_prior/flow_loss', flow_loss, log_step)
+                    self.writer.add_scalar('flow_prior/distill_loss', distill_loss, log_step)
+                    self.writer.add_scalar('flow_prior/total_loss', prior_total_loss, log_step)
             
             elif self.prior_model == 'Diffusion':
                 skill = output.z.detach()
@@ -184,9 +206,9 @@ class ModelTrainer():
                     sp_loss = np.mean(metric['bc_loss'])
 
                 if batch_idx % 100 == 0:
-                    self.writer.add_scalar('BC Loss_VAE', losses.bc_loss.item(), epoch)
-                    self.writer.add_scalar('KL Loss_VAE', losses.kld_loss.item(), epoch)
-                    self.writer.add_scalar('NVP_Loss', sp_loss.item(), epoch)
+                    self.writer.add_scalar('train_batch/vae_bc_loss', losses.bc_loss.item(), log_step)
+                    self.writer.add_scalar('train_batch/vae_kl_loss', losses.kld_loss.item(), log_step)
+                    self.writer.add_scalar('diffusion_prior/bc_loss', sp_loss.item(), log_step)
 
             elif self.prior_model == 'CVAE':
                 skill = output.z.detach()
@@ -213,9 +235,9 @@ class ModelTrainer():
                     sp_loss = bc_loss+kld_loss
 
                 if batch_idx % 100 == 0:
-                    self.writer.add_scalar('BC Loss_VAE', losses.bc_loss.item(), epoch)
-                    self.writer.add_scalar('KL Loss_VAE', losses.kld_loss.item(), epoch)
-                    self.writer.add_scalar('NVP_Loss', sp_loss.item(), epoch)
+                    self.writer.add_scalar('train_batch/vae_bc_loss', losses.bc_loss.item(), log_step)
+                    self.writer.add_scalar('train_batch/vae_kl_loss', losses.kld_loss.item(), log_step)
+                    self.writer.add_scalar('cvae_prior/total_loss', sp_loss.item(), log_step)
 
             elif self.prior_model == 'MLP':
                 skill = output.z.detach()
@@ -241,11 +263,11 @@ class ModelTrainer():
                     self.sp_optimizer.step()
                 
                 if batch_idx % 100 == 0:
-                    self.writer.add_scalar('BC Loss_VAE', losses.bc_loss.item(), epoch)
-                    self.writer.add_scalar('KL Loss_VAE', losses.kld_loss.item(), epoch)
-                    self.writer.add_scalar('NVP_Loss', loss.item(), epoch)
+                    self.writer.add_scalar('train_batch/vae_bc_loss', losses.bc_loss.item(), log_step)
+                    self.writer.add_scalar('train_batch/vae_kl_loss', losses.kld_loss.item(), log_step)
+                    self.writer.add_scalar('mlp_prior/bc_loss', loss.item(), log_step)
             
-        train_loss = running_loss / len(self.train_loader.dataset)
+        train_loss = running_loss / len(self.train_loader)
         return train_loss
 
 
@@ -264,7 +286,7 @@ class ModelTrainer():
                 loss = losses.bc_loss.item()
                 running_loss += loss
 
-        val_loss = running_loss/len(self.val_loader.dataset)
+        val_loss = running_loss / len(self.val_loader)
         return val_loss
 
 
@@ -274,6 +296,8 @@ class ModelTrainer():
             print(f"\n[start epoch {epoch:03d}/{self.n_epochs}]", flush=True)
             
             train_epoch_loss = self.fit(epoch)
+            self.writer.add_scalar('train_epoch/loss', train_epoch_loss, epoch)
+
             if epoch % 5 == 0:
                 val_epoch_loss = self.validate()
                 print(
@@ -281,9 +305,7 @@ class ModelTrainer():
                     f"val_loss={val_epoch_loss:.6f}",
                     flush=True,
                 )
-
-            self.writer.add_scalar('train_loss', train_epoch_loss, epoch)
-            self.writer.add_scalar('val_loss', val_epoch_loss, epoch)
+                self.writer.add_scalar('val_epoch/loss', val_epoch_loss, epoch)
 
             if epoch % 50 == 0:
                 torch.save(self.skill_vae, self.vae_save_path)
@@ -299,21 +321,41 @@ if __name__ == "__main__":
     #parser.add_argument('--dataset_name', type=str, default="fetch_block_40000")
     parser.add_argument('--prior_model', type=str, default='CVAE')
     parser.add_argument('--seed', type=int, default=21)
+    parser.add_argument('--use_student', type=int, default=1)
+    parser.add_argument('--swanlab_project', type=str, default="Flow_skill_1")
+    parser.add_argument('--swanlab_workspace', type=str, default="x1x1217")
+    parser.add_argument('--swanlab_mode', type=str, default=None)
     args=parser.parse_args()
     args.dataset_name = f'fetch_block_push{args.push}_pick{args.pick}'
+    flow_suffix = f"_student{args.use_student}" if args.prior_model == "Flow" else ""
     
-    # log_file = f'./log/skill_prior/{args.dataset_name}/seed_{args.seed}_{args.prior_model}/'
     curr_dir = os.path.dirname(__file__)
     log_file = os.path.join(
         curr_dir,
-        "log",
+        "swanlog",
         "skill_prior",
         args.dataset_name,
-        f"seed_{args.seed}_{args.prior_model}",
+        f"seed_{args.seed}_{args.prior_model}{flow_suffix}",
     )
     
     os.makedirs(log_file, exist_ok=True)
-    writer = SummaryWriter(log_file)
+    writer = SwanLabWriter(
+        project=args.swanlab_project,
+        workspace=args.swanlab_workspace,
+        experiment_name=f"skill_prior_seed{args.seed}_{args.prior_model}{flow_suffix}",
+        config=vars(args),
+        logdir=log_file,
+        mode=args.swanlab_mode,
+        tags=["skill_prior", args.prior_model],
+    )
 
-    trainer = ModelTrainer(args.dataset_name, args.config_file, args.prior_model, args.seed, writer)
+    trainer = ModelTrainer(
+        args.dataset_name,
+        args.config_file,
+        args.prior_model,
+        args.seed,
+        writer,
+        use_student=bool(args.use_student),
+    )
     trainer.train()
+    writer.close()

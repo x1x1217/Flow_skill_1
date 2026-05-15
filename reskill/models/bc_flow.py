@@ -1,6 +1,6 @@
 import torch
 
-from reskill.models.flow_prior import FlowTeacher, FlowStudent, compute_flow_loss, compute_distill_loss
+from reskill.models.flow_prior import FlowTeacher, FlowStudent, compute_flow_loss, compute_distill_loss, compute_flow_z
 
 class Flow_BC(object):
     """
@@ -24,6 +24,7 @@ class Flow_BC(object):
         flow_steps=10,
         lr=3e-4,
         distill_coef=1.0,
+        use_student=True,
         grad_clip=None
     ):
         self.teacher = FlowTeacher(
@@ -41,11 +42,12 @@ class Flow_BC(object):
             device=device
         ).to(device)
         
-        self.actor = self.student
-        self.optimizer = torch.optim.Adam(
-            list(self.teacher.parameters()) + list(self.student.parameters()),
-            lr=lr
-        )
+        self.actor = self.student if use_student else self.teacher
+        self.use_student = use_student
+        trainable_params = list(self.teacher.parameters())
+        if self.use_student:
+            trainable_params += list(self.student.parameters())
+        self.optimizer = torch.optim.Adam(trainable_params, lr=lr)
         
         self.cond_dim = cond_dim
         self.latent_dim = latent_dim
@@ -68,7 +70,8 @@ class Flow_BC(object):
         target_z = self._to_tensor(target_z)
         
         self.teacher.train()
-        self.student.train()
+        if self.use_student:
+            self.student.train()
         
         metric = {
             "flow_loss": [],
@@ -78,16 +81,23 @@ class Flow_BC(object):
         
         for _ in range(iterations):
             bc_flow_loss, teacher_stats = compute_flow_loss(self.teacher, cond, target_z)
-            distill_loss, student_stats = compute_distill_loss(self.teacher, self.student, cond, self.flow_steps, self.max_action)
-            loss = bc_flow_loss + self.distill_coef * distill_loss
+            if self.use_student:
+                distill_loss, student_stats = compute_distill_loss(
+                    self.teacher,
+                    self.student,
+                    cond,
+                    self.flow_steps,
+                    self.max_action
+                )
+                loss = bc_flow_loss + self.distill_coef * distill_loss
+            else:
+                distill_loss = torch.zeros((), device=cond.device, dtype=bc_flow_loss.dtype)
+                loss = bc_flow_loss
             
             self.optimizer.zero_grad()
             loss.backward()
             if self.grad_clip is not None:
-                torch.nn.utils.clip_grad_norm_(
-                    list(self.teacher.parameters()) + list(self.student.parameters()),
-                    self.grad_clip
-                )
+                torch.nn.utils.clip_grad_norm_(self.optimizer.param_groups[0]["params"], self.grad_clip)
             self.optimizer.step()
             
             metric["flow_loss"].append(bc_flow_loss.item())
@@ -105,10 +115,14 @@ class Flow_BC(object):
         cond = self._to_tensor(cond)
         noise = torch.randn(batch_size, self.latent_dim, device=cond.device, dtype=cond.dtype)
 
-        self.student.eval()
         with torch.no_grad():
-            z = self.student(cond, noise)
-            z = z.clamp(-self.max_action, self.max_action)
+            if self.use_student:
+                self.student.eval()
+                z = self.student(cond, noise)
+                z = z.clamp(-self.max_action, self.max_action)
+            else:
+                self.teacher.eval()
+                z = compute_flow_z(self.teacher, cond, noise, self.flow_steps, self.max_action)
             
         return z
     

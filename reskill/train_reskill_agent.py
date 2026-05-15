@@ -6,14 +6,16 @@ from tqdm import tqdm
 import time
 import numpy as np
 import os
-from reskill.rl.sac.sac import SAC
-from reskill.rl.sac.replay_memory import ReplayMemory
-from reskill.rl.utils.mpi_tools import num_procs, mpi_fork, proc_id
-from reskill.rl.agents.ppo import PPO
-from reskill.utils.general_utils import AttrDict
-import reskill.rl.envs
+import sys
+sys.path.append("..")
+from rl.sac.sac import SAC
+from rl.sac.replay_memory import ReplayMemory
+from rl.utils.mpi_tools import num_procs, mpi_fork, proc_id
+from rl.agents.ppo import PPO
+from utils.general_utils import AttrDict
+import rl.envs
 import math
-from tensorboardX import SummaryWriter
+from utils.swanlab_writer import SwanLabWriter
 
 
 device = torch.device('cuda')
@@ -255,6 +257,9 @@ def main():
     parser.add_argument('--dataset_name', type=str, default="fetch_block_40000")
     parser.add_argument('--prior_model', type=str, default='Diffusion')
     parser.add_argument('--seed', type=int, default=21)
+    parser.add_argument('--swanlab_project', type=str, default="Flow_skill_1")
+    parser.add_argument('--swanlab_workspace', type=str, default="x1x1217")
+    parser.add_argument('--swanlab_mode', type=str, default=None)
     args=parser.parse_args()
 
     config_path = "configs/rl/" + args.config_file
@@ -269,9 +274,17 @@ def main():
     if proc_id() == 0:
         #wandb.init(project=conf.setup.exp_name)
         #wandb.run.name = conf.setup.env + "_reskill_seed_" + str(conf.setup.seed) + '_' + time.asctime().replace(' ', '_')
-        log_file = './log/agent/'+args.dataset_name+'/seed_'+str(args.seed)+'_'+args.prior_model+'/'
+        log_file = './swanlog/agent/'+args.dataset_name+'/seed_'+str(args.seed)+'_'+args.prior_model+'/'
         os.makedirs(log_file, exist_ok=True)
-        writer = SummaryWriter(log_file)
+        writer = SwanLabWriter(
+            project=args.swanlab_project,
+            workspace=args.swanlab_workspace,
+            experiment_name=f"agent_{args.dataset_name}_seed{args.seed}_{args.prior_model}",
+            config=vars(args),
+            logdir=log_file,
+            mode=args.swanlab_mode,
+            tags=["agent", args.prior_model],
+        )
     else:
         writer = None
 
@@ -375,6 +388,9 @@ def main():
           writer=writer,
           prior_model=args.prior_model,
           args=args)
+
+    if proc_id() == 0 and writer is not None:
+        writer.close()
     
     sac_memory.save_buffer(env.spec.id, str(args.seed)+"_"+args.prior_model)
 
