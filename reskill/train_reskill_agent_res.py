@@ -30,8 +30,16 @@ def get_obs(obs, env_name):
 def logistic_fn(step, k=0.001, C=18000):
     return 1/(1 + math.exp(-k * (step-C)))
 
-def train(agent, zombie_agent, residual_agent, env, skill_vae, skill_prior, logistic_C, logistic_k, 
-          save_path, save_path_residual, save_path_zombie, writer, prior_model, args):
+def flow_guidance_enabled(args, epoch):
+    return (
+        args.prior_model == 'Flow'
+        and args.use_grad == 1
+        and args.guidance_scale > 0
+        and epoch >= args.guidance_warmup_epoch
+    )
+
+def train(agent, latent_q_agent, residual_agent, env, skill_vae, skill_prior, logistic_C, logistic_k, 
+          save_path, save_path_residual, save_path_latent_q, writer, prior_model, args):
 
     env_name = env.spec.id
     obs, ep_ret, ep_len = env.reset(), 0, 0
@@ -53,15 +61,26 @@ def train(agent, zombie_agent, residual_agent, env, skill_vae, skill_prior, logi
                 z = skill_prior.inverse(sample).noise.detach()
             elif prior_model == 'Flow':
                 cond = torch.cat((o, n), dim=1).to(device)
-                z = skill_prior.sample_z_torch(cond).detach()
+                if flow_guidance_enabled(args, epoch):
+                    z = skill_prior.sample_z_guided_torch(
+                        cond,
+                        q_fn=latent_q_agent.ac.q,
+                        n_obs=args.n_obs,
+                        guidance_scale=args.guidance_scale,
+                        grad_clip=args.guidance_grad_clip,
+                    ).detach()
+                else:
+                    z = skill_prior.sample_z_torch(cond).detach()
+                if latent_q_agent is not None:
+                    v_latent_q, logp_latent_q = latent_q_agent.ac.v_logp(torch.as_tensor(o, dtype=torch.float32), z)
             elif prior_model == 'Diffusion':
                 state_ = torch.cat((o, n), dim=1).to(device)
                 #print(state_)
                 if args.use_grad == 1:
-                    z = skill_prior.sample_action_guide_repeat(state_, zombie_agent.ac.q, args.n_obs, 1)
+                    z = skill_prior.sample_action_guide_repeat(state_, latent_q_agent.ac.q, args.n_obs, 1)
                 else:
                     z = skill_prior.sample_action_torch(state_)
-                v_zombie, logp_zombie = zombie_agent.ac.v_logp(torch.as_tensor(o, dtype=torch.float32), z)
+                v_latent_q, logp_latent_q = latent_q_agent.ac.v_logp(torch.as_tensor(o, dtype=torch.float32), z)
             elif prior_model == 'CVAE':
                 state_ = torch.cat((o, n), dim=1).to(device)
                 lat = torch.normal(0, 1, (skill_prior.latent_dim, )).unsqueeze(0).cuda()
@@ -122,8 +141,8 @@ def train(agent, zombie_agent, residual_agent, env, skill_vae, skill_prior, logi
 
             # save and log
             agent.buf.store(o.cpu().detach(), n.cpu().detach(), skill_r, v_agent, logp_agent)
-            if prior_model == 'Diffusion':
-                zombie_agent.buf.store(o.cpu().detach(), z.cpu().detach(), skill_r, v_zombie, logp_zombie)
+            if latent_q_agent is not None:
+                latent_q_agent.buf.store(o.cpu().detach(), z.cpu().detach(), skill_r, v_latent_q, logp_latent_q)
 
             o = o2
             t += 1
@@ -138,17 +157,17 @@ def train(agent, zombie_agent, residual_agent, env, skill_vae, skill_prior, logi
                 # if trajectory didn't reach terminal state, bootstrap value target
                 if timeout or epoch_ended:
                     _, v_agent, _, _, _ = agent.ac.step(o)
-                    if prior_model == 'Diffusion':
-                        _, v_zombie, _, _, _ = zombie_agent.ac.step(o)
+                    if latent_q_agent is not None:
+                        _, v_latent_q, _, _, _ = latent_q_agent.ac.step(o)
                     _, v_res, _, _, _ = residual_agent.ac.step(o2_res)
                 else:
                     v_agent = 0
-                    if prior_model == 'Diffusion':
-                        v_zombie = 0
+                    if latent_q_agent is not None:
+                        v_latent_q = 0
                     v_res = 0
                 agent.buf.finish_path(v_agent)
-                if prior_model == 'Diffusion':
-                    zombie_agent.buf.finish_path(v_zombie)
+                if latent_q_agent is not None:
+                    latent_q_agent.buf.finish_path(v_latent_q)
                 residual_agent.buf.finish_path(v_res)
                 if terminal:
                     if proc_id() == 0:
@@ -159,15 +178,15 @@ def train(agent, zombie_agent, residual_agent, env, skill_vae, skill_prior, logi
         # Save model
         if (epoch % agent.save_freq == 0) or (epoch == agent.epochs-1):
             torch.save(agent.ac.pi, save_path)
-            if prior_model == 'Diffusion':
-                torch.save(zombie_agent.ac, save_path_zombie)
+            if latent_q_agent is not None:
+                torch.save(latent_q_agent.ac, save_path_latent_q)
             #skill_distill.save_checkpoint(env_name, str(args.seed)+"_"+args.prior_model)
             torch.save(residual_agent.ac.pi, save_path_residual)
 
         # Perform PPO update!
         losses = agent.update()
-        if prior_model == 'Diffusion':
-            zombie_losses = zombie_agent.update()
+        if latent_q_agent is not None:
+            latent_q_losses = latent_q_agent.update()
         residual_losses = residual_agent.update()
 
         success_traj = 0
@@ -191,12 +210,21 @@ def train(agent, zombie_agent, residual_agent, env, skill_vae, skill_prior, logi
                 elif prior_model == "Flow":
                     n = n.cuda()
                     cond = torch.cat((obs, n), dim=1).cuda()
-                    z = skill_prior.sample_z_torch(cond).detach()
+                    if flow_guidance_enabled(args, epoch):
+                        z = skill_prior.sample_z_guided_torch(
+                            cond,
+                            q_fn=latent_q_agent.ac.q,
+                            n_obs=args.n_obs,
+                            guidance_scale=args.guidance_scale,
+                            grad_clip=args.guidance_grad_clip,
+                        ).detach()
+                    else:
+                        z = skill_prior.sample_z_torch(cond).detach()
                 elif prior_model == "Diffusion":
                     n = n.cuda()
                     state_ = torch.cat((obs, n), dim=1).cuda()
                     if args.use_grad == 1:
-                        z = skill_prior.sample_action_guide_repeat(state_, zombie_agent.ac.q, args.n_obs, 1)
+                        z = skill_prior.sample_action_guide_repeat(state_, latent_q_agent.ac.q, args.n_obs, 1)
                     else:
                         z = skill_prior.sample_action_torch(state_)
                 elif prior_model == 'MLP':
@@ -252,6 +280,10 @@ def train(agent, zombie_agent, residual_agent, env, skill_vae, skill_prior, logi
             writer.add_scalar('clip_frac', losses.ClipFrac, env_step_cnt)
             writer.add_scalar('delta_loss_pi', losses.DeltaLossPi, env_step_cnt)
             writer.add_scalar('delta_loss_v', losses.DeltaLossV, env_step_cnt)
+            if latent_q_agent is not None:
+                writer.add_scalar('latent_q/pi_loss', latent_q_losses.LossPi, env_step_cnt)
+                writer.add_scalar('latent_q/v_loss', latent_q_losses.LossV, env_step_cnt)
+                writer.add_scalar('latent_q/q_loss', latent_q_losses.DeltaLossQ, env_step_cnt)
             writer.add_scalar('eval_epoch/success_traj', success_traj, epoch)
             writer.add_scalar('eval_epoch/success_rate', success_traj / 50, epoch)
             writer.add_scalar('eval_epoch/reward_sum', total_r, epoch)
@@ -304,6 +336,9 @@ def main():
     parser.add_argument('--use_sigma', type=int, default=1)
     parser.add_argument('--use_grad', type=int, default=1)
     parser.add_argument('--use_student', type=int, default=1)
+    parser.add_argument('--guidance_scale', type=float, default=0.0)
+    parser.add_argument('--guidance_warmup_epoch', type=int, default=0)
+    parser.add_argument('--guidance_grad_clip', type=float, default=0.0)
     parser.add_argument('--swanlab_project', type=str, default="Flow_skill_1")
     parser.add_argument('--swanlab_workspace', type=str, default="x1x1217")
     parser.add_argument('--swanlab_mode', type=str, default=None)
@@ -315,6 +350,12 @@ def main():
     if args.prior_model == 'Flow':
         args.prior_run_name = f"{args.prior_model}_student{args.use_student}"
         args.run_variant = f"use_student_{args.use_student}_grad_{args.use_grad}"
+        if args.use_grad == 1:
+            args.run_variant += (
+                f"_gscale_{args.guidance_scale:g}"
+                f"_gwarm_{args.guidance_warmup_epoch}"
+                f"_gclip_{args.guidance_grad_clip:g}"
+            )
     curr_dir = os.path.dirname(__file__)
     config_path = os.path.join(curr_dir, "configs", "rl", args.config_file)
     
@@ -381,7 +422,7 @@ def main():
     )
     os.makedirs(save_dir, exist_ok=True)
     save_path = os.path.join(save_dir, "ppo_agent.pth")
-    save_path_zombie = os.path.join(save_dir, "ppo_zombie_agent.pth")
+    save_path_latent_q = os.path.join(save_dir, "ppo_latent_q_agent.pth")
     save_path_residual = os.path.join(save_dir, "ppo_residual_agent.pth")
 
     torch.set_num_threads(torch.get_num_threads())
@@ -423,7 +464,7 @@ def main():
     n_actions = skill_vae.n_actions
     n_obs = skill_vae.n_obs
     seq_len = skill_vae.seq_len
-    skill_zombie_agent = None
+    latent_q_agent = None
     args.n_obs = n_obs
 
     if args.prior_model == 'RNVP':
@@ -444,6 +485,8 @@ def main():
                     act_dim=n_features, 
                     act_limit=2)
     elif args.prior_model == 'Flow':
+        if args.use_grad == 1 and args.use_student == 1 and args.guidance_scale > 0:
+            raise ValueError("Flow guidance currently requires --use_student 0 for teacher Euler sampling.")
         skill_agent = PPO(ac_kwargs=dict(hidden_sizes=[conf.skill_agent.hid]*conf.skill_agent.l),
                     gamma=conf.skill_agent.gamma,
                     seed=args.seed,
@@ -460,8 +503,25 @@ def main():
                     obs_dim=n_obs,
                     act_dim=n_actions,
                     act_limit=2)
+        if args.use_grad == 1 and args.guidance_scale > 0:
+            latent_q_agent = PPO(ac_kwargs=dict(hidden_sizes=[conf.skill_agent.hid] * conf.skill_agent.l),
+                        gamma=conf.skill_agent.gamma,
+                        seed=args.seed,
+                        steps_per_epoch=conf.skill_agent.steps_per_epoch,
+                        epochs=conf.setup.epochs,
+                        clip_ratio=conf.skill_agent.clip_ratio,
+                        pi_lr=conf.skill_agent.pi_lr,
+                        vf_lr=conf.skill_agent.vf_lr,
+                        train_pi_iters=conf.skill_agent.train_pi_iters,
+                        train_v_iters=conf.skill_agent.train_v_iters,
+                        lam=conf.skill_agent.lam,
+                        max_ep_len=conf.setup.max_ep_len,
+                        target_kl=conf.skill_agent.target_kl,
+                        obs_dim=n_obs,
+                        act_dim=n_features,
+                        act_limit=2)
     elif args.prior_model == 'Diffusion':
-        skill_zombie_agent = PPO(ac_kwargs=dict(hidden_sizes=[conf.skill_agent.hid] * conf.skill_agent.l),
+        latent_q_agent = PPO(ac_kwargs=dict(hidden_sizes=[conf.skill_agent.hid] * conf.skill_agent.l),
                     gamma=conf.skill_agent.gamma, 
                     seed=args.seed, 
                     steps_per_epoch=conf.skill_agent.steps_per_epoch, 
@@ -539,7 +599,7 @@ def main():
 
     print("Training RL agent...")
     train(agent=skill_agent,
-          zombie_agent=skill_zombie_agent,
+          latent_q_agent=latent_q_agent,
           residual_agent=residual_agent,  
           env=env,
           skill_vae=skill_vae,
@@ -547,7 +607,7 @@ def main():
           logistic_C=conf.setup.logistic_C,
           logistic_k=conf.setup.logistic_k,
           save_path=save_path,
-          save_path_zombie=save_path_zombie,
+          save_path_latent_q=save_path_latent_q,
           save_path_residual=save_path_residual,
           writer=writer,
           prior_model=args.prior_model,

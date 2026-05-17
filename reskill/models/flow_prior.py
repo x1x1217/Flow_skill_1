@@ -114,7 +114,33 @@ def compute_flow_z(flow_teacher, cond, noises, flow_steps, max_action):
         z = z.clamp(-max_action, max_action)
     
     return z
+
+def compute_flow_z_guided(flow_teacher, cond, noises, flow_steps, max_action, q_fn, n_obs, guidance_scale=0.0, grad_clip=0.0):
+    batch_size = cond.shape[0]
+    z = noises
+    dt = 1.0 / float(flow_steps)
+    obs = cond[:, :n_obs].detach()
     
+    for i in range(flow_steps):
+        t = torch.full((batch_size, 1), float(i) / float(flow_steps), device=cond.device, dtype=cond.dtype)
+        
+        with torch.no_grad():
+            vel = flow_teacher(cond, z, t)
+        
+        with torch.enable_grad():
+            z_in = z.detach().requires_grad_(True)
+            q_value = q_fn(torch.cat([obs, z_in], dim=1)).reshape(-1, 1)
+            grad = torch.autograd.grad(q_value.sum(), z_in)[0].float()
+        
+        if grad_clip is not None and grad_clip > 0:
+            grad_norm = grad.norm(dim=1, keepdim=True).clamp_min(1e-6)
+            grad = grad * (grad_clip / grad_norm).clamp(max=1.0)
+        
+        z = z + dt * (vel + guidance_scale * grad)
+        z = z.clamp(-max_action, max_action)
+    
+    return z
+
 def compute_distill_loss(flow_teacher, flow_student, cond, flow_steps, max_action):
     batch_size = cond.shape[0]
     latent_dim = flow_teacher.latent_dim    

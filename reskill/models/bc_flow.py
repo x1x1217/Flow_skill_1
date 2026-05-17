@@ -1,6 +1,6 @@
 import torch
 
-from reskill.models.flow_prior import FlowTeacher, FlowStudent, compute_flow_loss, compute_distill_loss, compute_flow_z
+from reskill.models.flow_prior import FlowTeacher, FlowStudent, compute_flow_loss, compute_distill_loss, compute_flow_z, compute_flow_z_guided
 
 class Flow_BC(object):
     """
@@ -123,9 +123,37 @@ class Flow_BC(object):
             else:
                 self.teacher.eval()
                 z = compute_flow_z(self.teacher, cond, noise, self.flow_steps, self.max_action)
-            
+
         return z
     
+    def sample_z_guided_torch(self, cond, q_fn, n_obs, guidance_scale=0.0, grad_clip=0.0):
+        """
+        cond: [o, n], size: [B, cond_dim]
+        q_fn: latent-level Q function with input [o, z]
+        """
+        batch_size = cond.shape[0]
+        
+        cond = self._to_tensor(cond)
+        noise = torch.randn(batch_size, self.latent_dim, device=cond.device, dtype=cond.dtype)
+        
+        if self.use_student:
+            raise NotImplementedError("Flow guidance is only implemented for teacher Euler sampling.")
+        
+        self.teacher.eval()
+        z = compute_flow_z_guided(
+            self.teacher,
+            cond,
+            noise,
+            self.flow_steps,
+            self.max_action,
+            q_fn,
+            n_obs,
+            guidance_scale=guidance_scale,
+            grad_clip=grad_clip,
+        )
+        
+        return z
+
     def save_model(self, dir, id=None):
         suffix = f"_{id}" if id is not None else ""
         torch.save(self.teacher.state_dict(), f"{dir}/teacher{suffix}.pth")

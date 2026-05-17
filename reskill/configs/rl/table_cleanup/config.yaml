@@ -3,7 +3,7 @@ setup:
   exp_name: "reskill_agent"
   cpu: 1
   seed: 21
-  epochs: 200
+  epochs: 400
   max_ep_len: 50
   logistic_C: 18000
   logistic_k: 0.001
