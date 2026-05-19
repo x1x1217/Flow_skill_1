@@ -7,8 +7,8 @@ mkdir -p logs/Flow/reskill_flow
 seeds=(2 3 20)
 use_student=0
 use_grad=1
-guidance_scale=0.03
-guidance_warmup_epoch=50
+guidance_scale=0.01
+guidance_warmup_epoch=0
 guidance_grad_clip=1.0
 
 for seed in "${seeds[@]}"; do
@@ -25,7 +25,7 @@ for seed in "${seeds[@]}"; do
     --guidance_scale "$guidance_scale" \
     --guidance_warmup_epoch "$guidance_warmup_epoch" \
     --guidance_grad_clip "$guidance_grad_clip" \
-    > "logs/Flow/reskill_flow/seed${seed}/table_cleanup_pick1_push999_seed${seed}_student${use_student}_grad${use_grad}_gscale${guidance_scale}_gwarm${guidance_warmup_epoch}_gclip${guidance_grad_clip}.log" 2>&1 &
+    > "logs/Flow/reskill_flow/seed${seed}/table_cleanup_grad${use_grad}_gscale${guidance_scale}_NoWarmup.log" 2>&1 &
 
     # CUDA_VISIBLE_DEVICES=1 python -u -m reskill.train_reskill_agent_res \
     # --config_file slippery_push/config.yaml \

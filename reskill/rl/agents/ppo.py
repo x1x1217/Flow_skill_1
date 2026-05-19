@@ -248,13 +248,14 @@ class PPO():
         return ((self.ac.q(torch.concat([obs, act], dim=1)) - ret) ** 2).mean()
 
 
-    def update(self):
+    def update(self, name=None):
         data = self.buf.get()
 
         pi_l_old, pi_info_old = self.compute_loss_pi(data)
         pi_l_old = pi_l_old.item()
         v_l_old = self.compute_loss_v(data).item()
         q_l_old = self.compute_loss_q(data).item()
+        pi_iters = 0
 
         # Train policy with multiple steps of gradient descent
         for i in range(self.train_pi_iters):
@@ -262,11 +263,15 @@ class PPO():
             loss_pi, pi_info = self.compute_loss_pi(data)
             kl = mpi_avg(pi_info['kl'])
             if kl > 1.5 * self.target_kl:
-                print('Early stopping at step %d due to reaching max kl.' %i)
+                if name is None:
+                    print('Early stopping at step %d due to reaching max kl.' % i)
+                else:
+                    print('Early stopping %s at step %d due to reaching max kl.' % (name, i))
                 break
             loss_pi.backward()
             mpi_avg_grads(self.ac.pi)    # average grads across MPI processes
             self.pi_optimizer.step()
+            pi_iters = i + 1
 
         # Value function learning
         for i in range(self.train_v_iters):
@@ -290,8 +295,8 @@ class PPO():
                         KL=kl, 
                         Entropy=ent, 
                         ClipFrac=cf,
+                        PiIters=pi_iters,
                         DeltaLossPi=(loss_pi.item() - pi_l_old),
                         DeltaLossV=(loss_v.item() - v_l_old),
                         DeltaLossQ=(loss_q.item() - q_l_old))
-
 

@@ -26,7 +26,7 @@ set -e
 cd ~/x1x/Flow_skill_1
 mkdir -p logs/Diffusion/reskill_diffusion
 
-seeds=(3 20)
+seeds=(3)
 
 for seed in "${seeds[@]}"; do
     mkdir -p "logs/Diffusion/reskill_diffusion/seed${seed}"

@@ -105,7 +105,6 @@ def train(agent, residual_agent, skill_distill, sac_replay, env, skill_vae, skil
             sac_replay.push(o.cpu().detach().numpy()[0], z.cpu().detach().numpy()[0], skill_r, o2.cpu().detach().numpy()[0], mask)
 
             o = o2
-            t += 1
 
             timeout = ep_len >= agent.max_ep_len
             terminal = d or timeout

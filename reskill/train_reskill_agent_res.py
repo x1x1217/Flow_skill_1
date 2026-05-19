@@ -6,6 +6,7 @@ from tqdm import tqdm
 import time
 import numpy as np
 import os
+import sys
 from reskill.rl.sac.sac import SAC
 from reskill.rl.sac.replay_memory import ReplayMemory
 from reskill.rl.utils.mpi_tools import num_procs, mpi_fork, proc_id
@@ -18,6 +19,28 @@ from reskill.utils.swanlab_writer import SwanLabWriter
 
 
 device = torch.device('cuda')
+
+
+def register_legacy_model_modules():
+    import reskill.models as reskill_models
+    import reskill.models.bc_diffusion as bc_diffusion
+    import reskill.models.cvae as cvae
+    import reskill.models.diffusion as diffusion
+    import reskill.models.helpers as helpers
+    import reskill.models.model as model
+    import reskill.models.normal_mlp as normal_mlp
+    import reskill.models.rnvp as rnvp
+    import reskill.models.skill_vae as skill_vae
+
+    sys.modules.setdefault('models', reskill_models)
+    sys.modules.setdefault('models.bc_diffusion', bc_diffusion)
+    sys.modules.setdefault('models.cvae', cvae)
+    sys.modules.setdefault('models.diffusion', diffusion)
+    sys.modules.setdefault('models.helpers', helpers)
+    sys.modules.setdefault('models.model', model)
+    sys.modules.setdefault('models.normal_mlp', normal_mlp)
+    sys.modules.setdefault('models.rnvp', rnvp)
+    sys.modules.setdefault('models.skill_vae', skill_vae)
 
 
 def get_obs(obs, env_name):
@@ -37,6 +60,19 @@ def flow_guidance_enabled(args, epoch):
         and args.guidance_scale > 0
         and epoch >= args.guidance_warmup_epoch
     )
+
+
+def align_steps_per_epoch(raw_steps_per_epoch, max_ep_len, seq_len):
+    episode_skills = int(math.ceil(max_ep_len / seq_len))
+    local_raw_steps = int(raw_steps_per_epoch / num_procs())
+    local_aligned_steps = (local_raw_steps // episode_skills) * episode_skills
+    if local_aligned_steps <= 0:
+        raise ValueError(
+            "steps_per_epoch is too small for one full episode after MPI split: "
+            f"raw_steps_per_epoch={raw_steps_per_epoch}, num_procs={num_procs()}, "
+            f"max_ep_len={max_ep_len}, seq_len={seq_len}"
+        )
+    return local_aligned_steps * num_procs(), episode_skills
 
 def train(agent, latent_q_agent, residual_agent, env, skill_vae, skill_prior, logistic_C, logistic_k, 
           save_path, save_path_residual, save_path_latent_q, writer, prior_model, args):
@@ -145,7 +181,6 @@ def train(agent, latent_q_agent, residual_agent, env, skill_vae, skill_prior, lo
                 latent_q_agent.buf.store(o.cpu().detach(), z.cpu().detach(), skill_r, v_latent_q, logp_latent_q)
 
             o = o2
-            t += 1
 
             timeout = ep_len >= agent.max_ep_len
             terminal = d or timeout
@@ -184,10 +219,10 @@ def train(agent, latent_q_agent, residual_agent, env, skill_vae, skill_prior, lo
             torch.save(residual_agent.ac.pi, save_path_residual)
 
         # Perform PPO update!
-        losses = agent.update()
+        losses = agent.update(name='skill')
         if latent_q_agent is not None:
-            latent_q_losses = latent_q_agent.update()
-        residual_losses = residual_agent.update()
+            latent_q_losses = latent_q_agent.update(name='latent_q')
+        residual_losses = residual_agent.update(name='residual')
 
         success_traj = 0
         total_r = 0
@@ -278,12 +313,24 @@ def train(agent, latent_q_agent, residual_agent, env, skill_vae, skill_prior, lo
             writer.add_scalar('kl', losses.KL, env_step_cnt)
             writer.add_scalar('entropy', losses.Entropy, env_step_cnt)
             writer.add_scalar('clip_frac', losses.ClipFrac, env_step_cnt)
+            writer.add_scalar('pi_iters', losses.PiIters, env_step_cnt)
             writer.add_scalar('delta_loss_pi', losses.DeltaLossPi, env_step_cnt)
             writer.add_scalar('delta_loss_v', losses.DeltaLossV, env_step_cnt)
             if latent_q_agent is not None:
                 writer.add_scalar('latent_q/pi_loss', latent_q_losses.LossPi, env_step_cnt)
                 writer.add_scalar('latent_q/v_loss', latent_q_losses.LossV, env_step_cnt)
                 writer.add_scalar('latent_q/q_loss', latent_q_losses.DeltaLossQ, env_step_cnt)
+                writer.add_scalar('latent_q/kl', latent_q_losses.KL, env_step_cnt)
+                writer.add_scalar('latent_q/entropy', latent_q_losses.Entropy, env_step_cnt)
+                writer.add_scalar('latent_q/clip_frac', latent_q_losses.ClipFrac, env_step_cnt)
+                writer.add_scalar('latent_q/pi_iters', latent_q_losses.PiIters, env_step_cnt)
+            writer.add_scalar('residual/pi_loss', residual_losses.LossPi, env_step_cnt)
+            writer.add_scalar('residual/v_loss', residual_losses.LossV, env_step_cnt)
+            writer.add_scalar('residual/q_loss', residual_losses.DeltaLossQ, env_step_cnt)
+            writer.add_scalar('residual/kl', residual_losses.KL, env_step_cnt)
+            writer.add_scalar('residual/entropy', residual_losses.Entropy, env_step_cnt)
+            writer.add_scalar('residual/clip_frac', residual_losses.ClipFrac, env_step_cnt)
+            writer.add_scalar('residual/pi_iters', residual_losses.PiIters, env_step_cnt)
             writer.add_scalar('eval_epoch/success_traj', success_traj, epoch)
             writer.add_scalar('eval_epoch/success_rate', success_traj / 50, epoch)
             writer.add_scalar('eval_epoch/reward_sum', total_r, epoch)
@@ -434,6 +481,7 @@ def main():
         "saved_skill_models",
         args.dataset_name,
         args.prior_model,
+        # f"seed_{args.seed}",
         f"seed_{args.seed}",
         f"skill_prior_{args.prior_run_name}",
     )
@@ -443,6 +491,7 @@ def main():
     # skill_vae_path = f"./results/saved_skill_models/{args.dataset_name}/seed_{args.seed}/skill_prior_{args.prior_model}/skill_vae.pth"
     # skill_prior_path = f"./results/saved_skill_models/{args.dataset_name}/seed_{args.seed}/skill_prior_{args.prior_model}/skill_prior.pth"
 
+    register_legacy_model_modules()
     skill_vae = torch.load(skill_vae_path, map_location=device)
     skill_prior = torch.load(skill_prior_path, map_location=device)
     if args.prior_model == 'RNVP':
@@ -466,6 +515,21 @@ def main():
     seq_len = skill_vae.seq_len
     latent_q_agent = None
     args.n_obs = n_obs
+    raw_steps_per_epoch = conf.skill_agent.steps_per_epoch
+    aligned_steps_per_epoch, episode_skills = align_steps_per_epoch(
+        raw_steps_per_epoch,
+        conf.setup.max_ep_len,
+        seq_len,
+    )
+    conf.skill_agent.steps_per_epoch = aligned_steps_per_epoch
+    if proc_id() == 0:
+        print(
+            "steps_per_epoch alignment: "
+            f"raw={raw_steps_per_epoch}, aligned={aligned_steps_per_epoch}, "
+            f"num_procs={num_procs()}, seq_len={seq_len}, "
+            f"max_ep_len={conf.setup.max_ep_len}, episode_skills={episode_skills}",
+            flush=True,
+        )
 
     if args.prior_model == 'RNVP':
         skill_agent = PPO(ac_kwargs=dict(hidden_sizes=[conf.skill_agent.hid] * conf.skill_agent.l),
