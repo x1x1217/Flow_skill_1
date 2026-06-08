@@ -124,7 +124,7 @@ def train(agent, residual_agent, skill_distill, sac_replay, env, skill_vae, skil
                 #residual_agent.buf.finish_path(v_res)
                 if terminal:
                     if proc_id() == 0:
-                        writer.add_scalar('Episode Reture', ep_ret, env_step_cnt)
+                        writer.add_scalar('Episode Return', ep_ret, env_step_cnt)
                 obs, ep_ret, ep_len = env.reset(), 0, 0
                 o = get_obs(obs, env_name)
 

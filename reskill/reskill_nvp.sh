@@ -1,6 +1,28 @@
-python train_reskill_agent_res.py --config_file table_cleanup/config.yaml --prior_model RNVP --pick 1 --push 999 --seed 2 --use_sigma 1 --use_grad 1 
-python train_reskill_agent_res.py --config_file table_cleanup/config.yaml --prior_model RNVP --pick 1 --push 999 --seed 3 --use_sigma 1 --use_grad 1 
-python train_reskill_agent_res.py --config_file table_cleanup/config.yaml --prior_model RNVP --pick 1 --push 999 --seed 20 --use_sigma 1 --use_grad 1 
-python train_reskill_agent_res.py --config_file table_cleanup/config.yaml --prior_model RNVP --pick 1 --push 999 --seed 21 --use_sigma 1 --use_grad 1 
-python train_reskill_agent_res.py --config_file table_cleanup/config.yaml --prior_model RNVP --pick 1 --push 999 --seed 22 --use_sigma 1 --use_grad 1 
+set -e
 
+cd ~/x1x/Flow_skill_1
+mkdir -p logs/RNVP/reskill_nvp
+
+seeds=(2 3 20)
+pick=1
+push=500
+
+environment_name=slippery_push
+swanlab_project=Flow_skill_1_${environment_name}
+
+for seed in "${seeds[@]}"; do
+    mkdir -p "logs/RNVP/reskill_nvp/${environment_name}/seed${seed}/"
+
+    CUDA_VISIBLE_DEVICES=1 python -u -m reskill.train_reskill_agent_res \
+    --config_file $environment_name/config.yaml \
+    --prior_model RNVP \
+    --pick $pick \
+    --push $push \
+    --seed "$seed" \
+    --use_sigma 0 \
+    --use_grad 0 \
+    --swanlab_project "$swanlab_project" \
+    > "logs/RNVP/reskill_nvp/${environment_name}/seed${seed}/rnvp.log" 2>&1 &
+done
+
+wait

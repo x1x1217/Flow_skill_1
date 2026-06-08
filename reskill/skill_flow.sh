@@ -14,8 +14,11 @@ set -e
 cd "$(dirname "$0")/.."
 mkdir -p logs/Flow/skill_flow
 
+pick=1
+push=200
+
 # seeds=(2 3 20)
-seeds=(2 3 20)
+seeds=(2 20)
 use_student=0
 
 for seed in "${seeds[@]}"; do
@@ -31,11 +34,11 @@ for seed in "${seeds[@]}"; do
 
   CUDA_VISIBLE_DEVICES=1 python -u -m reskill.train_skill_modules \
     --prior_model Flow \
-    --pick 1 \
-    --push 999 \
+    --pick "$pick" \
+    --push "$push" \
     --seed "$seed" \
     --use_student "$use_student" \
-    > "logs/Flow/skill_flow/seed${seed}/pick1_push999.log" 2>&1 &
+    > "logs/Flow/skill_flow/seed${seed}/pick${pick}_push${push}.log" 2>&1 &
 
 done
 

@@ -11,6 +11,7 @@ from reskill.rl.sac.sac import SAC
 from reskill.rl.sac.replay_memory import ReplayMemory
 from reskill.rl.utils.mpi_tools import num_procs, mpi_fork, proc_id
 from reskill.rl.agents.ppo import PPO
+from reskill.rl.agents.chunk_critic import ChunkReplayBuffer, LatentChunkCritic
 from reskill.utils.general_utils import AttrDict
 import reskill.rl.envs
 from reskill.models.bc_diffusion import Diffusion_BC
@@ -74,8 +75,8 @@ def align_steps_per_epoch(raw_steps_per_epoch, max_ep_len, seq_len):
         )
     return local_aligned_steps * num_procs(), episode_skills
 
-def train(agent, latent_q_agent, residual_agent, env, skill_vae, skill_prior, logistic_C, logistic_k, 
-          save_path, save_path_residual, save_path_latent_q, writer, prior_model, args):
+def train(agent, latent_q_agent, chunk_critic, chunk_replay, residual_agent, env, skill_vae, skill_prior, logistic_C, logistic_k, 
+          save_path, save_path_residual, save_path_latent_q, save_path_chunk_critic, writer, prior_model, args):
 
     env_name = env.spec.id
     obs, ep_ret, ep_len = env.reset(), 0, 0
@@ -84,6 +85,10 @@ def train(agent, latent_q_agent, residual_agent, env, skill_vae, skill_prior, lo
 
     env_step_cnt = 0
     residual_factor = 0.0
+    ep_ret_smooth_window_steps = 10000
+    ep_ret_smooth_next_step = ep_ret_smooth_window_steps
+    ep_ret_smooth_sum = 0.0
+    ep_ret_smooth_count = 0
 
     local_steps_per_epoch = int(agent.steps_per_epoch / num_procs())
 
@@ -100,15 +105,13 @@ def train(agent, latent_q_agent, residual_agent, env, skill_vae, skill_prior, lo
                 if flow_guidance_enabled(args, epoch):
                     z = skill_prior.sample_z_guided_torch(
                         cond,
-                        q_fn=latent_q_agent.ac.q,
+                        q_fn=chunk_critic.q_fn_from_obs_latent,
                         n_obs=args.n_obs,
                         guidance_scale=args.guidance_scale,
                         grad_clip=args.guidance_grad_clip,
                     ).detach()
                 else:
                     z = skill_prior.sample_z_torch(cond).detach()
-                if latent_q_agent is not None:
-                    v_latent_q, logp_latent_q = latent_q_agent.ac.v_logp(torch.as_tensor(o, dtype=torch.float32), z)
             elif prior_model == 'Diffusion':
                 state_ = torch.cat((o, n), dim=1).to(device)
                 #print(state_)
@@ -127,6 +130,7 @@ def train(agent, latent_q_agent, residual_agent, env, skill_vae, skill_prior, lo
                 z = skill_prior.net(state_).detach()
 
             o2, skill_r = o, 0
+            chunk_r = 0.0
         
             for step in range(skill_vae.seq_len):
                 """if len(sac_replay) > args.batch_size:
@@ -153,6 +157,7 @@ def train(agent, latent_q_agent, residual_agent, env, skill_vae, skill_prior, lo
                 env_step_cnt += 1
 
                 skill_r += r #Sum rewards for high level policy
+                chunk_r += (args.chunk_critic_gamma ** step) * r
                 ep_ret += r
                 ep_len += 1
 
@@ -176,6 +181,7 @@ def train(agent, latent_q_agent, residual_agent, env, skill_vae, skill_prior, lo
                 writer.add_scalar('ppo/logistic_fn', residual_factor, env_step_cnt)
 
             # save and log
+            o_start_np = o.cpu().detach().numpy()[0]
             agent.buf.store(o.cpu().detach(), n.cpu().detach(), skill_r, v_agent, logp_agent)
             if latent_q_agent is not None:
                 latent_q_agent.buf.store(o.cpu().detach(), z.cpu().detach(), skill_r, v_latent_q, logp_latent_q)
@@ -185,6 +191,14 @@ def train(agent, latent_q_agent, residual_agent, env, skill_vae, skill_prior, lo
             timeout = ep_len >= agent.max_ep_len
             terminal = d or timeout
             epoch_ended = t == local_steps_per_epoch-1
+            if chunk_replay is not None:
+                chunk_replay.push(
+                    o_start_np,
+                    z.cpu().detach().numpy()[0],
+                    chunk_r,
+                    o2.cpu().detach().numpy()[0],
+                    float(terminal),
+                )
         
             if terminal or epoch_ended:
                 if epoch_ended and not(terminal):
@@ -206,7 +220,19 @@ def train(agent, latent_q_agent, residual_agent, env, skill_vae, skill_prior, lo
                 residual_agent.buf.finish_path(v_res)
                 if terminal:
                     if proc_id() == 0:
-                        writer.add_scalar('Episode Reture', ep_ret, env_step_cnt)
+                        writer.add_scalar('Episode Return', ep_ret, env_step_cnt)
+                        ep_ret_smooth_sum += ep_ret
+                        ep_ret_smooth_count += 1
+                        if env_step_cnt >= ep_ret_smooth_next_step and ep_ret_smooth_count > 0:
+                            writer.add_scalar(
+                                'Episode Return Smoothed',
+                                ep_ret_smooth_sum / ep_ret_smooth_count,
+                                env_step_cnt,
+                            )
+                            ep_ret_smooth_sum = 0.0
+                            ep_ret_smooth_count = 0
+                            while ep_ret_smooth_next_step <= env_step_cnt:
+                                ep_ret_smooth_next_step += ep_ret_smooth_window_steps
                 obs, ep_ret, ep_len = env.reset(), 0, 0
                 o = get_obs(obs, env_name)
 
@@ -215,6 +241,8 @@ def train(agent, latent_q_agent, residual_agent, env, skill_vae, skill_prior, lo
             torch.save(agent.ac.pi, save_path)
             if latent_q_agent is not None:
                 torch.save(latent_q_agent.ac, save_path_latent_q)
+            if chunk_critic is not None:
+                torch.save(chunk_critic.state_dict(), save_path_chunk_critic)
             #skill_distill.save_checkpoint(env_name, str(args.seed)+"_"+args.prior_model)
             torch.save(residual_agent.ac.pi, save_path_residual)
 
@@ -223,6 +251,13 @@ def train(agent, latent_q_agent, residual_agent, env, skill_vae, skill_prior, lo
         if latent_q_agent is not None:
             latent_q_losses = latent_q_agent.update(name='latent_q')
         residual_losses = residual_agent.update(name='residual')
+        if chunk_critic is not None:
+            chunk_critic_losses = chunk_critic.update_with_flow_policy(
+                chunk_replay,
+                agent,
+                skill_prior,
+                args,
+            )
 
         success_traj = 0
         total_r = 0
@@ -248,7 +283,7 @@ def train(agent, latent_q_agent, residual_agent, env, skill_vae, skill_prior, lo
                     if flow_guidance_enabled(args, epoch):
                         z = skill_prior.sample_z_guided_torch(
                             cond,
-                            q_fn=latent_q_agent.ac.q,
+                            q_fn=chunk_critic.q_fn_from_obs_latent,
                             n_obs=args.n_obs,
                             guidance_scale=args.guidance_scale,
                             grad_clip=args.guidance_grad_clip,
@@ -324,6 +359,13 @@ def train(agent, latent_q_agent, residual_agent, env, skill_vae, skill_prior, lo
                 writer.add_scalar('latent_q/entropy', latent_q_losses.Entropy, env_step_cnt)
                 writer.add_scalar('latent_q/clip_frac', latent_q_losses.ClipFrac, env_step_cnt)
                 writer.add_scalar('latent_q/pi_iters', latent_q_losses.PiIters, env_step_cnt)
+            if chunk_critic is not None:
+                writer.add_scalar('chunk_critic/q_loss', chunk_critic_losses.q_loss, env_step_cnt)
+                writer.add_scalar('chunk_critic/q1_loss', chunk_critic_losses.q1_loss, env_step_cnt)
+                writer.add_scalar('chunk_critic/q2_loss', chunk_critic_losses.q2_loss, env_step_cnt)
+                writer.add_scalar('chunk_critic/target_q', chunk_critic_losses.target_q, env_step_cnt)
+                writer.add_scalar('chunk_critic/current_q', chunk_critic_losses.current_q, env_step_cnt)
+                writer.add_scalar('chunk_critic/replay_size', len(chunk_replay), env_step_cnt)
             writer.add_scalar('residual/pi_loss', residual_losses.LossPi, env_step_cnt)
             writer.add_scalar('residual/v_loss', residual_losses.LossV, env_step_cnt)
             writer.add_scalar('residual/q_loss', residual_losses.DeltaLossQ, env_step_cnt)
@@ -386,6 +428,14 @@ def main():
     parser.add_argument('--guidance_scale', type=float, default=0.0)
     parser.add_argument('--guidance_warmup_epoch', type=int, default=0)
     parser.add_argument('--guidance_grad_clip', type=float, default=0.0)
+    parser.add_argument('--chunk_critic_hidden_dim', type=int, default=256)
+    parser.add_argument('--chunk_critic_lr', type=float, default=3e-4)
+    parser.add_argument('--chunk_critic_tau', type=float, default=0.005)
+    parser.add_argument('--chunk_critic_gamma', type=float, default=None)
+    parser.add_argument('--chunk_critic_batch_size', type=int, default=256)
+    parser.add_argument('--chunk_critic_updates_per_epoch', type=int, default=200)
+    parser.add_argument('--chunk_critic_replay_size', type=int, default=1000000)
+    parser.add_argument('--chunk_critic_ensembles', type=int, default=1)
     parser.add_argument('--swanlab_project', type=str, default="Flow_skill_1")
     parser.add_argument('--swanlab_workspace', type=str, default="x1x1217")
     parser.add_argument('--swanlab_mode', type=str, default=None)
@@ -402,6 +452,7 @@ def main():
                 f"_gscale_{args.guidance_scale:g}"
                 f"_gwarm_{args.guidance_warmup_epoch}"
                 f"_gclip_{args.guidance_grad_clip:g}"
+                f"_chunkq_{args.chunk_critic_ensembles}"
             )
     curr_dir = os.path.dirname(__file__)
     config_path = os.path.join(curr_dir, "configs", "rl", args.config_file)
@@ -411,6 +462,10 @@ def main():
         conf = AttrDict(conf)
     for key in conf:
         conf[key] = AttrDict(conf[key])
+    if args.chunk_critic_gamma is None:
+        args.chunk_critic_gamma = conf.skill_agent.gamma
+    if args.chunk_critic_ensembles < 1:
+        raise ValueError("--chunk_critic_ensembles must be >= 1")
 
     mpi_fork(conf.setup.cpu)  #  run parallel code with mpi
 
@@ -444,8 +499,7 @@ def main():
             project=args.swanlab_project,
             workspace=args.swanlab_workspace,
             experiment_name=(
-                f"agent_{conf.setup.env}_{args.dataset_name}_seed{args.seed}_"
-                f"{args.prior_run_name}_{args.run_variant}"
+                f"{conf.setup.env}_{args.prior_model}_grad_{args.use_grad}_seed{args.seed}"
             ),
             config=swanlab_config,
             logdir=log_file,
@@ -470,6 +524,7 @@ def main():
     os.makedirs(save_dir, exist_ok=True)
     save_path = os.path.join(save_dir, "ppo_agent.pth")
     save_path_latent_q = os.path.join(save_dir, "ppo_latent_q_agent.pth")
+    save_path_chunk_critic = os.path.join(save_dir, "chunk_critic.pth")
     save_path_residual = os.path.join(save_dir, "ppo_residual_agent.pth")
 
     torch.set_num_threads(torch.get_num_threads())
@@ -514,6 +569,8 @@ def main():
     n_obs = skill_vae.n_obs
     seq_len = skill_vae.seq_len
     latent_q_agent = None
+    chunk_critic = None
+    chunk_replay = None
     args.n_obs = n_obs
     raw_steps_per_epoch = conf.skill_agent.steps_per_epoch
     aligned_steps_per_epoch, episode_skills = align_steps_per_epoch(
@@ -551,6 +608,8 @@ def main():
     elif args.prior_model == 'Flow':
         if args.use_grad == 1 and args.use_student == 1 and args.guidance_scale > 0:
             raise ValueError("Flow guidance currently requires --use_student 0 for teacher Euler sampling.")
+        if args.use_grad == 1 and args.guidance_scale > 0 and args.chunk_critic_updates_per_epoch <= 0:
+            raise ValueError("Flow guidance requires --chunk_critic_updates_per_epoch > 0.")
         skill_agent = PPO(ac_kwargs=dict(hidden_sizes=[conf.skill_agent.hid]*conf.skill_agent.l),
                     gamma=conf.skill_agent.gamma,
                     seed=args.seed,
@@ -568,22 +627,22 @@ def main():
                     act_dim=n_actions,
                     act_limit=2)
         if args.use_grad == 1 and args.guidance_scale > 0:
-            latent_q_agent = PPO(ac_kwargs=dict(hidden_sizes=[conf.skill_agent.hid] * conf.skill_agent.l),
-                        gamma=conf.skill_agent.gamma,
-                        seed=args.seed,
-                        steps_per_epoch=conf.skill_agent.steps_per_epoch,
-                        epochs=conf.setup.epochs,
-                        clip_ratio=conf.skill_agent.clip_ratio,
-                        pi_lr=conf.skill_agent.pi_lr,
-                        vf_lr=conf.skill_agent.vf_lr,
-                        train_pi_iters=conf.skill_agent.train_pi_iters,
-                        train_v_iters=conf.skill_agent.train_v_iters,
-                        lam=conf.skill_agent.lam,
-                        max_ep_len=conf.setup.max_ep_len,
-                        target_kl=conf.skill_agent.target_kl,
-                        obs_dim=n_obs,
-                        act_dim=n_features,
-                        act_limit=2)
+            chunk_critic = LatentChunkCritic(
+                state_dim=n_obs,
+                latent_dim=n_features,
+                hidden_dim=args.chunk_critic_hidden_dim,
+                num_ensembles=args.chunk_critic_ensembles,
+                lr=args.chunk_critic_lr,
+                gamma=args.chunk_critic_gamma,
+                tau=args.chunk_critic_tau,
+                seq_len=seq_len,
+            )
+            chunk_replay = ChunkReplayBuffer(
+                state_dim=n_obs,
+                latent_dim=n_features,
+                capacity=args.chunk_critic_replay_size,
+                seed=args.seed,
+            )
     elif args.prior_model == 'Diffusion':
         latent_q_agent = PPO(ac_kwargs=dict(hidden_sizes=[conf.skill_agent.hid] * conf.skill_agent.l),
                     gamma=conf.skill_agent.gamma, 
@@ -664,6 +723,8 @@ def main():
     print("Training RL agent...")
     train(agent=skill_agent,
           latent_q_agent=latent_q_agent,
+          chunk_critic=chunk_critic,
+          chunk_replay=chunk_replay,
           residual_agent=residual_agent,  
           env=env,
           skill_vae=skill_vae,
@@ -672,6 +733,7 @@ def main():
           logistic_k=conf.setup.logistic_k,
           save_path=save_path,
           save_path_latent_q=save_path_latent_q,
+          save_path_chunk_critic=save_path_chunk_critic,
           save_path_residual=save_path_residual,
           writer=writer,
           prior_model=args.prior_model,
