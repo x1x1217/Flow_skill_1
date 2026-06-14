@@ -22,13 +22,13 @@ chunk_critic_batch_size=256
 chunk_critic_updates_per_epoch=200
 chunk_critic_replay_size=1000000
 
-environment_name=pyramid_stack
+environment_name=slippery_push
 swanlab_project=Flow_skill_${environment_name}
 
 for seed in "${seeds[@]}"; do
     mkdir -p "logs/Flow/reskill_flow/${environment_name}/seed${seed}/"
 
-    CUDA_VISIBLE_DEVICES=0 python -u -m reskill.train_reskill_agent_res \
+    CUDA_VISIBLE_DEVICES=1 python -u -m reskill.train_reskill_agent_res \
     --config_file $environment_name/config.yaml \
     --prior_model Flow \
     --pick $pick \
@@ -47,7 +47,7 @@ for seed in "${seeds[@]}"; do
     --chunk_critic_updates_per_epoch "$chunk_critic_updates_per_epoch" \
     --chunk_critic_replay_size "$chunk_critic_replay_size" \
     --swanlab_project "$swanlab_project" \
-    > "logs/Flow/reskill_flow/${environment_name}/seed${seed}/grad${use_grad}_gscale${guidance_scale}_chunkq${chunk_critic_ensembles}.log" 2>&1 &
+    > "logs/Flow/reskill_flow/${environment_name}/seed${seed}/grad${use_grad}_gscale${guidance_scale}_chunkq${chunk_critic_ensembles}_CorrectedEval.log" 2>&1 &
 
     # CUDA_VISIBLE_DEVICES=1 python -u -m reskill.train_reskill_agent_res \
     # --config_file slippery_push/config.yaml \

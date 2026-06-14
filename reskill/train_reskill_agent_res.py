@@ -52,15 +52,10 @@ def get_obs(obs, env_name):
     return out
 
 def logistic_fn(step, k=0.001, C=18000):
-    return 1/(1 + math.exp(-k * (step-C)))
+    return 1/(1 + math.exp(-k * (step - C)))
 
 def flow_guidance_enabled(args, epoch):
-    return (
-        args.prior_model == 'Flow'
-        and args.use_grad == 1
-        and args.guidance_scale > 0
-        and epoch >= args.guidance_warmup_epoch
-    )
+    return (args.prior_model == 'Flow' and args.use_grad == 1 and args.guidance_scale > 0 and epoch >= args.guidance_warmup_epoch)
 
 
 def align_steps_per_epoch(raw_steps_per_epoch, max_ep_len, seq_len):
@@ -224,15 +219,12 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, residual_agent, env
                         ep_ret_smooth_sum += ep_ret
                         ep_ret_smooth_count += 1
                         if env_step_cnt >= ep_ret_smooth_next_step and ep_ret_smooth_count > 0:
-                            writer.add_scalar(
-                                'Episode Return Smoothed',
-                                ep_ret_smooth_sum / ep_ret_smooth_count,
-                                env_step_cnt,
-                            )
+                            writer.add_scalar('Episode Return Smoothed', ep_ret_smooth_sum / ep_ret_smooth_count, env_step_cnt)
                             ep_ret_smooth_sum = 0.0
                             ep_ret_smooth_count = 0
                             while ep_ret_smooth_next_step <= env_step_cnt:
                                 ep_ret_smooth_next_step += ep_ret_smooth_window_steps
+                                
                 obs, ep_ret, ep_len = env.reset(), 0, 0
                 o = get_obs(obs, env_name)
 
@@ -252,12 +244,7 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, residual_agent, env
             latent_q_losses = latent_q_agent.update(name='latent_q')
         residual_losses = residual_agent.update(name='residual')
         if chunk_critic is not None:
-            chunk_critic_losses = chunk_critic.update_with_flow_policy(
-                chunk_replay,
-                agent,
-                skill_prior,
-                args,
-            )
+            chunk_critic_losses = chunk_critic.update_with_flow_policy(chunk_replay, agent, skill_prior, args)
 
         success_traj = 0
         total_r = 0
@@ -269,7 +256,8 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, residual_agent, env
 
             steps = 0
             r = 0
-            while(True):
+            episode_success = False
+            while steps < env._max_episode_steps:
 
                 # Use skill agent
                 n = agent.ac.act_deterministic(obs)
@@ -325,22 +313,20 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, residual_agent, env
                     #a = a_dec.cpu().detach().numpy()[0]
                     obs, reward, done, debug_info = env.step(a)
                     r += reward
+                    episode_success = episode_success or bool(debug_info['is_success'])
                     obs = get_obs(obs, env_name)
 
                     #env.render()
                     
                     steps += 1
+                    if steps >= env._max_episode_steps:
+                        break
 
-                if steps > env._max_episode_steps or debug_info['is_success']:
-                    if debug_info['is_success']:
-                        success_traj += 1
-                    obs = env.reset()
-                    obs = get_obs(obs, env_name)
-                    steps = 0
-                    total_r += r
-                    if r > 0:
-                        r_time += 1
-                    break
+            if episode_success:
+                success_traj += 1
+            total_r += r
+            if r > 0:
+                r_time += 1
 
         if proc_id() == 0:
             writer.add_scalar('pi_loss_', losses.LossPi, env_step_cnt)

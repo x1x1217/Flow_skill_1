@@ -57,7 +57,7 @@ class TestRLAgent():
         steps = 0
         r = 0
 
-        while(True):
+        while steps < self.env._max_episode_steps:
 
             # Use skill agent
             dist, _ = self.skill_agent(obs)
@@ -90,13 +90,8 @@ class TestRLAgent():
                 self.env.render()
                 
                 steps += 1
-
-            if steps > self.env._max_episode_steps or debug_info['is_success']:
-
-                obs = self.env.reset()
-                obs = self.get_obs(obs)
-                steps = 0
-                break
+                if steps >= self.env._max_episode_steps:
+                    break
 
         print(r)
 

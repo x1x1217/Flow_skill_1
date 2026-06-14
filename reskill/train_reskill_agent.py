@@ -148,7 +148,8 @@ def train(agent, residual_agent, skill_distill, sac_replay, env, skill_vae, skil
 
             steps = 0
             r = 0
-            while(True):
+            episode_success = False
+            while steps < env._max_episode_steps:
 
                 # Use skill agent
                 n = agent.ac.act_deterministic(obs)
@@ -184,22 +185,20 @@ def train(agent, residual_agent, skill_distill, sac_replay, env, skill_vae, skil
                     a = a_dec.cpu().detach().numpy()[0]
                     obs, reward, done, debug_info = env.step(a)
                     r += reward
+                    episode_success = episode_success or bool(debug_info['is_success'])
                     obs = get_obs(obs, env_name)
 
                     #env.render()
                     
                     steps += 1
+                    if steps >= env._max_episode_steps:
+                        break
 
-                if steps > env._max_episode_steps or debug_info['is_success']:
-                    if debug_info['is_success']:
-                        success_traj += 1
-                    obs = env.reset()
-                    obs = get_obs(obs, env_name)
-                    steps = 0
-                    total_r += r
-                    if r > 0:
-                        r_time += 1
-                    break
+            if episode_success:
+                success_traj += 1
+            total_r += r
+            if r > 0:
+                r_time += 1
 
         if proc_id() == 0:
             writer.add_scalar('pi_loss_', losses.LossPi, env_step_cnt)
