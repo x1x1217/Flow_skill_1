@@ -14,6 +14,19 @@ guidance_scale=0.01
 guidance_warmup_epoch=0
 guidance_grad_clip=1.0
 
+use_condition_flow=1
+condition_use_grad=1
+condition_guidance_scale=0.01
+condition_guidance_warmup_epoch=10
+condition_guidance_grad_clip=1.0
+condition_critic_ensembles=1
+condition_critic_hidden_dim=256
+condition_critic_lr=0.0003
+condition_critic_tau=0.005
+condition_critic_batch_size=256
+condition_critic_updates_per_epoch=200
+condition_critic_replay_size=1000000
+
 chunk_critic_ensembles=1
 chunk_critic_hidden_dim=256
 chunk_critic_lr=0.0003
@@ -39,6 +52,18 @@ for seed in "${seeds[@]}"; do
     --guidance_scale "$guidance_scale" \
     --guidance_warmup_epoch "$guidance_warmup_epoch" \
     --guidance_grad_clip "$guidance_grad_clip" \
+    --use_condition_flow "$use_condition_flow" \
+    --condition_use_grad "$condition_use_grad" \
+    --condition_guidance_scale "$condition_guidance_scale" \
+    --condition_guidance_warmup_epoch "$condition_guidance_warmup_epoch" \
+    --condition_guidance_grad_clip "$condition_guidance_grad_clip" \
+    --condition_critic_ensembles "$condition_critic_ensembles" \
+    --condition_critic_hidden_dim "$condition_critic_hidden_dim" \
+    --condition_critic_lr "$condition_critic_lr" \
+    --condition_critic_tau "$condition_critic_tau" \
+    --condition_critic_batch_size "$condition_critic_batch_size" \
+    --condition_critic_updates_per_epoch "$condition_critic_updates_per_epoch" \
+    --condition_critic_replay_size "$condition_critic_replay_size" \
     --chunk_critic_ensembles "$chunk_critic_ensembles" \
     --chunk_critic_hidden_dim "$chunk_critic_hidden_dim" \
     --chunk_critic_lr "$chunk_critic_lr" \
@@ -47,7 +72,7 @@ for seed in "${seeds[@]}"; do
     --chunk_critic_updates_per_epoch "$chunk_critic_updates_per_epoch" \
     --chunk_critic_replay_size "$chunk_critic_replay_size" \
     --swanlab_project "$swanlab_project" \
-    > "logs/Flow/reskill_flow/${environment_name}/seed${seed}/grad${use_grad}_gscale${guidance_scale}_chunkq${chunk_critic_ensembles}_CorrectedEval.log" 2>&1 &
+    > "logs/Flow/reskill_flow/${environment_name}/seed${seed}/condflow${use_condition_flow}_cgrad${condition_use_grad}_cgscale${condition_guidance_scale}_cgwarm${condition_guidance_warmup_epoch}_condq${condition_critic_ensembles}.log" 2>&1 &
 
     # CUDA_VISIBLE_DEVICES=1 python -u -m reskill.train_reskill_agent_res \
     # --config_file slippery_push/config.yaml \

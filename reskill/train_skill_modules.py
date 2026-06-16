@@ -46,6 +46,7 @@ class ModelTrainer():
         os.makedirs(self.save_dir, exist_ok=True)
         self.vae_save_path = self.save_dir + "/skill_vae.pth"
         self.sp_save_path = self.save_dir + "/skill_prior.pth"
+        self.condition_prior_save_path = self.save_dir + "/condition_prior.pth"
         
         # config_path = "configs/skill_mdl/" + config_file
         config_path = os.path.join(curr_dir, "configs", "skill_mdl", config_file)
@@ -101,6 +102,13 @@ class ModelTrainer():
                 cond_dim=conf.skill_vae.n_obs+conf.skill_vae.n_actions,
                 latent_dim=conf.skill_vae.n_z,
                 max_action=10,
+                device=self.device,
+                use_student=self.use_student
+            )
+            self.condition_prior = Flow_BC(
+                cond_dim=conf.skill_vae.n_obs,
+                latent_dim=conf.skill_vae.n_actions,
+                max_action=2,
                 device=self.device,
                 use_student=self.use_student
             )
@@ -167,12 +175,16 @@ class ModelTrainer():
                     condtion = torch.cat([state_ori, action], dim=1)
                     
                     metric = self.sp_nvp.train(condtion, skill, iterations=1)
+                    condition_metric = self.condition_prior.train(state_ori, action, iterations=1)
                     sp_loss = np.mean(metric['total_loss'])
             
                 if batch_idx % 10 == 0:
                     flow_loss = np.mean(metric['flow_loss'])
                     distill_loss = np.mean(metric['distill_loss'])
                     prior_total_loss = np.mean(metric['total_loss'])
+                    condition_flow_loss = np.mean(condition_metric['flow_loss'])
+                    condition_distill_loss = np.mean(condition_metric['distill_loss'])
+                    condition_total_loss = np.mean(condition_metric['total_loss'])
                     print(
                         f"[epoch {epoch:03d} batch {batch_idx:04d}/{len(self.train_loader)}] "
                         f"vae_total={losses.total_loss.item():.4f} "
@@ -180,7 +192,9 @@ class ModelTrainer():
                         f"vae_kl={losses.kld_loss.item():.4f} "
                         f"flow={flow_loss:.4f} "
                         f"distill={distill_loss:.4f} "
-                        f"prior_total={prior_total_loss:.4f}",
+                        f"prior_total={prior_total_loss:.4f} "
+                        f"condition_flow={condition_flow_loss:.4f} "
+                        f"condition_total={condition_total_loss:.4f}",
                         flush=True,
                     )
                     self.writer.add_scalar('train_batch/vae_bc_loss', losses.bc_loss.item(), log_step)
@@ -189,6 +203,9 @@ class ModelTrainer():
                     self.writer.add_scalar('flow_prior/flow_loss', flow_loss, log_step)
                     self.writer.add_scalar('flow_prior/distill_loss', distill_loss, log_step)
                     self.writer.add_scalar('flow_prior/total_loss', prior_total_loss, log_step)
+                    self.writer.add_scalar('condition_flow/flow_loss', condition_flow_loss, log_step)
+                    self.writer.add_scalar('condition_flow/distill_loss', condition_distill_loss, log_step)
+                    self.writer.add_scalar('condition_flow/total_loss', condition_total_loss, log_step)
             
             elif self.prior_model == 'Diffusion':
                 skill = output.z.detach()
@@ -307,9 +324,11 @@ class ModelTrainer():
                 )
                 self.writer.add_scalar('val_epoch/loss', val_epoch_loss, epoch)
 
-            if epoch % 50 == 0:
+            if epoch % 50 == 0 or epoch == self.n_epochs - 1:
                 torch.save(self.skill_vae, self.vae_save_path)
                 torch.save(self.sp_nvp, self.sp_save_path)
+                if self.prior_model == 'Flow':
+                    torch.save(self.condition_prior, self.condition_prior_save_path)
                 
    
 if __name__ == "__main__":

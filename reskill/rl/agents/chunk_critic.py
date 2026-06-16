@@ -202,3 +202,61 @@ class LatentChunkCritic:
             current_q=float(np.mean(current_qs)),
             updates=args.chunk_critic_updates_per_epoch,
         )
+
+    def update_with_condition_policy(self, replay_buffer, condition_prior, args):
+        if len(replay_buffer) < args.condition_critic_batch_size:
+            return AttrDict(
+                q_loss=0.0,
+                q1_loss=0.0,
+                q2_loss=0.0,
+                target_q=0.0,
+                current_q=0.0,
+                updates=0,
+            )
+
+        losses = []
+        q1_losses = []
+        q2_losses = []
+        target_qs = []
+        current_qs = []
+
+        for _ in range(args.condition_critic_updates_per_epoch):
+            batch = replay_buffer.sample(args.condition_critic_batch_size)
+            with torch.no_grad():
+                next_c = condition_prior.sample_z_torch(batch.next_state).detach()
+                target_min = self.min_q(batch.next_state, next_c, use_target=True)
+                target_q = batch.reward + (1.0 - batch.done) * self.chunk_discount * target_min
+
+            self.optimizer.zero_grad()
+            q_loss = 0.0
+            q1_loss_value = 0.0
+            q2_loss_value = 0.0
+            current_q_value = 0.0
+            for critic in self.critics:
+                q1, q2 = critic(batch.state, batch.latent)
+                q1_loss = F.mse_loss(q1, target_q)
+                q2_loss = F.mse_loss(q2, target_q)
+                q_loss = q_loss + q1_loss + q2_loss
+                q1_loss_value += q1_loss.item()
+                q2_loss_value += q2_loss.item()
+                current_q_value += torch.min(q1, q2).mean().item()
+            q_loss.backward()
+            self.optimizer.step()
+
+            for target_critic, critic in zip(self.target_critics, self.critics):
+                soft_update(target_critic, critic, self.tau)
+
+            losses.append(q_loss.item())
+            q1_losses.append(q1_loss_value / self.num_ensembles)
+            q2_losses.append(q2_loss_value / self.num_ensembles)
+            target_qs.append(target_q.mean().item())
+            current_qs.append(current_q_value / self.num_ensembles)
+
+        return AttrDict(
+            q_loss=float(np.mean(losses)),
+            q1_loss=float(np.mean(q1_losses)),
+            q2_loss=float(np.mean(q2_losses)),
+            target_q=float(np.mean(target_qs)),
+            current_q=float(np.mean(current_qs)),
+            updates=args.condition_critic_updates_per_epoch,
+        )

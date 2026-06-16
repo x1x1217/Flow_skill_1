@@ -38,7 +38,7 @@ for seed in "${seeds[@]}"; do
     --push "$push" \
     --seed "$seed" \
     --use_student "$use_student" \
-    > "logs/Flow/skill_flow/seed${seed}/pick${pick}_push${push}.log" 2>&1 &
+    > "logs/Flow/skill_flow/seed${seed}/pick${pick}_push${push}_condition_flow.log" 2>&1 &
 
 done
 
