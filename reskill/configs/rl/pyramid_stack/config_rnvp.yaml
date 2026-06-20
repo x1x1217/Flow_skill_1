@@ -5,9 +5,8 @@ setup:
   seed: 21
   epochs: 1300
   max_ep_len: 50
-  logistic_C: 1500000
-  logistic_k: 0.000002
-  max_residual_factor: 0.7
+  logistic_C: 45000
+  logistic_k: 0.000125
   
 skill_agent:
   hid: 64

@@ -69,6 +69,10 @@ def condition_guidance_enabled(args, epoch):
     )
 
 
+def mean_or_zero(values):
+    return float(np.mean(values)) if len(values) > 0 else 0.0
+
+
 def align_steps_per_epoch(raw_steps_per_epoch, max_ep_len, seq_len):
     episode_skills = int(math.ceil(max_ep_len / seq_len))
     local_raw_steps = int(raw_steps_per_epoch / num_procs())
@@ -81,8 +85,73 @@ def align_steps_per_epoch(raw_steps_per_epoch, max_ep_len, seq_len):
         )
     return local_aligned_steps * num_procs(), episode_skills
 
+
+def resolve_skill_model_dir(curr_dir, args):
+    candidate_dirs = [
+        os.path.join(
+            curr_dir,
+            "results",
+            "saved_skill_models",
+            args.dataset_name,
+            args.prior_model,
+            f"seed_{args.seed}",
+            f"skill_prior_{args.prior_run_name}",
+        ),
+        os.path.join(
+            curr_dir,
+            "results",
+            "saved_skill_models",
+            args.dataset_name,
+            f"seed_{args.seed}",
+            f"skill_prior_{args.prior_run_name}",
+        ),
+        os.path.join(
+            curr_dir,
+            "results",
+            "saved_skill_models",
+            args.dataset_name,
+            f"seed_{args.seed}",
+            f"skill_prior_{args.prior_model}",
+        ),
+    ]
+
+    required = ["skill_vae", "skill_prior"]
+    if args.use_condition_flow == 1:
+        required.append("condition_prior")
+
+    for model_dir in candidate_dirs:
+        if all(resolve_skill_checkpoint_path(model_dir, name, args.skill_checkpoint) is not None for name in required):
+            return model_dir
+
+    checked = "\n".join(candidate_dirs)
+    raise FileNotFoundError(
+        "Could not find skill module checkpoint directory. Checked:\n"
+        f"{checked}\n"
+        f"checkpoint={args.skill_checkpoint}, required={required}"
+    )
+
+
+def resolve_skill_checkpoint_path(model_dir, name, checkpoint):
+    if checkpoint == "best":
+        candidates = [
+            os.path.join(model_dir, f"best_{name}.pth"),
+            os.path.join(model_dir, f"{name}.pth"),
+        ]
+    elif checkpoint == "last":
+        candidates = [
+            os.path.join(model_dir, f"{name}.pth"),
+        ]
+    else:
+        raise ValueError("--skill_checkpoint must be 'best' or 'last'.")
+
+    for path in candidates:
+        if os.path.exists(path):
+            return path
+    return None
+
 def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, condition_critic, condition_replay,
           residual_agent, env, skill_vae, skill_prior, logistic_C, logistic_k,
+          max_residual_factor,
           save_path, save_path_residual, save_path_latent_q, save_path_chunk_critic, save_path_condition_critic,
           writer, prior_model, args):
 
@@ -97,14 +166,28 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
     ep_ret_smooth_next_step = ep_ret_smooth_window_steps
     ep_ret_smooth_sum = 0.0
     ep_ret_smooth_count = 0
+    ep_ret_recent = []
+    ep_ret_recent_window = 20
 
     local_steps_per_epoch = int(agent.steps_per_epoch / num_procs())
 
     for epoch in tqdm(range(agent.epochs)):
+        rollout_condition_guidance_scales = []
+        rollout_skill_guidance_scales = []
+        rollout_condition_norm = []
+        rollout_z_norm = []
+        rollout_decoder_action_norm = []
+        rollout_residual_action_norm = []
+        rollout_env_action_norm = []
+        rollout_chunk_reward = []
+        rollout_chunk_discounted_reward = []
+
         for t in range(local_steps_per_epoch):
             # Select condition vector using either high-level PPO or condition flow policy.
+            condition_guidance_scale = 0.0
             if args.use_condition_flow == 1:
                 if condition_guidance_enabled(args, epoch):
+                    condition_guidance_scale = args.condition_guidance_scale
                     n = condition_prior.sample_z_guided_torch(
                         o,
                         q_fn=condition_critic.q_fn_from_obs_latent,
@@ -117,6 +200,10 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
                 v_agent, logp_agent = None, None
             else:
                 n, v_agent, logp_agent, mu, std = agent.ac.step(torch.as_tensor(o, dtype=torch.float32))
+            rollout_condition_guidance_scales.append(condition_guidance_scale)
+            rollout_condition_norm.append(n.norm(dim=1).mean().item())
+
+            skill_guidance_scale = 0.0
             if prior_model == 'RNVP':
                 sample = AttrDict(noise=n, state=o)
                 # Warp noise vector to latent space skill
@@ -124,6 +211,7 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
             elif prior_model == 'Flow':
                 cond = torch.cat((o, n), dim=1).to(device)
                 if flow_guidance_enabled(args, epoch):
+                    skill_guidance_scale = args.guidance_scale
                     z = skill_prior.sample_z_guided_torch(
                         cond,
                         q_fn=chunk_critic.q_fn_from_obs_latent,
@@ -149,6 +237,8 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
             elif prior_model == 'MLP':
                 state_ = torch.cat((o, n), dim=1).to(device)
                 z = skill_prior.net(state_).detach()
+            rollout_skill_guidance_scales.append(skill_guidance_scale)
+            rollout_z_norm.append(z.norm(dim=1).mean().item())
 
             o2, skill_r = o, 0
             chunk_r = 0.0
@@ -173,6 +263,9 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
                 
                 a = (a_dec.cpu().detach().numpy() + (a_res.cpu().detach().numpy() * residual_factor))[0]
                 #a = a_dec.cpu().detach().numpy()[0]
+                rollout_decoder_action_norm.append(a_dec.norm(dim=1).mean().item())
+                rollout_residual_action_norm.append(a_res.norm(dim=1).mean().item())
+                rollout_env_action_norm.append(float(np.linalg.norm(a)))
                 
                 # Step the env
                 obs, r, d, _ = env.step(a)
@@ -199,9 +292,10 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
                 
 
             # Update residual action weighting factor
-            residual_factor = logistic_fn(env_step_cnt, k=logistic_k, C=logistic_C)
+            residual_factor = min(logistic_fn(env_step_cnt, k=logistic_k, C=logistic_C), max_residual_factor)
             if proc_id() == 0:
                 writer.add_scalar('ppo/logistic_fn', residual_factor, env_step_cnt)
+                writer.add_scalar('residual/factor', residual_factor, env_step_cnt)
 
             # save and log
             o_start_np = o.cpu().detach().numpy()[0]
@@ -231,6 +325,8 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
                     o2.cpu().detach().numpy()[0],
                     float(terminal),
                 )
+            rollout_chunk_reward.append(skill_r)
+            rollout_chunk_discounted_reward.append(chunk_r)
         
             if terminal or epoch_ended:
                 if epoch_ended and not(terminal):
@@ -256,6 +352,10 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
                 if terminal:
                     if proc_id() == 0:
                         writer.add_scalar('Episode Return', ep_ret, env_step_cnt)
+                        ep_ret_recent.append(ep_ret)
+                        if len(ep_ret_recent) > ep_ret_recent_window:
+                            ep_ret_recent.pop(0)
+                        writer.add_scalar('Episode Return Smoothed Recent', mean_or_zero(ep_ret_recent), env_step_cnt)
                         ep_ret_smooth_sum += ep_ret
                         ep_ret_smooth_count += 1
                         if env_step_cnt >= ep_ret_smooth_next_step and ep_ret_smooth_count > 0:
@@ -290,13 +390,26 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
             latent_q_losses = latent_q_agent.update(name='latent_q')
         residual_losses = residual_agent.update(name='residual')
         if chunk_critic is not None:
-            chunk_critic_losses = chunk_critic.update_with_flow_policy(chunk_replay, agent, skill_prior, args)
+            chunk_critic_losses = chunk_critic.update_with_flow_policy(
+                chunk_replay,
+                agent,
+                skill_prior,
+                args,
+                condition_prior=condition_prior,
+            )
         if condition_critic is not None:
             condition_critic_losses = condition_critic.update_with_condition_policy(condition_replay, condition_prior, args)
 
         success_traj = 0
         total_r = 0
         r_time = 0
+        eval_condition_guidance_scales = []
+        eval_skill_guidance_scales = []
+        eval_condition_norm = []
+        eval_z_norm = []
+        eval_decoder_action_norm = []
+        eval_residual_action_norm = []
+        eval_env_action_norm = []
 
         for roll in range(50):
             obs = env.reset()
@@ -308,8 +421,10 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
             while steps < env._max_episode_steps:
 
                 # Use high-level condition source.
+                condition_guidance_scale = 0.0
                 if args.use_condition_flow == 1:
                     if condition_guidance_enabled(args, epoch):
+                        condition_guidance_scale = args.condition_guidance_scale
                         n = condition_prior.sample_z_guided_torch(
                             obs,
                             q_fn=condition_critic.q_fn_from_obs_latent,
@@ -322,6 +437,10 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
                 else:
                     n = agent.ac.act_deterministic(obs)
                     n = torch.FloatTensor(n)
+                eval_condition_guidance_scales.append(condition_guidance_scale)
+                eval_condition_norm.append(n.norm(dim=1).mean().item())
+
+                skill_guidance_scale = 0.0
                 if prior_model == "RNVP":
                     skill = AttrDict(noise=n, state=obs)
                     z = skill_prior.inverse(skill).noise.detach()
@@ -329,6 +448,7 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
                     n = n.cuda()
                     cond = torch.cat((obs, n), dim=1).cuda()
                     if flow_guidance_enabled(args, epoch):
+                        skill_guidance_scale = args.guidance_scale
                         z = skill_prior.sample_z_guided_torch(
                             cond,
                             q_fn=chunk_critic.q_fn_from_obs_latent,
@@ -355,6 +475,8 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
                     state_ = torch.cat((obs, n), dim=1).cuda()
                     input = torch.cat([zz, state_], dim=1).to(device)
                     z = skill_prior.decode(input)
+                eval_skill_guidance_scales.append(skill_guidance_scale)
+                eval_z_norm.append(z.norm(dim=1).mean().item())
 
                 o2, skill_r = o, 0
             
@@ -369,8 +491,11 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
                     a_res = np.clip(dist, -RESIDUAL_ACTION_LIMIT, RESIDUAL_ACTION_LIMIT)
 
                     # Add residual action to decoded action
-                    a = (a_dec.cpu().detach().numpy() + a_res)[0]
+                    a = (a_dec.cpu().detach().numpy() + (a_res * residual_factor))[0]
                     #a = a_dec.cpu().detach().numpy()[0]
+                    eval_decoder_action_norm.append(a_dec.norm(dim=1).mean().item())
+                    eval_residual_action_norm.append(float(np.linalg.norm(a_res)))
+                    eval_env_action_norm.append(float(np.linalg.norm(a)))
                     obs, reward, done, debug_info = env.step(a)
                     r += reward
                     episode_success = episode_success or bool(debug_info['is_success'])
@@ -419,6 +544,24 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
                 writer.add_scalar('condition_critic/target_q', condition_critic_losses.target_q, env_step_cnt)
                 writer.add_scalar('condition_critic/current_q', condition_critic_losses.current_q, env_step_cnt)
                 writer.add_scalar('condition_critic/replay_size', len(condition_replay), env_step_cnt)
+                writer.add_scalar('condition_flow_q_guidance/q_loss', condition_critic_losses.q_loss, env_step_cnt)
+                writer.add_scalar('condition_flow_q_guidance/q1_loss', condition_critic_losses.q1_loss, env_step_cnt)
+                writer.add_scalar('condition_flow_q_guidance/q2_loss', condition_critic_losses.q2_loss, env_step_cnt)
+                writer.add_scalar('condition_flow_q_guidance/target_q', condition_critic_losses.target_q, env_step_cnt)
+                writer.add_scalar('condition_flow_q_guidance/current_q', condition_critic_losses.current_q, env_step_cnt)
+                writer.add_scalar('condition_flow_q_guidance/replay_size', len(condition_replay), env_step_cnt)
+            writer.add_scalar('rollout/condition_guidance_scale', mean_or_zero(rollout_condition_guidance_scales), env_step_cnt)
+            writer.add_scalar('rollout/skill_guidance_scale', mean_or_zero(rollout_skill_guidance_scales), env_step_cnt)
+            writer.add_scalar('rollout/guidance_scale', mean_or_zero(rollout_condition_guidance_scales), env_step_cnt)
+            writer.add_scalar('rollout/condition_norm', mean_or_zero(rollout_condition_norm), env_step_cnt)
+            writer.add_scalar('rollout/noise_norm', mean_or_zero(rollout_condition_norm), env_step_cnt)
+            writer.add_scalar('rollout/z_norm', mean_or_zero(rollout_z_norm), env_step_cnt)
+            writer.add_scalar('rollout/decoder_action_norm', mean_or_zero(rollout_decoder_action_norm), env_step_cnt)
+            writer.add_scalar('rollout/residual_action_norm', mean_or_zero(rollout_residual_action_norm), env_step_cnt)
+            writer.add_scalar('rollout/env_action_norm', mean_or_zero(rollout_env_action_norm), env_step_cnt)
+            writer.add_scalar('rollout/base_action_norm', mean_or_zero(rollout_decoder_action_norm), env_step_cnt)
+            writer.add_scalar('rollout/chunk_reward', mean_or_zero(rollout_chunk_reward), env_step_cnt)
+            writer.add_scalar('rollout/chunk_discounted_reward', mean_or_zero(rollout_chunk_discounted_reward), env_step_cnt)
             writer.add_scalar('residual/pi_loss', residual_losses.LossPi, env_step_cnt)
             writer.add_scalar('residual/v_loss', residual_losses.LossV, env_step_cnt)
             writer.add_scalar('residual/q_loss', residual_losses.DeltaLossQ, env_step_cnt)
@@ -431,12 +574,30 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
             writer.add_scalar('eval_epoch/reward_sum', total_r, epoch)
             writer.add_scalar('eval_epoch/avg_reward', total_r / 50, epoch)
             writer.add_scalar('eval_epoch/avg_reward_time', r_time / 50, epoch)
+            writer.add_scalar('eval_epoch/condition_guidance_scale', mean_or_zero(eval_condition_guidance_scales), epoch)
+            writer.add_scalar('eval_epoch/skill_guidance_scale', mean_or_zero(eval_skill_guidance_scales), epoch)
+            writer.add_scalar('eval_epoch/condition_norm', mean_or_zero(eval_condition_norm), epoch)
+            writer.add_scalar('eval_epoch/noise_norm', mean_or_zero(eval_condition_norm), epoch)
+            writer.add_scalar('eval_epoch/z_norm', mean_or_zero(eval_z_norm), epoch)
+            writer.add_scalar('eval_epoch/decoder_action_norm', mean_or_zero(eval_decoder_action_norm), epoch)
+            writer.add_scalar('eval_epoch/residual_action_norm', mean_or_zero(eval_residual_action_norm), epoch)
+            writer.add_scalar('eval_epoch/env_action_norm', mean_or_zero(eval_env_action_norm), epoch)
+            writer.add_scalar('eval_epoch/base_action_norm', mean_or_zero(eval_decoder_action_norm), epoch)
 
             writer.add_scalar('eval_step/success_traj', success_traj, env_step_cnt)
             writer.add_scalar('eval_step/success_rate', success_traj / 50, env_step_cnt)
             writer.add_scalar('eval_step/reward_sum', total_r, env_step_cnt)
             writer.add_scalar('eval_step/avg_reward', total_r / 50, env_step_cnt)
             writer.add_scalar('eval_step/avg_reward_time', r_time / 50, env_step_cnt)
+            writer.add_scalar('eval_step/condition_guidance_scale', mean_or_zero(eval_condition_guidance_scales), env_step_cnt)
+            writer.add_scalar('eval_step/skill_guidance_scale', mean_or_zero(eval_skill_guidance_scales), env_step_cnt)
+            writer.add_scalar('eval_step/condition_norm', mean_or_zero(eval_condition_norm), env_step_cnt)
+            writer.add_scalar('eval_step/noise_norm', mean_or_zero(eval_condition_norm), env_step_cnt)
+            writer.add_scalar('eval_step/z_norm', mean_or_zero(eval_z_norm), env_step_cnt)
+            writer.add_scalar('eval_step/decoder_action_norm', mean_or_zero(eval_decoder_action_norm), env_step_cnt)
+            writer.add_scalar('eval_step/residual_action_norm', mean_or_zero(eval_residual_action_norm), env_step_cnt)
+            writer.add_scalar('eval_step/env_action_norm', mean_or_zero(eval_env_action_norm), env_step_cnt)
+            writer.add_scalar('eval_step/base_action_norm', mean_or_zero(eval_decoder_action_norm), env_step_cnt)
 
 
 def main():
@@ -475,6 +636,7 @@ def main():
     parser.add_argument('--seed', type=int, default=21)
     parser.add_argument('--pick', type=int, default=1)
     parser.add_argument('--push', type=int, default=1)
+    parser.add_argument('--dataset_name', type=str, default=None)
     parser.add_argument('--use_sigma', type=int, default=1)
     parser.add_argument('--use_grad', type=int, default=1)
     parser.add_argument('--use_student', type=int, default=1)
@@ -501,6 +663,7 @@ def main():
     parser.add_argument('--condition_critic_updates_per_epoch', type=int, default=200)
     parser.add_argument('--condition_critic_replay_size', type=int, default=1000000)
     parser.add_argument('--condition_critic_ensembles', type=int, default=1)
+    parser.add_argument('--skill_checkpoint', type=str, default="best", choices=["best", "last"])
     parser.add_argument('--swanlab_project', type=str, default="Flow_skill_1")
     parser.add_argument('--swanlab_workspace', type=str, default="x1x1217")
     parser.add_argument('--swanlab_mode', type=str, default=None)
@@ -508,7 +671,8 @@ def main():
     if args.use_condition_flow == 1 and args.prior_model != 'Flow':
         raise ValueError("--use_condition_flow is only implemented for --prior_model Flow.")
 
-    args.dataset_name = f'fetch_block_push{args.push}_pick{args.pick}'
+    if args.dataset_name is None:
+        args.dataset_name = f'fetch_block_push{args.push}_pick{args.pick}'
     args.prior_run_name = args.prior_model
     args.run_variant = f"use_sigma_{args.use_sigma}_grad_{args.use_grad}"
     if args.prior_model == 'Flow':
@@ -605,20 +769,18 @@ def main():
 
     torch.set_num_threads(torch.get_num_threads())
 
-    # Load skills module
-    skill_model_dir = os.path.join(
-        curr_dir,
-        "results",
-        "saved_skill_models",
-        args.dataset_name,
-        args.prior_model,
-        # f"seed_{args.seed}",
-        f"seed_{args.seed}",
-        f"skill_prior_{args.prior_run_name}",
-    )
-    skill_vae_path = os.path.join(skill_model_dir, "skill_vae.pth")
-    skill_prior_path = os.path.join(skill_model_dir, "skill_prior.pth")
-    condition_prior_path = os.path.join(skill_model_dir, "condition_prior.pth")
+    # Load skills module. Prefer best checkpoints from new training runs, but
+    # fall back to last checkpoints and legacy directory layouts.
+    skill_model_dir = resolve_skill_model_dir(curr_dir, args)
+    skill_vae_path = resolve_skill_checkpoint_path(skill_model_dir, "skill_vae", args.skill_checkpoint)
+    skill_prior_path = resolve_skill_checkpoint_path(skill_model_dir, "skill_prior", args.skill_checkpoint)
+    condition_prior_path = resolve_skill_checkpoint_path(skill_model_dir, "condition_prior", args.skill_checkpoint)
+    if proc_id() == 0:
+        print(f"Loading skill modules from: {skill_model_dir}", flush=True)
+        print(f"  skill_vae: {skill_vae_path}", flush=True)
+        print(f"  skill_prior: {skill_prior_path}", flush=True)
+        if args.use_condition_flow == 1:
+            print(f"  condition_prior: {condition_prior_path}", flush=True)
 
     # skill_vae_path = f"./results/saved_skill_models/{args.dataset_name}/seed_{args.seed}/skill_prior_{args.prior_model}/skill_vae.pth"
     # skill_prior_path = f"./results/saved_skill_models/{args.dataset_name}/seed_{args.seed}/skill_prior_{args.prior_model}/skill_prior.pth"
@@ -691,8 +853,6 @@ def main():
                     act_dim=n_features, 
                     act_limit=2)
     elif args.prior_model == 'Flow':
-        if args.use_condition_flow == 1 and args.use_grad == 1 and args.guidance_scale > 0:
-            raise ValueError("First condition-flow version only supports condition guidance; keep --use_grad 0 for z guidance.")
         if args.use_condition_flow == 1 and args.condition_use_grad == 1 and args.use_student == 1 and args.condition_guidance_scale > 0:
             raise ValueError("Condition-flow guidance requires --use_student 0 for teacher Euler sampling.")
         if args.use_condition_flow == 1 and args.condition_use_grad == 1 and args.condition_guidance_scale > 0 and args.condition_critic_updates_per_epoch <= 0:
@@ -734,7 +894,7 @@ def main():
                 capacity=args.chunk_critic_replay_size,
                 seed=args.seed,
             )
-        if args.use_condition_flow == 1:
+        if args.use_condition_flow == 1 and args.condition_use_grad == 1 and args.condition_guidance_scale > 0:
             condition_critic = LatentChunkCritic(
                 state_dim=n_obs,
                 latent_dim=n_actions,
@@ -842,6 +1002,7 @@ def main():
           skill_prior=skill_prior,
           logistic_C=conf.setup.logistic_C,
           logistic_k=conf.setup.logistic_k,
+          max_residual_factor=getattr(conf.setup, "max_residual_factor", 1.0),
           save_path=save_path,
           save_path_latent_q=save_path_latent_q,
           save_path_chunk_critic=save_path_chunk_critic,

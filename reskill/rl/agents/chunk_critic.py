@@ -142,7 +142,7 @@ class LatentChunkCritic:
         latent = obs_latent[:, self.state_dim:]
         return self.min_q(state, latent, use_target=False)
 
-    def update_with_flow_policy(self, replay_buffer, skill_agent, skill_prior, args):
+    def update_with_flow_policy(self, replay_buffer, skill_agent, skill_prior, args, condition_prior=None):
         if len(replay_buffer) < args.chunk_critic_batch_size:
             return AttrDict(
                 q_loss=0.0,
@@ -162,8 +162,13 @@ class LatentChunkCritic:
         for _ in range(args.chunk_critic_updates_per_epoch):
             batch = replay_buffer.sample(args.chunk_critic_batch_size)
             with torch.no_grad():
-                next_n_np = skill_agent.ac.act_deterministic(batch.next_state)
-                next_n = torch.as_tensor(next_n_np, dtype=torch.float32, device=device)
+                if getattr(args, "use_condition_flow", 0) == 1:
+                    if condition_prior is None:
+                        raise RuntimeError("condition_prior is required for Q_z target with condition flow.")
+                    next_n = condition_prior.sample_z_torch(batch.next_state).detach()
+                else:
+                    next_n_np = skill_agent.ac.act_deterministic(batch.next_state)
+                    next_n = torch.as_tensor(next_n_np, dtype=torch.float32, device=device)
                 next_cond = torch.cat((batch.next_state, next_n), dim=1)
                 next_z = skill_prior.sample_z_torch(next_cond).detach()
                 target_min = self.min_q(batch.next_state, next_z, use_target=True)

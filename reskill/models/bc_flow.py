@@ -65,9 +65,10 @@ class Flow_BC(object):
             return x.to(self.device)
         return torch.as_tensor(x, dtype=torch.float32, device=self.device)
     
-    def train(self, cond, target_z, iterations):
+    def train(self, cond, target_z, iterations, sample_weight=None):
         cond = self._to_tensor(cond)
         target_z = self._to_tensor(target_z)
+        sample_weight = None if sample_weight is None else self._to_tensor(sample_weight).view(-1)
         
         self.teacher.train()
         if self.use_student:
@@ -80,7 +81,12 @@ class Flow_BC(object):
         }
         
         for _ in range(iterations):
-            bc_flow_loss, teacher_stats = compute_flow_loss(self.teacher, cond, target_z)
+            bc_flow_loss, teacher_stats = compute_flow_loss(
+                self.teacher,
+                cond,
+                target_z,
+                sample_weight=sample_weight,
+            )
             if self.use_student:
                 distill_loss, student_stats = compute_distill_loss(
                     self.teacher,

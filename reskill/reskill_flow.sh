@@ -6,18 +6,20 @@ mkdir -p logs/Flow/reskill_flow
 
 seeds=(2 3 20)
 pick=1
-push=999
+push=300
+# dataset_name=fetch_block_40000
+dataset_name=fetch_block_push${push}_pick${pick}
 
 use_student=0
-use_grad=0
+use_grad=1
 guidance_scale=0.01
 guidance_warmup_epoch=0
 guidance_grad_clip=1.0
 
 use_condition_flow=1
-condition_use_grad=1
-condition_guidance_scale=0.01
-condition_guidance_warmup_epoch=10
+condition_use_grad=0
+condition_guidance_scale=0.0
+condition_guidance_warmup_epoch=0
 condition_guidance_grad_clip=1.0
 condition_critic_ensembles=1
 condition_critic_hidden_dim=256
@@ -35,17 +37,18 @@ chunk_critic_batch_size=256
 chunk_critic_updates_per_epoch=200
 chunk_critic_replay_size=1000000
 
-environment_name=slippery_push
-swanlab_project=Flow_skill_${environment_name}
+environment_name=pyramid_stack
+swanlab_project=Flow_skill_1_${environment_name}
 
 for seed in "${seeds[@]}"; do
     mkdir -p "logs/Flow/reskill_flow/${environment_name}/seed${seed}/"
 
-    CUDA_VISIBLE_DEVICES=1 python -u -m reskill.train_reskill_agent_res \
-    --config_file $environment_name/config.yaml \
+    CUDA_VISIBLE_DEVICES=0 python -u -m reskill.train_reskill_agent_res \
+    --config_file $environment_name/config_rnvp.yaml \
     --prior_model Flow \
     --pick $pick \
     --push $push \
+    ${dataset_name:+--dataset_name "$dataset_name"} \
     --seed "$seed" \
     --use_student "$use_student" \
     --use_grad "$use_grad" \
@@ -72,7 +75,7 @@ for seed in "${seeds[@]}"; do
     --chunk_critic_updates_per_epoch "$chunk_critic_updates_per_epoch" \
     --chunk_critic_replay_size "$chunk_critic_replay_size" \
     --swanlab_project "$swanlab_project" \
-    > "logs/Flow/reskill_flow/${environment_name}/seed${seed}/condflow${use_condition_flow}_cgrad${condition_use_grad}_cgscale${condition_guidance_scale}_cgwarm${condition_guidance_warmup_epoch}_condq${condition_critic_ensembles}.log" 2>&1 &
+    > "logs/Flow/reskill_flow/${environment_name}/seed${seed}/condflow${use_condition_flow}_${dataset_name}.log" 2>&1 &
 
     # CUDA_VISIBLE_DEVICES=1 python -u -m reskill.train_reskill_agent_res \
     # --config_file slippery_push/config.yaml \

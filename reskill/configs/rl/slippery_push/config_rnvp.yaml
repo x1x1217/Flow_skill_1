@@ -1,19 +1,18 @@
 setup:
-  env: "FetchPyramidStack-v0"
+  env: "FetchSlipperyPush-v0"
   exp_name: "reskill_agent"
   cpu: 1
   seed: 21
-  epochs: 1300
+  epochs: 800
   max_ep_len: 50
-  logistic_C: 1500000
-  logistic_k: 0.000002
-  max_residual_factor: 0.7
+  logistic_C: 18000
+  logistic_k: 0.001
   
 skill_agent:
   hid: 64
   l: 2
   gamma: 0.99
-  steps_per_epoch: 2000 
+  steps_per_epoch: 3000 
   clip_ratio: 0.3
   pi_lr: 0.0001
   vf_lr: 0.001
@@ -35,8 +34,4 @@ residual_agent:
   lam: 0.97 
   target_kl: 0.9   
   act_limit: 1
-
-
-
-
 

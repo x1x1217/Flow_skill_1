@@ -74,7 +74,7 @@ class FlowStudent(nn.Module):
         x = torch.cat([cond, noise], dim=1)
         return self.net(x)
     
-def compute_flow_loss(flow_teacher, cond, target_z):
+def compute_flow_loss(flow_teacher, cond, target_z, sample_weight=None, eps=1e-8):
     """
     flow_teacher: teacher model
     cond: [o, n], size: [B, cond_dim]
@@ -90,13 +90,19 @@ def compute_flow_loss(flow_teacher, cond, target_z):
     
     vel = x_1 - x_0
     pred = flow_teacher(cond, x_t, t)
-    loss = F.mse_loss(pred, vel)
+    per_sample_loss = F.mse_loss(pred, vel, reduction="none").mean(dim=1)
+    if sample_weight is not None:
+        sample_weight = sample_weight.to(device=target_z.device, dtype=target_z.dtype).view(-1)
+        loss = (per_sample_loss * sample_weight).sum() / (sample_weight.sum() + eps)
+    else:
+        loss = per_sample_loss.mean()
     
     stats = {
         "t": t.detach(),
         "z_t": x_t.detach(),
         "target_vel": vel.detach(),
-        "pred_vel": pred.detach()
+        "pred_vel": pred.detach(),
+        "per_sample_loss": per_sample_loss.detach()
     }
    
     return loss, stats

@@ -1,6 +1,6 @@
 
 skill_vae:
-    epochs: 200
+    epochs: 400
     batch_size: 128
     lr: 0.0001
     n_actions: 4
