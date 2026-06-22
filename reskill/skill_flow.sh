@@ -14,8 +14,8 @@ set -e
 cd "$(dirname "$0")/.."
 mkdir -p logs/Flow/skill_flow
 
-pick=500
-push=1
+pick=1
+push=300
 # dataset_name=fetch_block_40000
 dataset_name=fetch_block_push${push}_pick${pick}
 
@@ -36,8 +36,8 @@ action_noise_std=0.0
 condition_reweight=1
 condition_weight_beta=0.2
 condition_weight_min=0.2
-condition_weight_max=3.0
-condition_raw_log_weight_clip_quantile=0.99
+condition_weight_max=20.0
+condition_raw_log_weight_clip_quantile=1.0
 
 for seed in "${seeds[@]}"; do
   mkdir -p "logs/Flow/skill_flow/seed${seed}"
@@ -50,7 +50,7 @@ for seed in "${seeds[@]}"; do
 #     --use_student "$use_student" \
 #     > "logs/Flow/skill_flow/pick999_push1_seed${seed}.log" 2>&1 &
 
-  CUDA_VISIBLE_DEVICES=0 python -u -m reskill.train_skill_modules \
+  CUDA_VISIBLE_DEVICES=3 python -u -m reskill.train_skill_modules \
     --prior_model Flow \
     --pick "$pick" \
     --push "$push" \
@@ -71,7 +71,7 @@ for seed in "${seeds[@]}"; do
     --condition_weight_max "$condition_weight_max" \
     --condition_raw_log_weight_clip_quantile "$condition_raw_log_weight_clip_quantile" \
     --swanlab_project "$swanlab_project" \
-    > "logs/Flow/skill_flow/seed${seed}/pick${pick}_push${push}_condition_flow.log" 2>&1 &
+    > "logs/Flow/skill_flow/seed${seed}/pick${pick}_push${push}_condition_flow_newClip.log" 2>&1 &
 
 done
 

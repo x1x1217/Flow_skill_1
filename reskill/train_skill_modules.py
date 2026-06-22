@@ -50,7 +50,7 @@ class ModelTrainer():
         condition_weight_beta=0.2,
         condition_weight_min=0.2,
         condition_weight_max=3.0,
-        condition_raw_log_weight_clip_quantile=0.99,
+        condition_raw_log_weight_clip_quantile=1.0,
     ):
         self.dataset_name = dataset_name
         self.prior_model = prior_model
@@ -98,6 +98,8 @@ class ModelTrainer():
         self.best_condition_val_loss = float("inf")
         self.best_behavior_val_nll = float("inf")
         self.condition_log_mean_weight = None
+        self.condition_log_weight_center = None
+        self.condition_clipped_weight_mean = None
         self.condition_raw_log_weight_max = None
         
         # config_path = "configs/skill_mdl/" + config_file
@@ -681,13 +683,23 @@ class ModelTrainer():
         )
         raw_log_weights_capped = np.minimum(raw_log_weights, raw_log_weight_max)
 
-        max_raw = float(np.max(raw_log_weights_capped))
-        log_mean_weight = max_raw + float(np.log(np.mean(np.exp(raw_log_weights_capped - max_raw))))
-        weights_before_clip = np.exp(raw_log_weights_capped - log_mean_weight)
-        weights = weights_before_clip
-        weights = np.clip(weights, self.condition_weight_min, self.condition_weight_max).astype(np.float32)
+        log_weight_center = float(np.median(raw_log_weights_capped))
+        log_weights = raw_log_weights_capped - log_weight_center
+        log_weight_min = float(np.log(self.condition_weight_min))
+        log_weight_max = float(np.log(self.condition_weight_max))
+        log_weights_clipped = np.clip(
+            log_weights,
+            log_weight_min,
+            log_weight_max,
+        )
+        weights_before_clip = np.exp(np.minimum(log_weights, log_weight_max))
+        weights_clipped = np.exp(log_weights_clipped)
+        clipped_weight_mean = float(np.mean(weights_clipped))
+        weights = (weights_clipped / (clipped_weight_mean + 1e-8)).astype(np.float32)
 
-        self.condition_log_mean_weight = log_mean_weight
+        self.condition_log_mean_weight = log_weight_center
+        self.condition_log_weight_center = log_weight_center
+        self.condition_clipped_weight_mean = clipped_weight_mean
         self.condition_raw_log_weight_max = raw_log_weight_max
 
         effective_sample_size = float((weights.sum() ** 2) / (np.square(weights).sum() + 1e-8))
@@ -704,6 +716,10 @@ class ModelTrainer():
             f"weight_before_clip_p{str(p).replace('.', '_')}": float(np.percentile(weights_before_clip, p))
             for p in percentiles
         }
+        weight_clipped_percentiles = {
+            f"weight_clipped_p{str(p).replace('.', '_')}": float(np.percentile(weights_clipped, p))
+            for p in percentiles
+        }
         weight_percentiles = {
             f"weight_p{str(p).replace('.', '_')}": float(np.percentile(weights, p))
             for p in percentiles
@@ -716,7 +732,9 @@ class ModelTrainer():
             "w_max": float(self.condition_weight_max),
             "raw_log_weight_clip_quantile": float(self.condition_raw_log_weight_clip_quantile),
             "raw_log_weight_max": float(raw_log_weight_max),
-            "log_mean_weight": float(log_mean_weight),
+            "log_mean_weight": float(log_weight_center),
+            "log_weight_center": float(log_weight_center),
+            "clipped_weight_mean": float(clipped_weight_mean),
             "weight_mean": float(np.mean(weights)),
             "weight_std": float(np.std(weights)),
             "weight_min": float(np.min(weights)),
@@ -725,6 +743,10 @@ class ModelTrainer():
             "weight_before_clip_std": float(np.std(weights_before_clip)),
             "weight_before_clip_min": float(np.min(weights_before_clip)),
             "weight_before_clip_max": float(np.max(weights_before_clip)),
+            "weight_clipped_mean": float(np.mean(weights_clipped)),
+            "weight_clipped_std": float(np.std(weights_clipped)),
+            "weight_clipped_min": float(np.min(weights_clipped)),
+            "weight_clipped_max": float(np.max(weights_clipped)),
             "raw_log_weight_mean": float(np.mean(raw_log_weights)),
             "raw_log_weight_std": float(np.std(raw_log_weights)),
             "raw_log_weight_capped_mean": float(np.mean(raw_log_weights_capped)),
@@ -737,6 +759,7 @@ class ModelTrainer():
         stats.update(raw_percentiles)
         stats.update(capped_raw_percentiles)
         stats.update(weight_before_clip_percentiles)
+        stats.update(weight_clipped_percentiles)
         stats.update(weight_percentiles)
         with open(self.condition_weight_stats_path, "w") as f:
             json.dump(stats, f, indent=2)
@@ -762,19 +785,35 @@ class ModelTrainer():
             with open(self.condition_weight_stats_path, "r") as f:
                 stats = json.load(f)
             self.condition_log_mean_weight = float(stats["log_mean_weight"])
+            self.condition_log_weight_center = float(stats.get("log_weight_center", stats["log_mean_weight"]))
+            self.condition_clipped_weight_mean = (
+                float(stats["clipped_weight_mean"])
+                if "clipped_weight_mean" in stats
+                else None
+            )
             self.condition_raw_log_weight_max = float(stats["raw_log_weight_max"])
 
         with torch.no_grad():
             log_prob = self.behavior_policy.log_prob(state, action0)
             raw_log_weight = -self.condition_weight_beta * log_prob
             raw_log_weight = torch.clamp(raw_log_weight, max=self.condition_raw_log_weight_max)
-            log_weight = raw_log_weight - self.condition_log_mean_weight
-            weight = torch.exp(log_weight)
-            weight = torch.clamp(
-                weight,
-                min=self.condition_weight_min,
-                max=self.condition_weight_max,
-            )
+            if self.condition_clipped_weight_mean is None:
+                log_weight = raw_log_weight - self.condition_log_mean_weight
+                weight = torch.exp(log_weight)
+                weight = torch.clamp(
+                    weight,
+                    min=self.condition_weight_min,
+                    max=self.condition_weight_max,
+                )
+            else:
+                log_weight = raw_log_weight - self.condition_log_weight_center
+                weight = torch.exp(log_weight)
+                weight = torch.clamp(
+                    weight,
+                    min=self.condition_weight_min,
+                    max=self.condition_weight_max,
+                )
+                weight = weight / (self.condition_clipped_weight_mean + 1e-8)
         return weight
 
     def extract_flow_targets(self, data):
@@ -984,7 +1023,7 @@ if __name__ == "__main__":
     parser.add_argument('--condition_weight_beta', type=float, default=0.2)
     parser.add_argument('--condition_weight_min', type=float, default=0.2)
     parser.add_argument('--condition_weight_max', type=float, default=3.0)
-    parser.add_argument('--condition_raw_log_weight_clip_quantile', type=float, default=0.99)
+    parser.add_argument('--condition_raw_log_weight_clip_quantile', type=float, default=1.0)
     parser.add_argument('--swanlab_project', type=str, default="Flow_skill_1")
     parser.add_argument('--swanlab_workspace', type=str, default="x1x1217")
     parser.add_argument('--swanlab_mode', type=str, default=None)

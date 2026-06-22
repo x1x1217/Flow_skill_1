@@ -29,23 +29,33 @@ def hard_update(target, source):
 
 
 class TwinQNetwork(nn.Module):
-    def __init__(self, state_dim, latent_dim, hidden_dim):
+    def __init__(
+        self,
+        state_dim,
+        latent_dim,
+        hidden_dim,
+        hidden_layers=2,
+        use_layer_norm=False,
+        activation="relu",
+    ):
         super().__init__()
         input_dim = state_dim + latent_dim
-        self.q1 = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, 1),
-        )
-        self.q2 = nn.Sequential(
-            nn.Linear(input_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, 1),
-        )
+
+        def build_q():
+            layers = []
+            prev_dim = input_dim
+            activation_cls = nn.Tanh if activation == "tanh" else nn.ReLU
+            for _ in range(hidden_layers):
+                layers.append(nn.Linear(prev_dim, hidden_dim))
+                if use_layer_norm:
+                    layers.append(nn.LayerNorm(hidden_dim))
+                layers.append(activation_cls())
+                prev_dim = hidden_dim
+            layers.append(nn.Linear(prev_dim, 1))
+            return nn.Sequential(*layers)
+
+        self.q1 = build_q()
+        self.q2 = build_q()
         self.apply(weights_init_)
 
     def forward(self, state, latent):
@@ -74,14 +84,34 @@ class ChunkReplayBuffer:
         self.position = (self.position + 1) % self.capacity
         self.size = min(self.size + 1, self.capacity)
 
-    def sample(self, batch_size):
-        idx = np.random.randint(0, self.size, size=batch_size)
+    def sample(self, batch_size, positive_ratio=0.0, positive_reward_threshold=0.0):
+        positive_ratio = float(np.clip(positive_ratio, 0.0, 1.0))
+        if positive_ratio > 0.0:
+            num_positive = int(batch_size * positive_ratio)
+            valid_idx = np.arange(self.size)
+            positive_idx = valid_idx[self.reward[: self.size, 0] > positive_reward_threshold]
+            if num_positive > 0 and len(positive_idx) > 0:
+                pos_idx = np.random.choice(
+                    positive_idx,
+                    size=num_positive,
+                    replace=len(positive_idx) < num_positive,
+                )
+                rand_idx = np.random.randint(0, self.size, size=batch_size - num_positive)
+                idx = np.concatenate([pos_idx, rand_idx])
+                np.random.shuffle(idx)
+            else:
+                idx = np.random.randint(0, self.size, size=batch_size)
+        else:
+            idx = np.random.randint(0, self.size, size=batch_size)
+
+        positive_fraction = float(np.mean(self.reward[idx, 0] > positive_reward_threshold))
         return AttrDict(
             state=torch.as_tensor(self.state[idx], dtype=torch.float32, device=device),
             latent=torch.as_tensor(self.latent[idx], dtype=torch.float32, device=device),
             reward=torch.as_tensor(self.reward[idx], dtype=torch.float32, device=device),
             next_state=torch.as_tensor(self.next_state[idx], dtype=torch.float32, device=device),
             done=torch.as_tensor(self.done[idx], dtype=torch.float32, device=device),
+            positive_fraction=positive_fraction,
         )
 
     def __len__(self):
@@ -89,7 +119,20 @@ class ChunkReplayBuffer:
 
 
 class LatentChunkCritic:
-    def __init__(self, state_dim, latent_dim, hidden_dim, num_ensembles, lr, gamma, tau, seq_len):
+    def __init__(
+        self,
+        state_dim,
+        latent_dim,
+        hidden_dim,
+        num_ensembles,
+        lr,
+        gamma,
+        tau,
+        seq_len,
+        hidden_layers=2,
+        use_layer_norm=False,
+        activation="relu",
+    ):
         self.state_dim = state_dim
         self.latent_dim = latent_dim
         self.num_ensembles = num_ensembles
@@ -98,11 +141,25 @@ class LatentChunkCritic:
         self.tau = tau
 
         self.critics = [
-            TwinQNetwork(state_dim, latent_dim, hidden_dim).to(device)
+            TwinQNetwork(
+                state_dim,
+                latent_dim,
+                hidden_dim,
+                hidden_layers=hidden_layers,
+                use_layer_norm=use_layer_norm,
+                activation=activation,
+            ).to(device)
             for _ in range(num_ensembles)
         ]
         self.target_critics = [
-            TwinQNetwork(state_dim, latent_dim, hidden_dim).to(device)
+            TwinQNetwork(
+                state_dim,
+                latent_dim,
+                hidden_dim,
+                hidden_layers=hidden_layers,
+                use_layer_norm=use_layer_norm,
+                activation=activation,
+            ).to(device)
             for _ in range(num_ensembles)
         ]
         for target_critic, critic in zip(self.target_critics, self.critics):
@@ -151,6 +208,7 @@ class LatentChunkCritic:
                 target_q=0.0,
                 current_q=0.0,
                 updates=0,
+                positive_fraction=0.0,
             )
 
         losses = []
@@ -158,9 +216,16 @@ class LatentChunkCritic:
         q2_losses = []
         target_qs = []
         current_qs = []
+        positive_fractions = []
 
         for _ in range(args.chunk_critic_updates_per_epoch):
-            batch = replay_buffer.sample(args.chunk_critic_batch_size)
+            batch = replay_buffer.sample(
+                args.chunk_critic_batch_size,
+                positive_ratio=getattr(args, "positive_replay_ratio", 0.0),
+                positive_reward_threshold=getattr(args, "positive_reward_threshold", 0.0),
+            )
+            positive_fractions.append(batch.positive_fraction)
+            target_guidance_scale = args.guidance_scale if getattr(args, "chunk_critic_update_steps", 0) > 0 else 0.0
             with torch.no_grad():
                 if getattr(args, "use_condition_flow", 0) == 1:
                     if condition_prior is None:
@@ -170,7 +235,24 @@ class LatentChunkCritic:
                     next_n_np = skill_agent.ac.act_deterministic(batch.next_state)
                     next_n = torch.as_tensor(next_n_np, dtype=torch.float32, device=device)
                 next_cond = torch.cat((batch.next_state, next_n), dim=1)
-                next_z = skill_prior.sample_z_torch(next_cond).detach()
+            if target_guidance_scale > 0.0:
+                with torch.enable_grad():
+                    next_z = skill_prior.sample_z_guided_torch(
+                        next_cond,
+                        q_fn=lambda obs_latent: self.min_q(
+                            obs_latent[:, : self.state_dim],
+                            obs_latent[:, self.state_dim :],
+                            use_target=True,
+                        ),
+                        n_obs=args.n_obs,
+                        guidance_scale=target_guidance_scale,
+                        grad_clip=args.guidance_grad_clip,
+                        guidance_normalize=getattr(args, "guidance_normalize", False),
+                    ).detach()
+            else:
+                with torch.no_grad():
+                    next_z = skill_prior.sample_z_torch(next_cond).detach()
+            with torch.no_grad():
                 target_min = self.min_q(batch.next_state, next_z, use_target=True)
                 target_q = batch.reward + (1.0 - batch.done) * self.chunk_discount * target_min
 
@@ -189,6 +271,7 @@ class LatentChunkCritic:
                 current_q_value += torch.min(q1, q2).mean().item()
             q_loss.backward()
             self.optimizer.step()
+            args.chunk_critic_update_steps = getattr(args, "chunk_critic_update_steps", 0) + 1
 
             for target_critic, critic in zip(self.target_critics, self.critics):
                 soft_update(target_critic, critic, self.tau)
@@ -206,62 +289,5 @@ class LatentChunkCritic:
             target_q=float(np.mean(target_qs)),
             current_q=float(np.mean(current_qs)),
             updates=args.chunk_critic_updates_per_epoch,
-        )
-
-    def update_with_condition_policy(self, replay_buffer, condition_prior, args):
-        if len(replay_buffer) < args.condition_critic_batch_size:
-            return AttrDict(
-                q_loss=0.0,
-                q1_loss=0.0,
-                q2_loss=0.0,
-                target_q=0.0,
-                current_q=0.0,
-                updates=0,
-            )
-
-        losses = []
-        q1_losses = []
-        q2_losses = []
-        target_qs = []
-        current_qs = []
-
-        for _ in range(args.condition_critic_updates_per_epoch):
-            batch = replay_buffer.sample(args.condition_critic_batch_size)
-            with torch.no_grad():
-                next_c = condition_prior.sample_z_torch(batch.next_state).detach()
-                target_min = self.min_q(batch.next_state, next_c, use_target=True)
-                target_q = batch.reward + (1.0 - batch.done) * self.chunk_discount * target_min
-
-            self.optimizer.zero_grad()
-            q_loss = 0.0
-            q1_loss_value = 0.0
-            q2_loss_value = 0.0
-            current_q_value = 0.0
-            for critic in self.critics:
-                q1, q2 = critic(batch.state, batch.latent)
-                q1_loss = F.mse_loss(q1, target_q)
-                q2_loss = F.mse_loss(q2, target_q)
-                q_loss = q_loss + q1_loss + q2_loss
-                q1_loss_value += q1_loss.item()
-                q2_loss_value += q2_loss.item()
-                current_q_value += torch.min(q1, q2).mean().item()
-            q_loss.backward()
-            self.optimizer.step()
-
-            for target_critic, critic in zip(self.target_critics, self.critics):
-                soft_update(target_critic, critic, self.tau)
-
-            losses.append(q_loss.item())
-            q1_losses.append(q1_loss_value / self.num_ensembles)
-            q2_losses.append(q2_loss_value / self.num_ensembles)
-            target_qs.append(target_q.mean().item())
-            current_qs.append(current_q_value / self.num_ensembles)
-
-        return AttrDict(
-            q_loss=float(np.mean(losses)),
-            q1_loss=float(np.mean(q1_losses)),
-            q2_loss=float(np.mean(q2_losses)),
-            target_q=float(np.mean(target_qs)),
-            current_q=float(np.mean(current_qs)),
-            updates=args.condition_critic_updates_per_epoch,
+            positive_fraction=float(np.mean(positive_fractions)),
         )

@@ -121,7 +121,18 @@ def compute_flow_z(flow_teacher, cond, noises, flow_steps, max_action):
     
     return z
 
-def compute_flow_z_guided(flow_teacher, cond, noises, flow_steps, max_action, q_fn, n_obs, guidance_scale=0.0, grad_clip=0.0):
+def compute_flow_z_guided(
+    flow_teacher,
+    cond,
+    noises,
+    flow_steps,
+    max_action,
+    q_fn,
+    n_obs,
+    guidance_scale=0.0,
+    grad_clip=0.0,
+    guidance_normalize=False,
+):
     batch_size = cond.shape[0]
     z = noises
     dt = 1.0 / float(flow_steps)
@@ -138,8 +149,10 @@ def compute_flow_z_guided(flow_teacher, cond, noises, flow_steps, max_action, q_
             q_value = q_fn(torch.cat([obs, z_in], dim=1)).reshape(-1, 1)
             grad = torch.autograd.grad(q_value.sum(), z_in)[0].float()
         
-        if grad_clip is not None and grad_clip > 0:
-            grad_norm = grad.norm(dim=1, keepdim=True).clamp_min(1e-6)
+        grad_norm = grad.norm(dim=1, keepdim=True).clamp_min(1e-6)
+        if guidance_normalize:
+            grad = grad / grad_norm
+        elif grad_clip is not None and grad_clip > 0:
             grad = grad * (grad_clip / grad_norm).clamp(max=1.0)
         
         z = z + dt * (vel + guidance_scale * grad)

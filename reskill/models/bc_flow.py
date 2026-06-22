@@ -132,7 +132,15 @@ class Flow_BC(object):
 
         return z
     
-    def sample_z_guided_torch(self, cond, q_fn, n_obs, guidance_scale=0.0, grad_clip=0.0):
+    def sample_z_guided_torch(
+        self,
+        cond,
+        q_fn,
+        n_obs,
+        guidance_scale=0.0,
+        grad_clip=0.0,
+        guidance_normalize=False,
+    ):
         """
         cond: [o, n], size: [B, cond_dim]
         q_fn: latent-level Q function with input [o, z]
@@ -156,6 +164,7 @@ class Flow_BC(object):
             n_obs,
             guidance_scale=guidance_scale,
             grad_clip=grad_clip,
+            guidance_normalize=guidance_normalize,
         )
         
         return z

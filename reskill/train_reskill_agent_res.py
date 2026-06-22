@@ -59,16 +59,6 @@ def flow_guidance_enabled(args, epoch):
     return (args.prior_model == 'Flow' and args.use_grad == 1 and args.guidance_scale > 0 and epoch >= args.guidance_warmup_epoch)
 
 
-def condition_guidance_enabled(args, epoch):
-    return (
-        args.prior_model == 'Flow'
-        and args.use_condition_flow == 1
-        and args.condition_use_grad == 1
-        and args.condition_guidance_scale > 0
-        and epoch >= args.condition_guidance_warmup_epoch
-    )
-
-
 def mean_or_zero(values):
     return float(np.mean(values)) if len(values) > 0 else 0.0
 
@@ -84,6 +74,61 @@ def align_steps_per_epoch(raw_steps_per_epoch, max_ep_len, seq_len):
             f"max_ep_len={max_ep_len}, seq_len={seq_len}"
         )
     return local_aligned_steps * num_procs(), episode_skills
+
+
+def collect_initial_chunk_rollout(env, skill_vae, skill_prior, condition_prior, chunk_replay, args):
+    if args.init_rollout_steps <= 0:
+        return 0
+    if chunk_replay is None:
+        return 0
+
+    env_name = env.spec.id
+    env_step_cnt = 0
+    obs, ep_len = env.reset(), 0
+    o = get_obs(obs, env_name)
+
+    while env_step_cnt < args.init_rollout_steps:
+        o_start = o
+        with torch.no_grad():
+            if args.use_condition_flow == 1:
+                n = condition_prior.sample_z_torch(o_start).detach()
+            else:
+                raise RuntimeError("Initial rollout for Q_z guidance requires --use_condition_flow 1.")
+            cond = torch.cat((o_start, n), dim=1).to(device)
+            z = skill_prior.sample_z_torch(cond).detach()
+
+        next_o = o_start
+        chunk_r = 0.0
+        done = False
+
+        for step in range(skill_vae.seq_len):
+            with torch.no_grad():
+                a_dec = skill_vae.decoder(torch.cat((next_o, z), 1))
+            obs, r, done, _ = env.step(a_dec.cpu().detach().numpy()[0])
+            env_step_cnt += 1
+            ep_len += 1
+            chunk_r += (args.chunk_critic_gamma ** step) * r
+            next_o = get_obs(obs, env_name)
+
+            if done or ep_len >= args.max_ep_len or env_step_cnt >= args.init_rollout_steps:
+                break
+
+        terminal = done or ep_len >= args.max_ep_len
+        chunk_replay.push(
+            o_start.cpu().detach().numpy()[0],
+            z.cpu().detach().numpy()[0],
+            chunk_r,
+            next_o.cpu().detach().numpy()[0],
+            float(terminal),
+        )
+
+        if terminal:
+            obs, ep_len = env.reset(), 0
+            o = get_obs(obs, env_name)
+        else:
+            o = next_o
+
+    return env_step_cnt
 
 
 def resolve_skill_model_dir(curr_dir, args):
@@ -149,13 +194,33 @@ def resolve_skill_checkpoint_path(model_dir, name, checkpoint):
             return path
     return None
 
-def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, condition_critic, condition_replay,
+def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior,
           residual_agent, env, skill_vae, skill_prior, logistic_C, logistic_k,
           max_residual_factor,
-          save_path, save_path_residual, save_path_latent_q, save_path_chunk_critic, save_path_condition_critic,
+          save_path, save_path_residual, save_path_latent_q, save_path_chunk_critic,
           writer, prior_model, args):
 
     env_name = env.spec.id
+    init_env_steps = collect_initial_chunk_rollout(
+        env,
+        skill_vae,
+        skill_prior,
+        condition_prior,
+        chunk_replay,
+        args,
+    )
+    if proc_id() == 0 and args.init_rollout_steps > 0:
+        print(
+            f"Collected {init_env_steps} initial flow env steps "
+            f"({len(chunk_replay) if chunk_replay is not None else 0} chunk transitions).",
+            flush=True,
+        )
+        if writer is not None:
+            writer.add_scalar(
+                "skill_flow_q_guidance/init_replay_size",
+                len(chunk_replay) if chunk_replay is not None else 0,
+                init_env_steps,
+            )
     obs, ep_ret, ep_len = env.reset(), 0, 0
     o = get_obs(obs, env_name)
     updates = 0
@@ -172,7 +237,6 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
     local_steps_per_epoch = int(agent.steps_per_epoch / num_procs())
 
     for epoch in tqdm(range(agent.epochs)):
-        rollout_condition_guidance_scales = []
         rollout_skill_guidance_scales = []
         rollout_condition_norm = []
         rollout_z_norm = []
@@ -184,23 +248,11 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
 
         for t in range(local_steps_per_epoch):
             # Select condition vector using either high-level PPO or condition flow policy.
-            condition_guidance_scale = 0.0
             if args.use_condition_flow == 1:
-                if condition_guidance_enabled(args, epoch):
-                    condition_guidance_scale = args.condition_guidance_scale
-                    n = condition_prior.sample_z_guided_torch(
-                        o,
-                        q_fn=condition_critic.q_fn_from_obs_latent,
-                        n_obs=args.n_obs,
-                        guidance_scale=args.condition_guidance_scale,
-                        grad_clip=args.condition_guidance_grad_clip,
-                    ).detach()
-                else:
-                    n = condition_prior.sample_z_torch(o).detach()
+                n = condition_prior.sample_z_torch(o).detach()
                 v_agent, logp_agent = None, None
             else:
                 n, v_agent, logp_agent, mu, std = agent.ac.step(torch.as_tensor(o, dtype=torch.float32))
-            rollout_condition_guidance_scales.append(condition_guidance_scale)
             rollout_condition_norm.append(n.norm(dim=1).mean().item())
 
             skill_guidance_scale = 0.0
@@ -218,6 +270,7 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
                         n_obs=args.n_obs,
                         guidance_scale=args.guidance_scale,
                         grad_clip=args.guidance_grad_clip,
+                        guidance_normalize=args.guidance_normalize,
                     ).detach()
                 else:
                     z = skill_prior.sample_z_torch(cond).detach()
@@ -309,14 +362,6 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
             timeout = ep_len >= agent.max_ep_len
             terminal = d or timeout
             epoch_ended = t == local_steps_per_epoch-1
-            if condition_replay is not None:
-                condition_replay.push(
-                    o_start_np,
-                    n.cpu().detach().numpy()[0],
-                    chunk_r,
-                    o2.cpu().detach().numpy()[0],
-                    float(terminal),
-                )
             if chunk_replay is not None:
                 chunk_replay.push(
                     o_start_np,
@@ -376,8 +421,6 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
                 torch.save(latent_q_agent.ac, save_path_latent_q)
             if chunk_critic is not None:
                 torch.save(chunk_critic.state_dict(), save_path_chunk_critic)
-            if condition_critic is not None:
-                torch.save(condition_critic.state_dict(), save_path_condition_critic)
             #skill_distill.save_checkpoint(env_name, str(args.seed)+"_"+args.prior_model)
             torch.save(residual_agent.ac.pi, save_path_residual)
 
@@ -397,13 +440,10 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
                 args,
                 condition_prior=condition_prior,
             )
-        if condition_critic is not None:
-            condition_critic_losses = condition_critic.update_with_condition_policy(condition_replay, condition_prior, args)
 
         success_traj = 0
         total_r = 0
         r_time = 0
-        eval_condition_guidance_scales = []
         eval_skill_guidance_scales = []
         eval_condition_norm = []
         eval_z_norm = []
@@ -421,23 +461,11 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
             while steps < env._max_episode_steps:
 
                 # Use high-level condition source.
-                condition_guidance_scale = 0.0
                 if args.use_condition_flow == 1:
-                    if condition_guidance_enabled(args, epoch):
-                        condition_guidance_scale = args.condition_guidance_scale
-                        n = condition_prior.sample_z_guided_torch(
-                            obs,
-                            q_fn=condition_critic.q_fn_from_obs_latent,
-                            n_obs=args.n_obs,
-                            guidance_scale=args.condition_guidance_scale,
-                            grad_clip=args.condition_guidance_grad_clip,
-                        ).detach()
-                    else:
-                        n = condition_prior.sample_z_torch(obs).detach()
+                    n = condition_prior.sample_z_torch(obs).detach()
                 else:
                     n = agent.ac.act_deterministic(obs)
                     n = torch.FloatTensor(n)
-                eval_condition_guidance_scales.append(condition_guidance_scale)
                 eval_condition_norm.append(n.norm(dim=1).mean().item())
 
                 skill_guidance_scale = 0.0
@@ -455,6 +483,7 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
                             n_obs=args.n_obs,
                             guidance_scale=args.guidance_scale,
                             grad_clip=args.guidance_grad_clip,
+                            guidance_normalize=args.guidance_normalize,
                         ).detach()
                     else:
                         z = skill_prior.sample_z_torch(cond).detach()
@@ -537,22 +566,16 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
                 writer.add_scalar('chunk_critic/target_q', chunk_critic_losses.target_q, env_step_cnt)
                 writer.add_scalar('chunk_critic/current_q', chunk_critic_losses.current_q, env_step_cnt)
                 writer.add_scalar('chunk_critic/replay_size', len(chunk_replay), env_step_cnt)
-            if condition_critic is not None:
-                writer.add_scalar('condition_critic/q_loss', condition_critic_losses.q_loss, env_step_cnt)
-                writer.add_scalar('condition_critic/q1_loss', condition_critic_losses.q1_loss, env_step_cnt)
-                writer.add_scalar('condition_critic/q2_loss', condition_critic_losses.q2_loss, env_step_cnt)
-                writer.add_scalar('condition_critic/target_q', condition_critic_losses.target_q, env_step_cnt)
-                writer.add_scalar('condition_critic/current_q', condition_critic_losses.current_q, env_step_cnt)
-                writer.add_scalar('condition_critic/replay_size', len(condition_replay), env_step_cnt)
-                writer.add_scalar('condition_flow_q_guidance/q_loss', condition_critic_losses.q_loss, env_step_cnt)
-                writer.add_scalar('condition_flow_q_guidance/q1_loss', condition_critic_losses.q1_loss, env_step_cnt)
-                writer.add_scalar('condition_flow_q_guidance/q2_loss', condition_critic_losses.q2_loss, env_step_cnt)
-                writer.add_scalar('condition_flow_q_guidance/target_q', condition_critic_losses.target_q, env_step_cnt)
-                writer.add_scalar('condition_flow_q_guidance/current_q', condition_critic_losses.current_q, env_step_cnt)
-                writer.add_scalar('condition_flow_q_guidance/replay_size', len(condition_replay), env_step_cnt)
-            writer.add_scalar('rollout/condition_guidance_scale', mean_or_zero(rollout_condition_guidance_scales), env_step_cnt)
+                writer.add_scalar('chunk_critic/positive_fraction', chunk_critic_losses.positive_fraction, env_step_cnt)
+                writer.add_scalar('skill_flow_q_guidance/z_q_loss', chunk_critic_losses.q_loss, env_step_cnt)
+                writer.add_scalar('skill_flow_q_guidance/z_q1_loss', chunk_critic_losses.q1_loss, env_step_cnt)
+                writer.add_scalar('skill_flow_q_guidance/z_q2_loss', chunk_critic_losses.q2_loss, env_step_cnt)
+                writer.add_scalar('skill_flow_q_guidance/z_target_q', chunk_critic_losses.target_q, env_step_cnt)
+                writer.add_scalar('skill_flow_q_guidance/z_current_q', chunk_critic_losses.current_q, env_step_cnt)
+                writer.add_scalar('skill_flow_q_guidance/positive_fraction', chunk_critic_losses.positive_fraction, env_step_cnt)
+                writer.add_scalar('skill_flow_q_guidance/replay_size', len(chunk_replay), env_step_cnt)
             writer.add_scalar('rollout/skill_guidance_scale', mean_or_zero(rollout_skill_guidance_scales), env_step_cnt)
-            writer.add_scalar('rollout/guidance_scale', mean_or_zero(rollout_condition_guidance_scales), env_step_cnt)
+            writer.add_scalar('rollout/guidance_scale', mean_or_zero(rollout_skill_guidance_scales), env_step_cnt)
             writer.add_scalar('rollout/condition_norm', mean_or_zero(rollout_condition_norm), env_step_cnt)
             writer.add_scalar('rollout/noise_norm', mean_or_zero(rollout_condition_norm), env_step_cnt)
             writer.add_scalar('rollout/z_norm', mean_or_zero(rollout_z_norm), env_step_cnt)
@@ -574,7 +597,6 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
             writer.add_scalar('eval_epoch/reward_sum', total_r, epoch)
             writer.add_scalar('eval_epoch/avg_reward', total_r / 50, epoch)
             writer.add_scalar('eval_epoch/avg_reward_time', r_time / 50, epoch)
-            writer.add_scalar('eval_epoch/condition_guidance_scale', mean_or_zero(eval_condition_guidance_scales), epoch)
             writer.add_scalar('eval_epoch/skill_guidance_scale', mean_or_zero(eval_skill_guidance_scales), epoch)
             writer.add_scalar('eval_epoch/condition_norm', mean_or_zero(eval_condition_norm), epoch)
             writer.add_scalar('eval_epoch/noise_norm', mean_or_zero(eval_condition_norm), epoch)
@@ -589,7 +611,6 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_prior, co
             writer.add_scalar('eval_step/reward_sum', total_r, env_step_cnt)
             writer.add_scalar('eval_step/avg_reward', total_r / 50, env_step_cnt)
             writer.add_scalar('eval_step/avg_reward_time', r_time / 50, env_step_cnt)
-            writer.add_scalar('eval_step/condition_guidance_scale', mean_or_zero(eval_condition_guidance_scales), env_step_cnt)
             writer.add_scalar('eval_step/skill_guidance_scale', mean_or_zero(eval_skill_guidance_scales), env_step_cnt)
             writer.add_scalar('eval_step/condition_norm', mean_or_zero(eval_condition_norm), env_step_cnt)
             writer.add_scalar('eval_step/noise_norm', mean_or_zero(eval_condition_norm), env_step_cnt)
@@ -643,7 +664,11 @@ def main():
     parser.add_argument('--guidance_scale', type=float, default=0.0)
     parser.add_argument('--guidance_warmup_epoch', type=int, default=0)
     parser.add_argument('--guidance_grad_clip', type=float, default=0.0)
+    parser.add_argument('--guidance_normalize', action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument('--chunk_critic_hidden_dim', type=int, default=256)
+    parser.add_argument('--chunk_critic_hidden_layers', type=int, default=2)
+    parser.add_argument('--chunk_critic_activation', type=str, default="relu", choices=["relu", "tanh"])
+    parser.add_argument('--chunk_critic_layer_norm', action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument('--chunk_critic_lr', type=float, default=3e-4)
     parser.add_argument('--chunk_critic_tau', type=float, default=0.005)
     parser.add_argument('--chunk_critic_gamma', type=float, default=None)
@@ -651,18 +676,11 @@ def main():
     parser.add_argument('--chunk_critic_updates_per_epoch', type=int, default=200)
     parser.add_argument('--chunk_critic_replay_size', type=int, default=1000000)
     parser.add_argument('--chunk_critic_ensembles', type=int, default=1)
+    parser.add_argument('--init_rollout_steps', type=int, default=0)
+    parser.add_argument('--positive_replay_ratio', type=float, default=0.0)
+    parser.add_argument('--positive_reward_threshold', type=float, default=0.0)
+    parser.add_argument('--max_residual_factor', type=float, default=None)
     parser.add_argument('--use_condition_flow', type=int, default=0)
-    parser.add_argument('--condition_use_grad', type=int, default=0)
-    parser.add_argument('--condition_guidance_scale', type=float, default=0.0)
-    parser.add_argument('--condition_guidance_warmup_epoch', type=int, default=0)
-    parser.add_argument('--condition_guidance_grad_clip', type=float, default=0.0)
-    parser.add_argument('--condition_critic_hidden_dim', type=int, default=256)
-    parser.add_argument('--condition_critic_lr', type=float, default=3e-4)
-    parser.add_argument('--condition_critic_tau', type=float, default=0.005)
-    parser.add_argument('--condition_critic_batch_size', type=int, default=256)
-    parser.add_argument('--condition_critic_updates_per_epoch', type=int, default=200)
-    parser.add_argument('--condition_critic_replay_size', type=int, default=1000000)
-    parser.add_argument('--condition_critic_ensembles', type=int, default=1)
     parser.add_argument('--skill_checkpoint', type=str, default="best", choices=["best", "last"])
     parser.add_argument('--swanlab_project', type=str, default="Flow_skill_1")
     parser.add_argument('--swanlab_workspace', type=str, default="x1x1217")
@@ -679,19 +697,20 @@ def main():
         args.prior_run_name = f"{args.prior_model}_student{args.use_student}"
         args.run_variant = f"use_student_{args.use_student}_grad_{args.use_grad}"
         if args.use_condition_flow == 1:
-            args.run_variant += (
-                f"_condflow_grad_{args.condition_use_grad}"
-                f"_cgscale_{args.condition_guidance_scale:g}"
-                f"_cgwarm_{args.condition_guidance_warmup_epoch}"
-                f"_cgclip_{args.condition_guidance_grad_clip:g}"
-                f"_condq_{args.condition_critic_ensembles}"
-            )
+            args.run_variant += "_condflow"
         if args.use_grad == 1:
             args.run_variant += (
                 f"_gscale_{args.guidance_scale:g}"
                 f"_gwarm_{args.guidance_warmup_epoch}"
                 f"_gclip_{args.guidance_grad_clip:g}"
+                f"_gnorm_{int(args.guidance_normalize)}"
+                f"_h{args.chunk_critic_hidden_dim}x{args.chunk_critic_hidden_layers}"
+                f"_ln_{int(args.chunk_critic_layer_norm)}"
+                f"_act_{args.chunk_critic_activation}"
+                f"_init_{args.init_rollout_steps}"
+                f"_posratio_{args.positive_replay_ratio:g}"
                 f"_chunkq_{args.chunk_critic_ensembles}"
+                f"_resmax_{args.max_residual_factor if args.max_residual_factor is not None else 'cfg'}"
             )
     curr_dir = os.path.dirname(__file__)
     config_path = os.path.join(curr_dir, "configs", "rl", args.config_file)
@@ -705,6 +724,11 @@ def main():
         args.chunk_critic_gamma = conf.skill_agent.gamma
     if args.chunk_critic_ensembles < 1:
         raise ValueError("--chunk_critic_ensembles must be >= 1")
+    if not 0.0 <= args.positive_replay_ratio <= 1.0:
+        raise ValueError("--positive_replay_ratio must be in [0, 1].")
+    if args.init_rollout_steps < 0:
+        raise ValueError("--init_rollout_steps must be >= 0.")
+    args.chunk_critic_update_steps = 0
 
     mpi_fork(conf.setup.cpu)  #  run parallel code with mpi
 
@@ -764,7 +788,6 @@ def main():
     save_path = os.path.join(save_dir, "ppo_agent.pth")
     save_path_latent_q = os.path.join(save_dir, "ppo_latent_q_agent.pth")
     save_path_chunk_critic = os.path.join(save_dir, "chunk_critic.pth")
-    save_path_condition_critic = os.path.join(save_dir, "condition_critic.pth")
     save_path_residual = os.path.join(save_dir, "ppo_residual_agent.pth")
 
     torch.set_num_threads(torch.get_num_threads())
@@ -816,9 +839,8 @@ def main():
     latent_q_agent = None
     chunk_critic = None
     chunk_replay = None
-    condition_critic = None
-    condition_replay = None
     args.n_obs = n_obs
+    args.max_ep_len = conf.setup.max_ep_len
     raw_steps_per_epoch = conf.skill_agent.steps_per_epoch
     aligned_steps_per_epoch, episode_skills = align_steps_per_epoch(
         raw_steps_per_epoch,
@@ -853,10 +875,6 @@ def main():
                     act_dim=n_features, 
                     act_limit=2)
     elif args.prior_model == 'Flow':
-        if args.use_condition_flow == 1 and args.condition_use_grad == 1 and args.use_student == 1 and args.condition_guidance_scale > 0:
-            raise ValueError("Condition-flow guidance requires --use_student 0 for teacher Euler sampling.")
-        if args.use_condition_flow == 1 and args.condition_use_grad == 1 and args.condition_guidance_scale > 0 and args.condition_critic_updates_per_epoch <= 0:
-            raise ValueError("Condition-flow guidance requires --condition_critic_updates_per_epoch > 0.")
         if args.use_grad == 1 and args.use_student == 1 and args.guidance_scale > 0:
             raise ValueError("Flow guidance currently requires --use_student 0 for teacher Euler sampling.")
         if args.use_grad == 1 and args.guidance_scale > 0 and args.chunk_critic_updates_per_epoch <= 0:
@@ -887,28 +905,14 @@ def main():
                 gamma=args.chunk_critic_gamma,
                 tau=args.chunk_critic_tau,
                 seq_len=seq_len,
+                hidden_layers=args.chunk_critic_hidden_layers,
+                use_layer_norm=args.chunk_critic_layer_norm,
+                activation=args.chunk_critic_activation,
             )
             chunk_replay = ChunkReplayBuffer(
                 state_dim=n_obs,
                 latent_dim=n_features,
                 capacity=args.chunk_critic_replay_size,
-                seed=args.seed,
-            )
-        if args.use_condition_flow == 1 and args.condition_use_grad == 1 and args.condition_guidance_scale > 0:
-            condition_critic = LatentChunkCritic(
-                state_dim=n_obs,
-                latent_dim=n_actions,
-                hidden_dim=args.condition_critic_hidden_dim,
-                num_ensembles=args.condition_critic_ensembles,
-                lr=args.condition_critic_lr,
-                gamma=args.chunk_critic_gamma,
-                tau=args.condition_critic_tau,
-                seq_len=seq_len,
-            )
-            condition_replay = ChunkReplayBuffer(
-                state_dim=n_obs,
-                latent_dim=n_actions,
-                capacity=args.condition_critic_replay_size,
                 seed=args.seed,
             )
     elif args.prior_model == 'Diffusion':
@@ -994,19 +998,20 @@ def main():
           chunk_critic=chunk_critic,
           chunk_replay=chunk_replay,
           condition_prior=condition_prior,
-          condition_critic=condition_critic,
-          condition_replay=condition_replay,
           residual_agent=residual_agent,  
           env=env,
           skill_vae=skill_vae,
           skill_prior=skill_prior,
           logistic_C=conf.setup.logistic_C,
           logistic_k=conf.setup.logistic_k,
-          max_residual_factor=getattr(conf.setup, "max_residual_factor", 1.0),
+          max_residual_factor=(
+              args.max_residual_factor
+              if args.max_residual_factor is not None
+              else getattr(conf.setup, "max_residual_factor", 1.0)
+          ),
           save_path=save_path,
           save_path_latent_q=save_path_latent_q,
           save_path_chunk_critic=save_path_chunk_critic,
-          save_path_condition_critic=save_path_condition_critic,
           save_path_residual=save_path_residual,
           writer=writer,
           prior_model=args.prior_model,
