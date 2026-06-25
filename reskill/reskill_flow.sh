@@ -4,15 +4,16 @@ set -e
 cd ~/x1x/Flow_skill_1
 mkdir -p logs/Flow/reskill_flow
 
-seeds=(2 3 20)
-pick=1
-push=300
+seeds=(2)
+pick=500
+push=1
 # dataset_name=fetch_block_40000
-dataset_name=fetch_block_push${push}_pick${pick}
+dataset_name=fetch_block_push1_pick500_labeled_flowbeh_beta02_wmin01_wmax300
+# dataset_name=fetch_block_push1_pick500_labeled_label_weight
 
 use_student=0
-use_grad=0
-guidance_scale=0.0
+use_grad=1
+guidance_scale=0.01
 guidance_warmup_epoch=0
 guidance_grad_clip=1.0
 guidance_normalize=1
@@ -34,13 +35,13 @@ chunk_critic_batch_size=256
 chunk_critic_updates_per_epoch=200
 chunk_critic_replay_size=1000000
 
-environment_name=pyramid_stack
+environment_name=slippery_push
 swanlab_project=Flow_skill_1_${environment_name}
 
 for seed in "${seeds[@]}"; do
     mkdir -p "logs/Flow/reskill_flow/${environment_name}/seed${seed}/"
 
-    CUDA_VISIBLE_DEVICES=3 python -u -m reskill.train_reskill_agent_res \
+    CUDA_VISIBLE_DEVICES=1 python -u -m reskill.train_reskill_agent_res \
     --config_file $environment_name/config_rnvp.yaml \
     --prior_model Flow \
     --pick $pick \
@@ -69,7 +70,7 @@ for seed in "${seeds[@]}"; do
     --chunk_critic_updates_per_epoch "$chunk_critic_updates_per_epoch" \
     --chunk_critic_replay_size "$chunk_critic_replay_size" \
     --swanlab_project "$swanlab_project" \
-    > "logs/Flow/reskill_flow/${environment_name}/seed${seed}/condflow${use_condition_flow}_${dataset_name}_ppo_resmax${max_residual_factor}.log" 2>&1 &
+    > "logs/Flow/reskill_flow/${environment_name}/seed${seed}/condflow${use_condition_flow}_${dataset_name}_resmax${max_residual_factor}_labelWeight_qz.log" 2>&1 &
 
     # CUDA_VISIBLE_DEVICES=1 python -u -m reskill.train_reskill_agent_res \
     # --config_file slippery_push/config.yaml \

@@ -36,7 +36,7 @@ action_noise_std=0.0
 condition_reweight=1
 condition_weight_beta=0.2
 condition_weight_min=0.2
-condition_weight_max=20.0
+condition_weight_max=200.0
 condition_raw_log_weight_clip_quantile=1.0
 
 for seed in "${seeds[@]}"; do
@@ -72,6 +72,7 @@ for seed in "${seeds[@]}"; do
     --condition_raw_log_weight_clip_quantile "$condition_raw_log_weight_clip_quantile" \
     --swanlab_project "$swanlab_project" \
     > "logs/Flow/skill_flow/seed${seed}/pick${pick}_push${push}_condition_flow_newClip.log" 2>&1 &
+    
 
 done
 
