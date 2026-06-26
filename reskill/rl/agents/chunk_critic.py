@@ -84,27 +84,10 @@ class ChunkReplayBuffer:
         self.position = (self.position + 1) % self.capacity
         self.size = min(self.size + 1, self.capacity)
 
-    def sample(self, batch_size, positive_ratio=0.0, positive_reward_threshold=0.0):
-        positive_ratio = float(np.clip(positive_ratio, 0.0, 1.0))
-        if positive_ratio > 0.0:
-            num_positive = int(batch_size * positive_ratio)
-            valid_idx = np.arange(self.size)
-            positive_idx = valid_idx[self.reward[: self.size, 0] > positive_reward_threshold]
-            if num_positive > 0 and len(positive_idx) > 0:
-                pos_idx = np.random.choice(
-                    positive_idx,
-                    size=num_positive,
-                    replace=len(positive_idx) < num_positive,
-                )
-                rand_idx = np.random.randint(0, self.size, size=batch_size - num_positive)
-                idx = np.concatenate([pos_idx, rand_idx])
-                np.random.shuffle(idx)
-            else:
-                idx = np.random.randint(0, self.size, size=batch_size)
-        else:
-            idx = np.random.randint(0, self.size, size=batch_size)
+    def sample(self, batch_size):
+        idx = np.random.randint(0, self.size, size=batch_size)
 
-        positive_fraction = float(np.mean(self.reward[idx, 0] > positive_reward_threshold))
+        positive_fraction = float(np.mean(self.reward[idx, 0] > 0.0))
         return AttrDict(
             state=torch.as_tensor(self.state[idx], dtype=torch.float32, device=device),
             latent=torch.as_tensor(self.latent[idx], dtype=torch.float32, device=device),
@@ -221,8 +204,6 @@ class LatentChunkCritic:
         for _ in range(args.chunk_critic_updates_per_epoch):
             batch = replay_buffer.sample(
                 args.chunk_critic_batch_size,
-                positive_ratio=getattr(args, "positive_replay_ratio", 0.0),
-                positive_reward_threshold=getattr(args, "positive_reward_threshold", 0.0),
             )
             positive_fractions.append(batch.positive_fraction)
             target_guidance_scale = args.guidance_scale if getattr(args, "chunk_critic_update_steps", 0) > 0 else 0.0
@@ -295,12 +276,6 @@ class LatentChunkCritic:
     def update_with_condition_policy(self, replay_buffer, condition_prior, args):
         batch_size = getattr(args, "condition_critic_batch_size", args.chunk_critic_batch_size)
         updates_per_epoch = getattr(args, "condition_critic_updates_per_epoch", args.chunk_critic_updates_per_epoch)
-        positive_ratio = getattr(args, "condition_positive_replay_ratio", getattr(args, "positive_replay_ratio", 0.0))
-        positive_reward_threshold = getattr(
-            args,
-            "condition_positive_reward_threshold",
-            getattr(args, "positive_reward_threshold", 0.0),
-        )
         if len(replay_buffer) < batch_size:
             return AttrDict(
                 q_loss=0.0,
@@ -322,8 +297,6 @@ class LatentChunkCritic:
         for _ in range(updates_per_epoch):
             batch = replay_buffer.sample(
                 batch_size,
-                positive_ratio=positive_ratio,
-                positive_reward_threshold=positive_reward_threshold,
             )
             positive_fractions.append(batch.positive_fraction)
             target_guidance_scale = (

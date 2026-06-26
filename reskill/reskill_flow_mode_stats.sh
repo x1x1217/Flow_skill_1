@@ -18,9 +18,6 @@ guidance_scale=0.01
 guidance_warmup_epoch=0
 guidance_grad_clip=1.0
 guidance_normalize=1
-init_rollout_steps=1500
-positive_replay_ratio=0.5
-positive_reward_threshold=0.0
 max_residual_factor=1
 
 use_condition_flow=1
@@ -51,16 +48,12 @@ CUDA_VISIBLE_DEVICES=3 python -u -m reskill.train_reskill_agent_res_mode_stats \
   --guidance_warmup_epoch "$guidance_warmup_epoch" \
   --guidance_grad_clip "$guidance_grad_clip" \
   --guidance_normalize \
-  --init_rollout_steps "$init_rollout_steps" \
-  --positive_replay_ratio "$positive_replay_ratio" \
-  --positive_reward_threshold "$positive_reward_threshold" \
   --max_residual_factor "$max_residual_factor" \
   --use_condition_flow "$use_condition_flow" \
   --chunk_critic_ensembles "$chunk_critic_ensembles" \
   --chunk_critic_hidden_dim "$chunk_critic_hidden_dim" \
   --chunk_critic_hidden_layers "$chunk_critic_hidden_layers" \
   --chunk_critic_activation "$chunk_critic_activation" \
-  --chunk_critic_layer_norm \
   --chunk_critic_lr "$chunk_critic_lr" \
   --chunk_critic_tau "$chunk_critic_tau" \
   --chunk_critic_batch_size "$chunk_critic_batch_size" \

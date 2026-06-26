@@ -115,61 +115,6 @@ def align_steps_per_epoch(raw_steps_per_epoch, max_ep_len, seq_len):
     return local_aligned_steps * num_procs(), episode_skills
 
 
-def collect_initial_chunk_rollout(env, skill_vae, skill_prior, condition_prior, chunk_replay, args):
-    if args.init_rollout_steps <= 0:
-        return 0
-    if chunk_replay is None:
-        return 0
-
-    env_name = env.spec.id
-    env_step_cnt = 0
-    obs, ep_len = env.reset(), 0
-    o = get_obs(obs, env_name)
-
-    while env_step_cnt < args.init_rollout_steps:
-        o_start = o
-        with torch.no_grad():
-            if args.use_condition_flow == 1:
-                n = condition_prior.sample_z_torch(o_start).detach()
-            else:
-                raise RuntimeError("Initial rollout for Q_z guidance requires --use_condition_flow 1.")
-            cond = torch.cat((o_start, n), dim=1).to(device)
-            z = skill_prior.sample_z_torch(cond).detach()
-
-        next_o = o_start
-        chunk_r = 0.0
-        done = False
-
-        for step in range(skill_vae.seq_len):
-            with torch.no_grad():
-                a_dec = skill_vae.decoder(torch.cat((next_o, z), 1))
-            obs, r, done, _ = env.step(a_dec.cpu().detach().numpy()[0])
-            env_step_cnt += 1
-            ep_len += 1
-            chunk_r += (args.chunk_critic_gamma ** step) * r
-            next_o = get_obs(obs, env_name)
-
-            if done or ep_len >= args.max_ep_len or env_step_cnt >= args.init_rollout_steps:
-                break
-
-        terminal = done or ep_len >= args.max_ep_len
-        chunk_replay.push(
-            o_start.cpu().detach().numpy()[0],
-            z.cpu().detach().numpy()[0],
-            chunk_r,
-            next_o.cpu().detach().numpy()[0],
-            float(terminal),
-        )
-
-        if terminal:
-            obs, ep_len = env.reset(), 0
-            o = get_obs(obs, env_name)
-        else:
-            o = next_o
-
-    return env_step_cnt
-
-
 def resolve_skill_model_dir(curr_dir, args):
     candidate_dirs = [
         os.path.join(
@@ -240,26 +185,6 @@ def train(agent, latent_q_agent, chunk_critic, chunk_replay, condition_critic, c
           writer, prior_model, args):
 
     env_name = env.spec.id
-    init_env_steps = collect_initial_chunk_rollout(
-        env,
-        skill_vae,
-        skill_prior,
-        condition_prior,
-        chunk_replay,
-        args,
-    )
-    if proc_id() == 0 and args.init_rollout_steps > 0:
-        print(
-            f"Collected {init_env_steps} initial flow env steps "
-            f"({len(chunk_replay) if chunk_replay is not None else 0} chunk transitions).",
-            flush=True,
-        )
-        if writer is not None:
-            writer.add_scalar(
-                "skill_flow_q_guidance/init_replay_size",
-                len(chunk_replay) if chunk_replay is not None else 0,
-                init_env_steps,
-            )
     obs, ep_ret, ep_len = env.reset(), 0, 0
     o = get_obs(obs, env_name)
     updates = 0
@@ -786,19 +711,15 @@ def main():
     parser.add_argument('--condition_critic_hidden_dim', type=int, default=None)
     parser.add_argument('--condition_critic_hidden_layers', type=int, default=None)
     parser.add_argument('--condition_critic_activation', type=str, default=None, choices=["relu", "tanh"])
-    parser.add_argument('--condition_critic_layer_norm', action=argparse.BooleanOptionalAction, default=None)
     parser.add_argument('--condition_critic_lr', type=float, default=None)
     parser.add_argument('--condition_critic_tau', type=float, default=None)
     parser.add_argument('--condition_critic_batch_size', type=int, default=None)
     parser.add_argument('--condition_critic_updates_per_epoch', type=int, default=None)
     parser.add_argument('--condition_critic_replay_size', type=int, default=None)
     parser.add_argument('--condition_critic_ensembles', type=int, default=None)
-    parser.add_argument('--condition_positive_replay_ratio', type=float, default=None)
-    parser.add_argument('--condition_positive_reward_threshold', type=float, default=None)
     parser.add_argument('--chunk_critic_hidden_dim', type=int, default=256)
     parser.add_argument('--chunk_critic_hidden_layers', type=int, default=2)
     parser.add_argument('--chunk_critic_activation', type=str, default="relu", choices=["relu", "tanh"])
-    parser.add_argument('--chunk_critic_layer_norm', action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument('--chunk_critic_lr', type=float, default=3e-4)
     parser.add_argument('--chunk_critic_tau', type=float, default=0.005)
     parser.add_argument('--chunk_critic_gamma', type=float, default=None)
@@ -806,9 +727,6 @@ def main():
     parser.add_argument('--chunk_critic_updates_per_epoch', type=int, default=200)
     parser.add_argument('--chunk_critic_replay_size', type=int, default=1000000)
     parser.add_argument('--chunk_critic_ensembles', type=int, default=1)
-    parser.add_argument('--init_rollout_steps', type=int, default=0)
-    parser.add_argument('--positive_replay_ratio', type=float, default=0.0)
-    parser.add_argument('--positive_reward_threshold', type=float, default=0.0)
     parser.add_argument('--max_residual_factor', type=float, default=None)
     parser.add_argument('--use_condition_flow', type=int, default=0)
     parser.add_argument('--skill_checkpoint', type=str, default="best", choices=["best", "last"])
@@ -835,10 +753,7 @@ def main():
                 f"_gclip_{args.guidance_grad_clip:g}"
                 f"_gnorm_{int(args.guidance_normalize)}"
                 f"_h{args.chunk_critic_hidden_dim}x{args.chunk_critic_hidden_layers}"
-                f"_ln_{int(args.chunk_critic_layer_norm)}"
                 f"_act_{args.chunk_critic_activation}"
-                f"_init_{args.init_rollout_steps}"
-                f"_posratio_{args.positive_replay_ratio:g}"
                 f"_chunkq_{args.chunk_critic_ensembles}"
                 f"_resmax_{args.max_residual_factor if args.max_residual_factor is not None else 'cfg'}"
             )
@@ -867,8 +782,6 @@ def main():
         args.condition_critic_hidden_layers = args.chunk_critic_hidden_layers
     if args.condition_critic_activation is None:
         args.condition_critic_activation = args.chunk_critic_activation
-    if args.condition_critic_layer_norm is None:
-        args.condition_critic_layer_norm = args.chunk_critic_layer_norm
     if args.condition_critic_lr is None:
         args.condition_critic_lr = args.chunk_critic_lr
     if args.condition_critic_tau is None:
@@ -881,10 +794,6 @@ def main():
         args.condition_critic_replay_size = args.chunk_critic_replay_size
     if args.condition_critic_ensembles is None:
         args.condition_critic_ensembles = args.chunk_critic_ensembles
-    if args.condition_positive_replay_ratio is None:
-        args.condition_positive_replay_ratio = args.positive_replay_ratio
-    if args.condition_positive_reward_threshold is None:
-        args.condition_positive_reward_threshold = args.positive_reward_threshold
     if args.condition_critic_ensembles < 1:
         raise ValueError("--condition_critic_ensembles must be >= 1")
     if args.condition_use_grad == 1 and args.condition_guidance_scale > 0:
@@ -894,12 +803,6 @@ def main():
             raise ValueError("Condition guidance currently requires --use_student 0 for teacher Euler sampling.")
         if args.condition_critic_updates_per_epoch <= 0:
             raise ValueError("Condition guidance requires --condition_critic_updates_per_epoch > 0.")
-    if not 0.0 <= args.positive_replay_ratio <= 1.0:
-        raise ValueError("--positive_replay_ratio must be in [0, 1].")
-    if not 0.0 <= args.condition_positive_replay_ratio <= 1.0:
-        raise ValueError("--condition_positive_replay_ratio must be in [0, 1].")
-    if args.init_rollout_steps < 0:
-        raise ValueError("--init_rollout_steps must be >= 0.")
     args.chunk_critic_update_steps = 0
     args.condition_critic_update_steps = 0
 
@@ -1082,7 +985,6 @@ def main():
                 tau=args.chunk_critic_tau,
                 seq_len=seq_len,
                 hidden_layers=args.chunk_critic_hidden_layers,
-                use_layer_norm=args.chunk_critic_layer_norm,
                 activation=args.chunk_critic_activation,
             )
             chunk_replay = ChunkReplayBuffer(
@@ -1102,7 +1004,6 @@ def main():
                 tau=args.condition_critic_tau,
                 seq_len=seq_len,
                 hidden_layers=args.condition_critic_hidden_layers,
-                use_layer_norm=args.condition_critic_layer_norm,
                 activation=args.condition_critic_activation,
             )
             condition_replay = ChunkReplayBuffer(
