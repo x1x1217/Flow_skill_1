@@ -132,6 +132,7 @@ def compute_flow_z_guided(
     guidance_scale=0.0,
     grad_clip=0.0,
     guidance_normalize=False,
+    guidance_stats=None,
 ):
     batch_size = cond.shape[0]
     z = noises
@@ -143,17 +144,35 @@ def compute_flow_z_guided(
         
         with torch.no_grad():
             vel = flow_teacher(cond, z, t)
+            vel_norm = vel.norm(dim=1, keepdim=True).clamp_min(1e-6)
         
         with torch.enable_grad():
             z_in = z.detach().requires_grad_(True)
             q_value = q_fn(torch.cat([obs, z_in], dim=1)).reshape(-1, 1)
             grad = torch.autograd.grad(q_value.sum(), z_in)[0].float()
         
-        grad_norm = grad.norm(dim=1, keepdim=True).clamp_min(1e-6)
+        raw_grad_norm = grad.norm(dim=1, keepdim=True).clamp_min(1e-6)
+        grad_norm = raw_grad_norm
         if guidance_normalize:
             grad = grad / grad_norm
         elif grad_clip is not None and grad_clip > 0:
             grad = grad * (grad_clip / grad_norm).clamp(max=1.0)
+        grad_norm = grad.norm(dim=1, keepdim=True).clamp_min(1e-6)
+
+        if guidance_stats is not None:
+            scaled_grad_norm = abs(float(guidance_scale)) * grad_norm
+            ratio = scaled_grad_norm / vel_norm
+            stat_values = {
+                "vel_norm": vel_norm,
+                "raw_grad_norm": raw_grad_norm,
+                "grad_norm": grad_norm,
+                "scaled_grad_norm": scaled_grad_norm,
+                "ratio": ratio,
+                "vel_step_norm": dt * vel_norm,
+                "guidance_step_norm": dt * scaled_grad_norm,
+            }
+            for key, value in stat_values.items():
+                guidance_stats.setdefault(key, []).append(value.mean().detach().cpu().item())
         
         z = z + dt * (vel + guidance_scale * grad)
         z = z.clamp(-max_action, max_action)

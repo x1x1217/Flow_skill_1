@@ -291,3 +291,100 @@ class LatentChunkCritic:
             updates=args.chunk_critic_updates_per_epoch,
             positive_fraction=float(np.mean(positive_fractions)),
         )
+
+    def update_with_condition_policy(self, replay_buffer, condition_prior, args):
+        batch_size = getattr(args, "condition_critic_batch_size", args.chunk_critic_batch_size)
+        updates_per_epoch = getattr(args, "condition_critic_updates_per_epoch", args.chunk_critic_updates_per_epoch)
+        positive_ratio = getattr(args, "condition_positive_replay_ratio", getattr(args, "positive_replay_ratio", 0.0))
+        positive_reward_threshold = getattr(
+            args,
+            "condition_positive_reward_threshold",
+            getattr(args, "positive_reward_threshold", 0.0),
+        )
+        if len(replay_buffer) < batch_size:
+            return AttrDict(
+                q_loss=0.0,
+                q1_loss=0.0,
+                q2_loss=0.0,
+                target_q=0.0,
+                current_q=0.0,
+                updates=0,
+                positive_fraction=0.0,
+            )
+
+        losses = []
+        q1_losses = []
+        q2_losses = []
+        target_qs = []
+        current_qs = []
+        positive_fractions = []
+
+        for _ in range(updates_per_epoch):
+            batch = replay_buffer.sample(
+                batch_size,
+                positive_ratio=positive_ratio,
+                positive_reward_threshold=positive_reward_threshold,
+            )
+            positive_fractions.append(batch.positive_fraction)
+            target_guidance_scale = (
+                args.condition_guidance_scale
+                if getattr(args, "condition_critic_update_steps", 0) > 0
+                else 0.0
+            )
+            if target_guidance_scale > 0.0:
+                with torch.enable_grad():
+                    next_latent = condition_prior.sample_z_guided_torch(
+                        batch.next_state,
+                        q_fn=lambda obs_latent: self.min_q(
+                            obs_latent[:, : self.state_dim],
+                            obs_latent[:, self.state_dim :],
+                            use_target=True,
+                        ),
+                        n_obs=args.n_obs,
+                        guidance_scale=target_guidance_scale,
+                        grad_clip=args.condition_guidance_grad_clip,
+                        guidance_normalize=getattr(args, "condition_guidance_normalize", False),
+                    ).detach()
+            else:
+                with torch.no_grad():
+                    next_latent = condition_prior.sample_z_torch(batch.next_state).detach()
+
+            with torch.no_grad():
+                target_min = self.min_q(batch.next_state, next_latent, use_target=True)
+                target_q = batch.reward + (1.0 - batch.done) * self.chunk_discount * target_min
+
+            self.optimizer.zero_grad()
+            q_loss = 0.0
+            q1_loss_value = 0.0
+            q2_loss_value = 0.0
+            current_q_value = 0.0
+            for critic in self.critics:
+                q1, q2 = critic(batch.state, batch.latent)
+                q1_loss = F.mse_loss(q1, target_q)
+                q2_loss = F.mse_loss(q2, target_q)
+                q_loss = q_loss + q1_loss + q2_loss
+                q1_loss_value += q1_loss.item()
+                q2_loss_value += q2_loss.item()
+                current_q_value += torch.min(q1, q2).mean().item()
+            q_loss.backward()
+            self.optimizer.step()
+            args.condition_critic_update_steps = getattr(args, "condition_critic_update_steps", 0) + 1
+
+            for target_critic, critic in zip(self.target_critics, self.critics):
+                soft_update(target_critic, critic, self.tau)
+
+            losses.append(q_loss.item())
+            q1_losses.append(q1_loss_value / self.num_ensembles)
+            q2_losses.append(q2_loss_value / self.num_ensembles)
+            target_qs.append(target_q.mean().item())
+            current_qs.append(current_q_value / self.num_ensembles)
+
+        return AttrDict(
+            q_loss=float(np.mean(losses)),
+            q1_loss=float(np.mean(q1_losses)),
+            q2_loss=float(np.mean(q2_losses)),
+            target_q=float(np.mean(target_qs)),
+            current_q=float(np.mean(current_qs)),
+            updates=updates_per_epoch,
+            positive_fraction=float(np.mean(positive_fractions)),
+        )

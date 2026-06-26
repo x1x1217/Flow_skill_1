@@ -140,6 +140,7 @@ class Flow_BC(object):
         guidance_scale=0.0,
         grad_clip=0.0,
         guidance_normalize=False,
+        guidance_stats=None,
     ):
         """
         cond: [o, n], size: [B, cond_dim]
@@ -165,6 +166,7 @@ class Flow_BC(object):
             guidance_scale=guidance_scale,
             grad_clip=grad_clip,
             guidance_normalize=guidance_normalize,
+            guidance_stats=guidance_stats,
         )
         
         return z

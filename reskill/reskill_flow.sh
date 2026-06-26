@@ -20,9 +20,18 @@ guidance_normalize=1
 init_rollout_steps=1500
 positive_replay_ratio=0.5
 positive_reward_threshold=0.0
+
 max_residual_factor=1
 
 use_condition_flow=1
+
+condition_use_grad=1
+condition_guidance_scale=0.1
+condition_guidance_warmup_epoch=0
+condition_guidance_grad_clip=1.0
+condition_guidance_normalize=1
+condition_positive_replay_ratio=0.5
+condition_positive_reward_threshold=0.0
 
 chunk_critic_ensembles=1
 chunk_critic_hidden_dim=2048
@@ -35,13 +44,24 @@ chunk_critic_batch_size=256
 chunk_critic_updates_per_epoch=200
 chunk_critic_replay_size=1000000
 
+condition_critic_ensembles=$chunk_critic_ensembles
+condition_critic_hidden_dim=$chunk_critic_hidden_dim
+condition_critic_hidden_layers=$chunk_critic_hidden_layers
+condition_critic_activation=$chunk_critic_activation
+condition_critic_layer_norm=$chunk_critic_layer_norm
+condition_critic_lr=$chunk_critic_lr
+condition_critic_tau=$chunk_critic_tau
+condition_critic_batch_size=$chunk_critic_batch_size
+condition_critic_updates_per_epoch=$chunk_critic_updates_per_epoch
+condition_critic_replay_size=$chunk_critic_replay_size
+
 environment_name=slippery_push
 swanlab_project=Flow_skill_1_${environment_name}
 
 for seed in "${seeds[@]}"; do
     mkdir -p "logs/Flow/reskill_flow/${environment_name}/seed${seed}/"
 
-    CUDA_VISIBLE_DEVICES=1 python -u -m reskill.train_reskill_agent_res \
+    CUDA_VISIBLE_DEVICES=2 python -u -m reskill.train_reskill_agent_res \
     --config_file $environment_name/config_rnvp.yaml \
     --prior_model Flow \
     --pick $pick \
@@ -59,6 +79,13 @@ for seed in "${seeds[@]}"; do
     --positive_reward_threshold "$positive_reward_threshold" \
     --max_residual_factor "$max_residual_factor" \
     --use_condition_flow "$use_condition_flow" \
+    --condition_use_grad "$condition_use_grad" \
+    --condition_guidance_scale "$condition_guidance_scale" \
+    --condition_guidance_warmup_epoch "$condition_guidance_warmup_epoch" \
+    --condition_guidance_grad_clip "$condition_guidance_grad_clip" \
+    --condition_guidance_normalize \
+    --condition_positive_replay_ratio "$condition_positive_replay_ratio" \
+    --condition_positive_reward_threshold "$condition_positive_reward_threshold" \
     --chunk_critic_ensembles "$chunk_critic_ensembles" \
     --chunk_critic_hidden_dim "$chunk_critic_hidden_dim" \
     --chunk_critic_hidden_layers "$chunk_critic_hidden_layers" \
@@ -69,8 +96,18 @@ for seed in "${seeds[@]}"; do
     --chunk_critic_batch_size "$chunk_critic_batch_size" \
     --chunk_critic_updates_per_epoch "$chunk_critic_updates_per_epoch" \
     --chunk_critic_replay_size "$chunk_critic_replay_size" \
+    --condition_critic_ensembles "$condition_critic_ensembles" \
+    --condition_critic_hidden_dim "$condition_critic_hidden_dim" \
+    --condition_critic_hidden_layers "$condition_critic_hidden_layers" \
+    --condition_critic_activation "$condition_critic_activation" \
+    --condition_critic_layer_norm \
+    --condition_critic_lr "$condition_critic_lr" \
+    --condition_critic_tau "$condition_critic_tau" \
+    --condition_critic_batch_size "$condition_critic_batch_size" \
+    --condition_critic_updates_per_epoch "$condition_critic_updates_per_epoch" \
+    --condition_critic_replay_size "$condition_critic_replay_size" \
     --swanlab_project "$swanlab_project" \
-    > "logs/Flow/reskill_flow/${environment_name}/seed${seed}/condflow${use_condition_flow}_${dataset_name}_resmax${max_residual_factor}_labelWeight_qz.log" 2>&1 &
+    > "logs/Flow/reskill_flow/${environment_name}/seed${seed}/condflow${use_condition_flow}_${dataset_name}_resmax${max_residual_factor}_qz${guidance_scale}_qc${condition_guidance_scale}_cgwarm${condition_guidance_warmup_epoch}.log" 2>&1 &
 
     # CUDA_VISIBLE_DEVICES=1 python -u -m reskill.train_reskill_agent_res \
     # --config_file slippery_push/config.yaml \
