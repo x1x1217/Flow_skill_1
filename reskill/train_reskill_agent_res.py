@@ -698,7 +698,7 @@ def main():
     parser.add_argument('--dataset_name', type=str, default=None)
     parser.add_argument('--use_sigma', type=int, default=1)
     parser.add_argument('--use_grad', type=int, default=1)
-    parser.add_argument('--use_student', type=int, default=1)
+    parser.add_argument('--use_student', type=int, default=0)
     parser.add_argument('--guidance_scale', type=float, default=0.0)
     parser.add_argument('--guidance_warmup_epoch', type=int, default=0)
     parser.add_argument('--guidance_grad_clip', type=float, default=0.0)
