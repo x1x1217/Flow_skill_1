@@ -295,9 +295,7 @@ class LatentChunkCritic:
         positive_fractions = []
 
         for _ in range(updates_per_epoch):
-            batch = replay_buffer.sample(
-                batch_size,
-            )
+            batch = replay_buffer.sample(batch_size)
             positive_fractions.append(batch.positive_fraction)
             target_guidance_scale = (
                 args.condition_guidance_scale

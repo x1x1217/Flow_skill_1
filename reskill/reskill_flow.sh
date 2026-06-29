@@ -6,12 +6,13 @@ repo_root=$(cd -- "$script_dir/.." && pwd)
 
 # Select the configurations to run. All selected configurations run in parallel.
 configs=(
-    "$script_dir/configs/reskill_flow/rawgrad_qc1_qz1_off-policy.sh"
-    "$script_dir/configs/reskill_flow/rawgrad_qc2_qz2_off-policy.sh"
-    "$script_dir/configs/reskill_flow/rawgrad_qc5_qz5_off-policy.sh"
-    "$script_dir/configs/reskill_flow/rawgrad_qc10_qz10_off-policy.sh"
-    "$script_dir/configs/reskill_flow/rawgrad_qc01_qz01_off-policy.sh"
-    "$script_dir/configs/reskill_flow/rawgrad_qc05_qz05_off-policy.sh"
+    # "$script_dir/configs/reskill_flow/rawgrad_qc1_qz1_on-policy.sh"
+    # "$script_dir/configs/reskill_flow/rawgrad_qc2_qz2_on-policy.sh"
+    # "$script_dir/configs/reskill_flow/rawgrad_qc5_qz5_on-policy.sh"
+    # "$script_dir/configs/reskill_flow/rawgrad_qc10_qz10_on-policy.sh"
+    "$script_dir/configs/reskill_flow/rawgrad_qc01_qz01_on-policy.sh"
+    "$script_dir/configs/reskill_flow/rawgrad_qc01_qz01_on-policy_clip5.sh"
+    # "$script_dir/configs/reskill_flow/rawgrad_qc05_qz05_on-policy.sh"
 )
 
 # Explicit command-line paths temporarily override the selection above.
@@ -32,15 +33,28 @@ launch_config() (
     extra_args=()
     source "$config_file"
 
-    : "${gpu:?gpu is required in $config_file}"
     : "${run_name:?run_name is required in $config_file}"
     : "${dataset_name:?dataset_name is required in $config_file}"
     : "${environment_name:?environment_name is required in $config_file}"
 
+    if ! declare -p gpus >/dev/null 2>&1; then
+        : "${gpu:?either gpu or gpus is required in $config_file}"
+        gpus=()
+        for _ in "${seeds[@]}"; do
+            gpus+=("$gpu")
+        done
+    fi
+    if (( ${#gpus[@]} < ${#seeds[@]} )); then
+        echo "Not enough GPUs in $config_file: seeds=${seeds[*]}, GPUs=${gpus[*]}" >&2
+        exit 2
+    fi
+
     cd "$repo_root"
     local_pids=()
 
-    for seed in "${seeds[@]}"; do
+    for index in "${!seeds[@]}"; do
+        seed=${seeds[$index]}
+        seed_gpu=${gpus[$index]}
         log_dir="logs/Flow/reskill_flow/${environment_name}/seed${seed}/${log_subdir:-newPara}"
         log_file="${log_dir}/${run_name}.log"
         mkdir -p "$log_dir"
@@ -63,30 +77,13 @@ launch_config() (
             --condition_guidance_scale "$condition_guidance_scale"
             --condition_guidance_warmup_epoch "$condition_guidance_warmup_epoch"
             --condition_guidance_grad_clip "$condition_guidance_grad_clip"
-            --chunk_critic_ensembles "$chunk_critic_ensembles"
-            --chunk_critic_hidden_dim "$chunk_critic_hidden_dim"
-            --chunk_critic_hidden_layers "$chunk_critic_hidden_layers"
-            --chunk_critic_activation "$chunk_critic_activation"
-            --chunk_critic_lr "$chunk_critic_lr"
-            --chunk_critic_tau "$chunk_critic_tau"
-            --chunk_critic_batch_size "$chunk_critic_batch_size"
-            --chunk_critic_updates_per_epoch "$chunk_critic_updates_per_epoch"
-            --chunk_critic_replay_size "$chunk_critic_replay_size"
-            --condition_critic_ensembles "$condition_critic_ensembles"
-            --condition_critic_hidden_dim "$condition_critic_hidden_dim"
-            --condition_critic_hidden_layers "$condition_critic_hidden_layers"
-            --condition_critic_activation "$condition_critic_activation"
-            --condition_critic_lr "$condition_critic_lr"
-            --condition_critic_tau "$condition_critic_tau"
-            --condition_critic_batch_size "$condition_critic_batch_size"
-            --condition_critic_updates_per_epoch "$condition_critic_updates_per_epoch"
-            --condition_critic_replay_size "$condition_critic_replay_size"
+            --skill_checkpoint best
             --swanlab_project "$swanlab_project"
             "${extra_args[@]}"
         )
 
-        echo "[launch] config=$config_file seed=$seed gpu=$gpu log=$log_file"
-        CUDA_VISIBLE_DEVICES="$gpu" "${cmd[@]}" > "$log_file" 2>&1 &
+        echo "[launch] config=$config_file seed=$seed gpu=$seed_gpu log=$log_file"
+        CUDA_VISIBLE_DEVICES="$seed_gpu" "${cmd[@]}" > "$log_file" 2>&1 &
         local_pids+=("$!")
     done
 

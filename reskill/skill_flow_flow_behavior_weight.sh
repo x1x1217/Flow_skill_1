@@ -4,22 +4,24 @@ cd "$(dirname "$0")/.."
 mkdir -p logs/Flow/skill_flow
 
 experiments=(
-  "500 1 fetch_block_push1_pick500_labeled fetch_block_push1_pick500_labeled_flowbeh_beta02_wmin01_wmax200 1 200.0"
-  "500 1 fetch_block_push1_pick500_labeled fetch_block_push1_pick500_labeled_flowbeh_beta02_wmin01_wmax300 2 300.0"
-  "500 1 fetch_block_push1_pick500_labeled fetch_block_push1_pick500_labeled_flowbeh_beta02_wmin01_wmax1000 3 1000.0"
+#   "500 1 fetch_block_push1_pick500_labeled fetch_block_push1_pick500_labeled_flowbeh_beta02_wmin01_wmax200 1 200.0"
+#   "500 1 fetch_block_push1_pick500_labeled fetch_block_push1_pick500_labeled_flowbeh_beta02_wmin01_wmax300 2 300.0"
+#   "500 1 fetch_block_push1_pick500_labeled fetch_block_push1_pick500_labeled_flowbeh_beta02_wmin01_wmax1000 3 1000.0"
+  "500 1 fetch_block_push1_pick500_labeled fetch_block_push1_pick500_labeled_flowbeh_beta02_wmin01_wmax300 0 300.0"
 )
 
-seeds=(2)
+seeds=(3)
 use_student=0
 swanlab_project=Flow_skill_1_offline_flow_behavior_weight
 
-skill_epochs=0
+skill_epochs=400
 prior_epochs=400
 prior_updates_per_batch=1
 prior_use_mu=1
 val_freq=5
 save_freq=50
 action_noise_std=0.0
+
 condition_reweight=1
 condition_weight_beta=0.2
 condition_weight_min=0.1
